@@ -561,10 +561,56 @@ def armar_resultados(genero, ocasion, categoria, texto_pedido, catalog, reglas, 
     ]
 
 
+def _completar_con_alternativas_de_corte(
+    genero, texto_pedido, catalog, categoria, tallas_usuario, ids_ya_mostrados, faltan, razon_alternativa_fn
+):
+    """Cuando "mostrar mas opciones" ya no tiene mas productos que cumplan
+    TODOS los filtros (incluido el corte pedido), completa los cupos que
+    faltan relajando SOLO el corte -- mantiene tipo de prenda, subtipo,
+    largo, manga, capucha/cierre y ocasion/precio (esos nunca se relajan).
+    Devuelve (alternativas_formateadas, aviso_o_None); si no se pidio un
+    corte especifico, o igual no aparece nada relajando el corte, devuelve
+    ([], None) y el llamador no debe mostrar ningun aviso de alternativa."""
+    corte_pedido = detectar_corte_pedido(texto_pedido)
+    if faltan <= 0 or not corte_pedido:
+        return [], None
+
+    # Hay que sacar los ya mostrados del catalogo ANTES de llamar a
+    # elegir_candidatos, no despues -- si no, permitir_otros_cortes nunca se
+    # activa: elegir_candidatos ve que "todavia existen" productos del corte
+    # pedido (los que ya se mostraron) y por eso no relaja nada, aunque para
+    # el usuario ya no quede ninguno nuevo que mostrar.
+    catalog_restante = [p for p in catalog if p["id"] not in ids_ya_mostrados]
+    candidatos = elegir_candidatos(
+        genero, texto_pedido, catalog_restante, cantidad=faltan,
+        categoria_pedida=categoria, permitir_otros_cortes=True,
+    )
+    if not candidatos:
+        return [], None
+
+    aviso = (
+        f'No encontramos mas opciones en "{corte_pedido}", pero esto tambien podria '
+        "interesarte (mismo tipo de prenda, otro corte):"
+    )
+    alternativas = [formatear_producto(p, razon_alternativa_fn(p), tallas_usuario) for p in candidatos]
+    return alternativas, aviso
+
+
 def buscar_plan_b(genero, ocasion, categoria, texto_pedido, catalog, reglas, tallas_usuario=None):
     """Se llama cuando el usuario dice que la busqueda primaria no le sirvio.
     Usa la regla de confianza media si existe; si no, amplia el buscador
-    simple mostrando los siguientes mejores candidatos del catalogo."""
+    simple mostrando los siguientes mejores candidatos del catalogo.
+
+    Prioridad al ampliar: primero se completa con mas productos que sigan
+    cumpliendo TODOS los filtros (tipo de prenda, subtipo, largo, manga,
+    capucha/cierre, ocasion, precio); si con eso no alcanza a completar
+    CANTIDAD_RESULTADOS, se rellena el resto relajando SOLO el corte
+    (ej: pidieron "baggy" y ya no queda ninguno mas -> se ofrecen otros
+    cortes de la misma prenda), dejando eso marcado aparte como alternativa,
+    nunca mezclado silenciosamente con los resultados exactos.
+
+    Devuelve (exactos, alternativas, aviso_alternativas) -- "aviso_alternativas"
+    es None si no hubo que relajar nada."""
     regla = buscar_regla(genero, ocasion, reglas, {"media"})
     if regla:
         atributos_txt = ", ".join(regla.get("atributos", []))
@@ -577,33 +623,40 @@ def buscar_plan_b(genero, ocasion, categoria, texto_pedido, catalog, reglas, tal
             f'Opcion alternativa (confianza media) para '
             f'{regla["genero"]} en "{regla["ocasion"]}": buscamos {atributos_txt}.'
         )
-        return [formatear_producto(p, razon, tallas_usuario) for p in candidatos]
+        return [formatear_producto(p, razon, tallas_usuario) for p in candidatos], [], None
 
     # Para no repetir lo que ya se mostro en la busqueda primaria, primero
     # calculamos esos mismos resultados (busqueda estricta) y los excluimos
-    # de la lista ampliada (permitir_otros_cortes=True). Asi, si la primaria
-    # no mostro nada (ej: no habia nada "boxy fit"), el Plan B parte mostrando
-    # desde el primer resultado en vez de saltarse resultados que nunca se
-    # mostraron.
+    # de la lista ampliada. Asi, si la primaria no mostro nada (ej: no habia
+    # nada "boxy fit"), el Plan B parte mostrando desde el primer resultado
+    # en vez de saltarse resultados que nunca se mostraron.
     primarios = elegir_candidatos(genero, texto_pedido, catalog, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria)
     ids_ya_mostrados = {p["id"] for p in primarios}
-    candidatos = [
+
+    exactos = [
         p
-        for p in elegir_candidatos(
-            genero, texto_pedido, catalog, cantidad=len(catalog),
-            categoria_pedida=categoria, permitir_otros_cortes=True,
-        )
+        for p in elegir_candidatos(genero, texto_pedido, catalog, cantidad=len(catalog), categoria_pedida=categoria)
         if p["id"] not in ids_ya_mostrados
     ][:CANTIDAD_RESULTADOS]
-    return [
-        formatear_producto(
-            p,
+    ids_ya_mostrados = ids_ya_mostrados | {p["id"] for p in exactos}
+
+    def razon_exacta(p):
+        return (
             "Mas opciones del catalogo urbano (sin regla validada todavia) que "
-            f'coinciden con la categoria "{p["categoria"]}".',
-            tallas_usuario,
+            f'coinciden con la categoria "{p["categoria"]}".'
         )
-        for p in candidatos
-    ]
+
+    def razon_alternativa(p):
+        return (
+            "Alternativa fuera del corte pedido (sin regla validada todavia) que "
+            f'coincide con la categoria "{p["categoria"]}".'
+        )
+
+    alternativas, aviso = _completar_con_alternativas_de_corte(
+        genero, texto_pedido, catalog, categoria, tallas_usuario, ids_ya_mostrados,
+        CANTIDAD_RESULTADOS - len(exactos), razon_alternativa,
+    )
+    return [formatear_producto(p, razon_exacta(p), tallas_usuario) for p in exactos], alternativas, aviso
 
 
 @app.route("/")
@@ -663,18 +716,34 @@ def recommend():
     tallas_usuario = estimar_tallas(genero, peso, altura)
     catalog_con_talla = filtrar_por_talla(catalog, tallas_usuario)
 
-    buscar_func = buscar_plan_b if plan_b else armar_resultados
-    resultados = buscar_func(genero, ocasion, categoria, texto_pedido, catalog_con_talla, reglas, tallas_usuario)
+    if plan_b:
+        resultados, alternativas, aviso_alternativas = buscar_plan_b(
+            genero, ocasion, categoria, texto_pedido, catalog_con_talla, reglas, tallas_usuario
+        )
+    else:
+        resultados = armar_resultados(genero, ocasion, categoria, texto_pedido, catalog_con_talla, reglas, tallas_usuario)
+        alternativas, aviso_alternativas = [], None
 
     sin_talla = False
-    if not resultados and tallas_usuario:
+    if not resultados and not alternativas and tallas_usuario:
         # Si sin filtrar por talla SI habia resultados, el vacio es
         # especificamente por talla -- avisamos eso en vez de un vacio sin
         # explicacion.
-        resultados_sin_talla = buscar_func(genero, ocasion, categoria, texto_pedido, catalog, reglas)
-        sin_talla = bool(resultados_sin_talla)
+        if plan_b:
+            resultados_sin_talla, alternativas_sin_talla, _ = buscar_plan_b(
+                genero, ocasion, categoria, texto_pedido, catalog, reglas
+            )
+            sin_talla = bool(resultados_sin_talla) or bool(alternativas_sin_talla)
+        else:
+            resultados_sin_talla = armar_resultados(genero, ocasion, categoria, texto_pedido, catalog, reglas)
+            sin_talla = bool(resultados_sin_talla)
 
-    return jsonify({"recomendaciones": resultados, "sin_talla": sin_talla})
+    return jsonify({
+        "recomendaciones": resultados,
+        "alternativas": alternativas,
+        "aviso_alternativas": aviso_alternativas,
+        "sin_talla": sin_talla,
+    })
 
 
 if __name__ == "__main__":

@@ -153,6 +153,17 @@ a.volver, #link-editar-perfil {
 
 #resultados-plan-b h3 { margin: 0.5rem 0 0; }
 
+/* Aviso antes de las alternativas de "mostrar mas opciones" que ya no
+   cumplen el corte pedido -- distinto del h3 normal para que se note que
+   es un aviso, no una coincidencia exacta. */
+#resultados-plan-b h3.aviso-alternativas {
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 600;
+  border-top: 1px dashed var(--border);
+  padding-top: 1rem;
+}
+
 #resultados {
   margin-top: 1.5rem;
   display: flex;

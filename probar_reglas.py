@@ -27,7 +27,22 @@ for r in armar_resultados("Hombre", "junta familiar", "prenda inferior", "baggy"
 print()
 
 print('=== Hombre + "prenda inferior" + boxy fit -- PLAN B (no hay boxy fit en catalogo, deberia mostrar otros cortes en vez de nada) ===')
-for r in buscar_plan_b("Hombre", "junta familiar", "prenda inferior", "boxy fit", catalog, reglas):
+exactos, alternativas, aviso = buscar_plan_b("Hombre", "junta familiar", "prenda inferior", "boxy fit", catalog, reglas)
+print(f"exactos: {len(exactos)}, alternativas: {len(alternativas)}, aviso: {aviso}")
+for r in exactos:
     print(f"- {r['nombre']} ({r['tienda']})")
+    print(f"  razon: {r['razon']}")
+for r in alternativas:
+    print(f"- [ALTERNATIVA] {r['nombre']} ({r['tienda']})")
+    print(f"  razon: {r['razon']}")
+print()
+
+print('=== Hombre + "prenda inferior" + baggy -- PLAN B (SI hay baggy, pero pocos: deberia completar con alternativas de otro corte) ===')
+exactos, alternativas, aviso = buscar_plan_b("Hombre", "junta familiar", "prenda inferior", "baggy", catalog, reglas)
+print(f"exactos: {len(exactos)}, alternativas: {len(alternativas)}, aviso: {aviso}")
+for r in exactos:
+    print(f"- {r['nombre']} ({r['tienda']})")
+for r in alternativas:
+    print(f"- [ALTERNATIVA] {r['nombre']} ({r['tienda']})")
     print(f"  razon: {r['razon']}")
 print()

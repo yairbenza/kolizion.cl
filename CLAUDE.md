@@ -145,6 +145,19 @@ Si la ficha no da ni descripción ni medidas suficientes para inferir con algo d
 
 `data/referencia_no_oficial.json` guarda dos respuestas de Mica (carrete/fiesta y universidad/polerón) que sí calzan con el enfoque streetwear, pero que NO son parte de las reglas oficiales validadas arriba. Son solo contexto extra por ahora.
 
+## "Mostrar más opciones" con alternativas de corte
+
+Cuando el usuario aprieta "Mostrar más opciones" (Plan B) y ya no queda ningún producto más que cumpla TODOS los filtros pedidos (tipo de prenda, subtipo, largo, manga, capucha/cierre, ocasión, precio, y el corte específico — ej: "jeans baggy"), el buscador ya no deja la búsqueda vacía: completa los cupos que faltan relajando **solo el corte**, mostrando otros ajustes de la misma prenda (ej: skinny, regular, straight en vez de baggy).
+
+Orden de prioridad al ampliar (`buscar_plan_b` en `app.py`):
+1. Primero se completa con más productos que sigan cumpliendo el corte pedido exacto (tipo de prenda + subtipo + largo + manga + capucha/cierre + corte, todo intacto).
+2. Si con eso no se llega a `CANTIDAD_RESULTADOS`, se rellenan los cupos restantes relajando solo el corte — nunca el tipo de prenda ni los demás filtros estrictos.
+3. No se relaja nada más allá de eso por ahora (no hay una tercera prioridad de "relajar ocasión/precio" implementada — el catálogo mock es lo bastante grande para que la prioridad 2 casi siempre alcance a llenar los 5 resultados).
+
+Estas alternativas de corte relajado nunca se mezclan en silencio con las que sí cumplen todo: el backend las devuelve en un campo aparte (`alternativas`, junto con `aviso_alternativas` con el texto del aviso, ej: `No encontramos más opciones en "boxy fit", pero esto también podría interesarte (mismo tipo de prenda, otro corte):`). El frontend (`static/resultados.js`) las pinta en su propia sección, con ese aviso como encabezado antes de las tarjetas (estilo `.aviso-alternativas` en `style.css`: color de acento, cursiva, borde punteado arriba — para que se note a simple vista que es una alternativa, no una coincidencia exacta).
+
+Ojo técnico: para que la relajación de corte se active, hay que sacar los productos ya mostrados del catálogo ANTES de llamar a `elegir_candidatos(permitir_otros_cortes=True)`, no filtrarlos después — si no, la función ve que "todavía existen" productos del corte pedido (los que ya se mostraron) y nunca relaja nada, aunque para el usuario ya no quede ninguno nuevo.
+
 ## Volver atrás sin perder los filtros
 
 Antes, si el usuario llegaba a `/resultados` y apretaba el botón "atrás" del navegador, `index.html` no se acordaba de nada: volvía siempre al primer paso del formulario (perfil o "¿para quién es esta búsqueda?"), perdiendo la categoría/tipo de prenda/corte/etc. que ya había elegido.

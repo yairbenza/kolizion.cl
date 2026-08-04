@@ -37,16 +37,36 @@ document.addEventListener("DOMContentLoaded", () => {
     feedback.classList.add("oculto");
     try {
       const data = await buscarConAnimacion({ ...ultimoPayload, plan_b: true });
-      if (!data.recomendaciones || data.recomendaciones.length === 0) {
+      const hayExactas = data.recomendaciones && data.recomendaciones.length > 0;
+      // "alternativas" son productos que ya no cumplen el corte pedido (se
+      // relajo ese filtro porque no quedaba nada mas exacto) -- se muestran
+      // aparte, con su propio aviso, nunca mezcladas en silencio con las
+      // que si cumplen todo lo pedido.
+      const hayAlternativas = data.alternativas && data.alternativas.length > 0;
+
+      if (!hayExactas && !hayAlternativas) {
         estado.textContent = data.sin_talla
           ? "No encontramos tu talla en las opciones actuales."
           : "No encontramos nada en el catálogo todavía para esto.";
         return;
       }
-      const titulo = document.createElement("h3");
-      titulo.textContent = "Más opciones:";
-      document.getElementById("resultados-plan-b").appendChild(titulo);
-      renderResultados("resultados-plan-b", data.recomendaciones);
+
+      const contenedor = document.getElementById("resultados-plan-b");
+
+      if (hayExactas) {
+        const titulo = document.createElement("h3");
+        titulo.textContent = "Más opciones:";
+        contenedor.appendChild(titulo);
+        renderResultados("resultados-plan-b", data.recomendaciones);
+      }
+
+      if (hayAlternativas) {
+        const aviso = document.createElement("h3");
+        aviso.className = "aviso-alternativas";
+        aviso.textContent = data.aviso_alternativas || "Esto también podría interesarte:";
+        contenedor.appendChild(aviso);
+        renderResultados("resultados-plan-b", data.alternativas);
+      }
     } catch (err) {
       estado.textContent = "Algo salió mal: " + err.message;
     }

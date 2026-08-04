@@ -351,6 +351,103 @@ function guardarPerfil(perfil) {
   localStorage.setItem(PERFIL_KEY, JSON.stringify(perfil));
 }
 
+// Pone en un select el valor guardado de una busqueda anterior. Como
+// valorFinal() ya convirtio "otro" en el texto libre y "me da igual" en ""
+// al guardar, aca hacemos el camino inverso: si el valor calza con alguna
+// opcion del select, se selecciona directo; si no calza con ninguna (era
+// "otro"), se selecciona "otro" y se rellena su campo de texto libre; si
+// viene vacio, se deja en "me da igual" (si existe esa opcion).
+function restaurarSelectConOtro(select, otroCampo, otroInput, valor) {
+  if (!valor) {
+    const tieneMeDaIgual = Array.from(select.options).some((o) => o.value === "me da igual");
+    if (tieneMeDaIgual) select.value = "me da igual";
+    otroCampo.classList.add("oculto");
+    otroInput.required = false;
+    otroInput.value = "";
+    return;
+  }
+  const coincide = Array.from(select.options).some((o) => o.value === valor.toLowerCase());
+  if (coincide) {
+    select.value = valor.toLowerCase();
+    otroCampo.classList.add("oculto");
+    otroInput.required = false;
+  } else if (Array.from(select.options).some((o) => o.value === "otro")) {
+    select.value = "otro";
+    otroCampo.classList.remove("oculto");
+    otroInput.required = true;
+    otroInput.value = valor;
+  }
+}
+
+// Vuelve a dejar la seccion de busqueda (yo o regalo) tal como estaba antes
+// de mandar la ultima busqueda, usando el payload que se guardo en
+// sessionStorage justo antes de ir a /resultados. Se usa cuando el usuario
+// vuelve con el boton "atras" del navegador, para que no tenga que llenar
+// todo el formulario de nuevo.
+function restaurarFiltros(prefix, payload) {
+  if (prefix === "regalo") {
+    const form = document.getElementById("form-busqueda-regalo");
+    if (payload.altura) form.elements["altura"].value = payload.altura;
+    if (payload.peso) form.elements["peso"].value = payload.peso;
+    if (payload.genero) form.elements["genero"].value = payload.genero;
+  }
+
+  const categoriaSelect = document.getElementById(`categoria-${prefix}`);
+  const categoriaOtroCampo = document.getElementById(`campo-categoria-otro-${prefix}`);
+  const categoriaOtroInput = categoriaOtroCampo.querySelector("input");
+  restaurarSelectConOtro(categoriaSelect, categoriaOtroCampo, categoriaOtroInput, payload.categoria);
+  // Dispara el listener de categoria: repuebla tipo de prenda y corte segun
+  // esta categoria, y muestra/oculta los campos de gorro.
+  categoriaSelect.dispatchEvent(new Event("change"));
+
+  const tipoPrendaSelect = document.getElementById(`tipo-prenda-${prefix}`);
+  const tipoPrendaOtroCampo = document.getElementById(`campo-tipo-prenda-otro-${prefix}`);
+  const tipoPrendaOtroInput = tipoPrendaOtroCampo.querySelector("input");
+  restaurarSelectConOtro(tipoPrendaSelect, tipoPrendaOtroCampo, tipoPrendaOtroInput, payload.tipo_prenda);
+  // Dispara el listener de tipo de prenda: repuebla subtipo/largo/manga/capucha/cierre.
+  tipoPrendaSelect.dispatchEvent(new Event("change"));
+
+  const subtipoSelect = document.getElementById(`subtipo-${prefix}`);
+  if (payload.subtipo) subtipoSelect.value = payload.subtipo;
+  const largoSelect = document.getElementById(`largo-${prefix}`);
+  if (payload.largo) largoSelect.value = payload.largo;
+  const mangaSelect = document.getElementById(`manga-${prefix}`);
+  if (payload.manga) mangaSelect.value = payload.manga;
+  const capuchaSelect = document.getElementById(`capucha-${prefix}`);
+  if (payload.capucha) capuchaSelect.value = payload.capucha;
+  const cierreSelect = document.getElementById(`cierre-${prefix}`);
+  if (payload.cierre) cierreSelect.value = payload.cierre;
+
+  const corteSelect = document.getElementById(`corte-${prefix}`);
+  const corteOtroCampo = document.getElementById(`campo-corte-otro-${prefix}`);
+  const corteOtroInput = corteOtroCampo.querySelector("input");
+  restaurarSelectConOtro(corteSelect, corteOtroCampo, corteOtroInput, payload.corte);
+
+  const ocasionSelect = document.getElementById(`ocasion-${prefix}`);
+  const ocasionOtroCampo = document.getElementById(`campo-ocasion-otro-${prefix}`);
+  const ocasionOtroInput = ocasionOtroCampo.querySelector("input");
+  restaurarSelectConOtro(ocasionSelect, ocasionOtroCampo, ocasionOtroInput, payload.ocasion);
+
+  const precioSelect = document.getElementById(`precio-${prefix}`);
+  if (payload.precio !== undefined) precioSelect.value = payload.precio;
+
+  const gorroCaminoSelect = document.getElementById(`gorro-camino-${prefix}`);
+  if (payload.gorro_camino) gorroCaminoSelect.value = payload.gorro_camino;
+  const gorroOutfitSelect = document.getElementById(`gorro-outfit-${prefix}`);
+  if (payload.gorro_outfit) gorroOutfitSelect.value = payload.gorro_outfit;
+  const gorroFormaSelect = document.getElementById(`gorro-forma-${prefix}`);
+  if (payload.gorro_forma) gorroFormaSelect.value = payload.gorro_forma;
+  if (Array.isArray(payload.gorro_colores)) {
+    document.querySelectorAll(`#campo-gorro-colores-${prefix} input[type="checkbox"]`).forEach((cb) => {
+      cb.checked = payload.gorro_colores.includes(cb.value);
+    });
+  }
+  // Dispara el listener de gorro-camino: muestra colores u outfit segun corresponda.
+  gorroCaminoSelect.dispatchEvent(new Event("change"));
+
+  mostrarSeccion(`seccion-busqueda-${prefix}`);
+}
+
 function mostrarPasoInicial() {
   const perfil = getPerfil();
   if (perfil) {
@@ -392,9 +489,29 @@ async function buscar(payload) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  mostrarPasoInicial();
   configurarBusquedaPrenda("yo");
   configurarBusquedaPrenda("regalo");
+
+  // Si el usuario llego a esta pagina con el boton "atras" del navegador
+  // (viene de /resultados) y hay una busqueda guardada de esta sesion,
+  // volvemos directo a los filtros ya llenos en vez del primer paso del
+  // formulario -- asi no pierde lo que ya habia elegido. Si entro de
+  // cualquier otra forma (primera visita, recargar, o el link "Hacer una
+  // nueva busqueda"), el flujo normal parte desde el principio.
+  const navegacion = performance.getEntriesByType("navigation")[0];
+  const vieneDeAtras = navegacion && navegacion.type === "back_forward";
+  const ultimoPayloadGuardado = sessionStorage.getItem("ultimoPayload");
+
+  if (vieneDeAtras && ultimoPayloadGuardado) {
+    try {
+      const payload = JSON.parse(ultimoPayloadGuardado);
+      restaurarFiltros(payload.modo === "regalo" ? "regalo" : "yo", payload);
+    } catch (e) {
+      mostrarPasoInicial();
+    }
+  } else {
+    mostrarPasoInicial();
+  }
 
   document.getElementById("form-perfil").addEventListener("submit", (e) => {
     e.preventDefault();

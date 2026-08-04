@@ -145,6 +145,19 @@ Si la ficha no da ni descripción ni medidas suficientes para inferir con algo d
 
 `data/referencia_no_oficial.json` guarda dos respuestas de Mica (carrete/fiesta y universidad/polerón) que sí calzan con el enfoque streetwear, pero que NO son parte de las reglas oficiales validadas arriba. Son solo contexto extra por ahora.
 
+## Volver atrás sin perder los filtros
+
+Antes, si el usuario llegaba a `/resultados` y apretaba el botón "atrás" del navegador, `index.html` no se acordaba de nada: volvía siempre al primer paso del formulario (perfil o "¿para quién es esta búsqueda?"), perdiendo la categoría/tipo de prenda/corte/etc. que ya había elegido.
+
+Ahora `static/script.js` detecta ese caso puntual (usando `performance.getEntriesByType("navigation")[0].type === "back_forward"`, la forma estándar de saber si la página se cargó por un "atrás"/"adelante" del navegador y no por una visita normal) y, si además hay una búsqueda guardada de esta sesión (`sessionStorage.ultimoPayload`, el mismo dato que ya se usaba para pintar `/resultados`), salta directo a la sección de filtros (`seccion-busqueda-yo` o `seccion-busqueda-regalo`, según corresponda) con todos los campos ya rellenados como habían quedado — función `restaurarFiltros()`.
+
+Si el navegador restaura la página desde su caché interna (bfcache) en vez de recargarla, esto ni siquiera hace falta: el estado queda congelado tal cual estaba. `restaurarFiltros()` es el respaldo para cuando el navegador SÍ recarga la página de cero.
+
+Casos que se manejan aparte:
+- Si un select no encuentra el valor guardado entre sus opciones (pasó porque el usuario había escrito algo en el campo libre de "Otro"), se selecciona "Otro" y se rellena ese campo de texto con el valor guardado.
+- Si el valor guardado viene vacío (era "Me da igual"), se deja esa opción seleccionada si existe.
+- El link "← Hacer una nueva búsqueda" de `/resultados` sigue mandando a un formulario limpio, porque es una navegación normal (no "atrás"), no dispara `restaurarFiltros()`.
+
 ## Reglas de trabajo
 
 - Cuando no hay consenso claro en una categoría, mostrar 2-3 opciones en vez de una sola recomendación.

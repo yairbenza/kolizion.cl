@@ -21,6 +21,8 @@ function renderResultados(contenedorId, recomendaciones) {
     const card = document.createElement("div");
     card.className = "resultado-card";
     card.innerHTML = `
+      ${rec.imagen ? `<img src="${rec.imagen}" alt="Ilustración de referencia (no es una foto real del producto)" class="imagen-producto">` : ""}
+      ${rec.imagen ? `<p class="aviso-imagen">Imagen ilustrativa de referencia, no es el producto real.</p>` : ""}
       <div class="tienda">${rec.tienda}</div>
       <h3>${rec.nombre}</h3>
       ${rec.marca ? `<p class="marca">${rec.marca}</p>` : ""}

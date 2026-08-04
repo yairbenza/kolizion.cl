@@ -14,6 +14,8 @@ import json
 import random
 from pathlib import Path
 
+from generar_imagenes_gorro import PANEL_SUGERIDO
+
 random.seed(42)
 
 BASE_DIR = Path(__file__).parent
@@ -147,6 +149,18 @@ def generar_productos_gorro():
                 )
                 if en_oferta:
                     descripcion += " ¡En oferta!"
+
+                # Imagen ilustrativa (SVG generado, no foto real): la mitad
+                # de los gorros con visera (i>3) usan la version de dos
+                # tonos (panel frontal en un color de contraste sugerido),
+                # la otra mitad solido. Lana siempre solido.
+                if forma == "lana":
+                    imagen = f"img/gorros/gorro-lana-{color}.svg"
+                elif i > 3:
+                    imagen = f"img/gorros/gorro-{forma}-{color}-panel-{PANEL_SUGERIDO[color]}.svg"
+                else:
+                    imagen = f"img/gorros/gorro-{forma}-{color}.svg"
+
                 productos.append({
                     "id": f"mock_gorro_{contador:04d}",
                     "nombre": f"[MOCK] Gorro {NOMBRES_FORMA_GORRO[forma]} {color.capitalize()} {adjetivo} {i}",
@@ -157,6 +171,7 @@ def generar_productos_gorro():
                     "precio_clp": precio_clp,
                     "en_oferta": en_oferta,
                     "descripcion": descripcion,
+                    "imagen": f"/static/{imagen}",
                     "genero": "unisex",
                     "categoria": "gorro",
                     "color_dominante": color,

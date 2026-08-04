@@ -50,6 +50,7 @@ def formatear_producto(producto, razon, tallas_usuario=None):
         "link": producto["link"],
         "razon": razon,
         "tallas_coincidentes": tallas_coincidentes,
+        "imagen": producto.get("imagen", ""),
     }
 
 

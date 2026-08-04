@@ -1,179 +1,152 @@
 # Proyecto
 
-App/simulador que recomienda ropa streetwear según altura, peso, ocasión y presupuesto del usuario, cruzando con catálogo de tiendas chicas. El objetivo es dar visibilidad a tiendas pequeñas y ayudar al comprador a encontrar la prenda indicada sin importar la tienda.
+App/simulador que recomienda ropa streetwear según altura, peso, ocasión y presupuesto, cruzando con catálogo de tiendas chicas. Objetivo: dar visibilidad a tiendas pequeñas y ayudar al comprador a encontrar la prenda indicada.
 
 ## Fuera de alcance
 
-Cualquier ocasión que no sea streetwear (matrimonio, oficina, entrevista de trabajo, playa, deporte, primera cita) — esos casos quedaron descartados del enfoque actual. No reincorporarlos sin que el usuario lo pida explícitamente.
-
-Zapatillas/calzado también quedó fuera de alcance por ahora: se sacaron la ocasión "comprar zapatillas", sus reglas de recomendación, y la opción de categoría "zapatillas" del formulario. El foco actual es solo prendas de ropa. No reincorporar sin que el usuario lo pida explícitamente.
+No reincorporar sin pedido explícito del usuario:
+- Ocasiones no-streetwear (matrimonio, oficina, entrevista de trabajo, playa, deporte, primera cita).
+- Zapatillas/calzado (se sacó la ocasión, sus reglas, y la opción de categoría del formulario). Foco actual: solo prendas de ropa.
 
 ## Reglas de recomendación validadas
 
-Ver `data/reglas_streetwear.json` para el detalle estructurado. Resumen:
+Detalle estructurado en `data/reglas_streetwear.json`.
 
-**Alta confianza (3-4 respuestas coincidiendo, salvo donde se indique):**
-- Hombre + concierto/festival + polera → oversize, colores oscuros, marca de streetwear reconocida o nicho valorado, tela transpirable.
-- Hombre + junta de amigos/skate park + pantalón cargo → baggy/suelto, cómodo para moverse, buen precio, buena caída hasta el tobillo.
-- Mujer + junta de amigos/skate park + pantalón cargo → baggy, cómodo, versátil, corte tiro bajo o cintura alta que estiliza.
-- Mujer + concierto/festival + polera/top → ajustado, que favorezca la figura para la ocasión (5-6 respuestas coincidiendo). Si no hay stock en corte ajustado, ofrecer oversize/boxy fit como alternativa secundaria, no como recomendación principal.
+**Alta confianza** (3-4 respuestas coincidiendo, salvo donde se indique):
 
-**Confianza media:**
-- Ninguna actualmente.
+| Género | Ocasión | Prenda | Recomendación |
+| --- | --- | --- | --- |
+| Hombre | Concierto/festival | Polera | Oversize, colores oscuros, marca streetwear reconocida o nicho valorado, tela transpirable |
+| Hombre | Junta de amigos/skate park | Pantalón cargo | Baggy/suelto, cómodo para moverse, buen precio, buena caída hasta el tobillo |
+| Mujer | Junta de amigos/skate park | Pantalón cargo | Baggy, cómodo, versátil, tiro bajo o cintura alta que estiliza |
+| Mujer | Concierto/festival | Polera/top | Ajustado que favorezca la figura (5-6 respuestas). Si no hay stock ajustado, oversize/boxy como alternativa secundaria, no principal |
 
-**Sin consenso — no recomendar con una sola opción:**
-- Ninguna actualmente.
+**Confianza media:** ninguna todavía. **Sin consenso:** ninguna todavía. Cuando lleguen más respuestas de validación, actualizar solo la regla puntual indicada — no tocar las ya confirmadas.
 
-Estas reglas se seguirán ampliando/afinando a medida que lleguen más respuestas de validación. Cuando eso pase, actualizar solo las reglas puntuales indicadas — no tocar las que ya están confirmadas.
+## Filtros del formulario — mapa rápido
 
-## Criterios de tagueo manual de corte
+| Prenda | Subtipo | Largo | Manga | Capucha / cierre | Corte |
+| --- | --- | --- | --- | --- | --- |
+| Polera, Camiseta | — | ✅ (no en Hombre) | Polera: ✅ larga/corta | — | tabla "superior" |
+| Polerón | — | — | — | ✅ con/sin capucha · ✅ con/sin cierre | tabla "superior" |
+| Camisa, Chaqueta, Chaleco | — | — | — | — | tabla "superior" |
+| Top (no ofrecido a Hombre) | ✅ croptop/babytee/halter/corset/tanktop/blusa | ✅ (no en Hombre) | — | — | tabla "superior" |
+| Pantalón | ✅ buzo/jeans/cargo | — | — | — | tabla "inferior" |
+| Shorts | ✅ jeans/tela/cargo/baño | — | — | — | tabla "inferior" |
+| Falda cargo, Bike shorts | — | — | — | — | tabla "inferior" |
+| Gorro | — (flujo propio, ver sección Gorro) | — | — | — | no aplica, talla única |
 
-Cuando se cargue el catálogo de una tienda nueva y la ficha del producto no diga explícitamente el corte, usar estos criterios para asignar el campo `corte` de forma consistente.
+Todos estos campos son independientes entre sí (una prenda puede ser oversize Y crop Y manga larga a la vez) y son filtros **estrictos que nunca se relajan** — la única excepción es el corte dentro de "Mostrar más opciones" (ver esa sección).
 
-**Prenda superior** (polera, polerón, camisa, chaqueta):
+Nota de código: en `TIPOS_PRENDA_CONOCIDOS` (`app.py`) el orden de detección importa por colisión de palabras — "polera" antes que "top" (regla validada dice "polera/top") y "top" antes que "poleron" (el subtipo "crop hoodie" contiene la palabra "hoodie").
 
-| Opción en la web | Cómo identificarlo |
-| --- | --- |
-| Slim fit | Se ciñe al cuerpo, marca la silueta, mangas ajustadas al brazo |
-| Regular fit | Calce normal, leve entalle en la cintura, ni pegado ni suelto |
-| Straight | Cae recto de arriba a abajo, sin ningún entalle en la cintura (a diferencia de regular, que sí puede entallar un poco) |
-| Boxy fit | Ancho/cuadrado en el cuerpo, hombros rectos, pero de largo normal (no pasa mucho la cadera) |
-| Oversized | Notablemente más grande que la talla normal: hombros caídos, largo que pasa la cadera, mangas anchas |
+## Corte — criterios de tagueo manual
 
-Nota: para polerón, comparar contra otros polerones, no contra poleras, por el grosor de la tela.
+Usar cuando la ficha de una tienda no diga el corte explícitamente.
 
-Rangos de holgura aproximados (no exactos — varían por marca) para cuando conviene apoyarse en un número en vez de solo la descripción:
-- Slim/Skinny: 0-5cm de holgura respecto al cuerpo
-- Regular/Straight: 5-14cm
-- Boxy/Relajado: 14-20cm
-- Oversized: 20cm o más
+**Prenda superior** (polera, polerón, camisa, chaqueta, top): comparar polerón contra otros polerones, no contra poleras, por el grosor de la tela.
 
-**Prenda inferior** (pantalón, jeans, cargo, buzo):
+| Opción | Cómo identificarlo | Holgura aprox.* |
+| --- | --- | --- |
+| Slim fit | Se ciñe al cuerpo, marca la silueta, mangas ajustadas al brazo | 0-5cm |
+| Regular fit | Calce normal, leve entalle en la cintura | 5-14cm |
+| Straight | Cae recto de arriba a abajo, sin ningún entalle en la cintura | 5-14cm |
+| Boxy fit | Ancho/cuadrado, hombros rectos, largo normal (no pasa mucho la cadera) | 14-20cm |
+| Oversized | Hombros caídos, largo que pasa la cadera, mangas anchas | 20cm o más |
 
-| Opción en la web | Cómo identificarlo |
+\* No exacto, varía por marca — apoyo solo cuando la ficha da medidas de holgura concretas.
+
+**Prenda inferior** (pantalón, jeans, cargo, buzo, shorts, falda cargo, bike shorts): el cargo se evalúa igual que cualquier pantalón, los bolsillos grandes no cambian el criterio. Acá NO hay estándar en centímetros verificado — usar el mismo criterio proporcional (menos espacio = ajustado, más espacio = baggy).
+
+| Opción | Cómo identificarlo |
 | --- | --- |
 | Skinny | Se ciñe a la pierna de principio a fin, mínimo espacio extra |
-| Slim fit | Ajustado pero con un poco más de espacio que skinny, especialmente en el muslo |
-| Straight fit | Caída recta, mismo ancho de muslo a tobillo, sin ajustar ni ensanchar |
-| Baggy | Amplio en muslo y pierna, caída suelta hasta el tobillo, espacio notorio en toda la pierna |
+| Slim fit | Ajustado, con un poco más de espacio, sobre todo en el muslo |
+| Straight fit | Caída recta, mismo ancho de muslo a tobillo |
+| Baggy | Amplio en muslo y pierna, caída suelta hasta el tobillo |
 
-Nota: para cargo, el corte (skinny/baggy/etc.) se evalúa igual que cualquier pantalón — los bolsillos grandes son una característica aparte, no cambian el criterio de ajuste. A diferencia de prenda superior, aquí NO hay un estándar de industria tan claro en centímetros — usar el mismo criterio proporcional (menos espacio = ajustado, más espacio = baggy) sin apoyarse en números exactos, ya que no están verificados.
+**Definiciones cortas del formulario** (solo texto visible entre paréntesis, no afectan el filtro):
+- Superior: Slim fit (se pega al cuerpo) · Regular fit (calce normal) · Straight (cae recto, sin marcar cintura) · Boxy fit (ancho y cuadrado) · Oversized (grande y holgado, hombros caídos)
+- Inferior: Skinny (bien pegado a la pierna) · Slim fit (ajustado, con algo de espacio) · Straight fit (calce parejo) · Baggy (holgado en toda la pierna)
+- Prendas nuevas de mujer: Crop top (abdomen a la vista) · Baby tee (corto y ajustado) · Top halter (sin mangas, amarrado al cuello) · Corset top (costuras marcadas) · Falda cargo (bolsillos grandes) · Bike shorts (tipo ciclista)
 
-**Definiciones cortas que se muestran en el formulario** (entre paréntesis, al lado de cada opción — solo texto visible, no afectan el filtro):
+## Manga, capucha, cierre — criterios de tagueo
 
-- Prenda superior: Slim fit (se pega al cuerpo) · Regular fit (calce normal) · Straight (cae recto, sin marcar cintura) · Boxy fit (ancho y cuadrado) · Oversized (grande y holgado, hombros caídos)
-- Prenda inferior: Skinny (bien pegado a la pierna) · Slim fit (ajustado, con algo de espacio) · Straight fit (calce parejo) · Baggy (holgado en toda la pierna)
-- Prendas nuevas de mujer: Crop top (corto, abdomen a la vista) · Baby tee (corto y ajustado) · Top halter (sin mangas, amarrado al cuello) · Corset top (ajustado, costuras marcadas) · Falda cargo (bolsillos grandes) · Bike shorts (ajustados, tipo ciclista)
-
-## Ampliación streetwear de mujer
-
-Se agregaron tipos de prenda nuevos al formulario porque el catálogo estaba menos desarrollado para mujer que para hombre.
-
-**Prenda superior — "Top"** (una sola opción nueva en "¿qué prenda buscas?", independiente de polera/camisa/etc): al elegir "Top" aparece un segundo dropdown "¿qué tipo buscas?" con 6 subtipos — Crop top/Crop hoodie, Baby tee, Top con breteles/halter, Corset top, Tank top, Camisas/blusas — igual que el subtipo de pantalón (buzo/jeans/cargo). Usan la misma tabla de corte de arriba (slim fit/regular fit/straight/boxy fit/oversized).
-
-**Prenda inferior** (opciones nuevas, independientes de Pantalón/Shorts, no como subtipo de ellos): Falda cargo (misma lógica de corte que cualquier pantalón — los bolsillos no cambian el criterio) y Bike shorts/shorts ciclista. Usan la misma tabla de corte de prenda inferior.
-
-**Campo nuevo: Largo.** Solo aparece si la prenda elegida es un "top" (polera, camiseta, o el tipo "Top" con cualquiera de sus 6 subtipos). Opciones: Corto/crop, Largo normal, Extra largo (longline). Es independiente del corte — una prenda puede ser oversize Y crop al mismo tiempo, así que ambos filtros se aplican juntos, no uno reemplaza al otro.
-
-Nota técnica: "top" era antes sinónimo de "polera" en el buscador (la regla validada #4 dice "polera/top"). Ahora "top" es su propio tipo, así que se le sacó esa palabra a "polera" — la regla 4 sigue encontrando poleras igual (por la palabra "polera"), pero ya no reacciona a la palabra suelta "top". Si el usuario escribe "top" en un campo libre sin decir "polera", ahora apunta al tipo "Top" nuevo, no a poleras.
-
-## Atributos adicionales: manga, capucha, cierre
-
-Preguntas condicionales nuevas, independientes del corte (una polera puede ser oversize Y manga larga a la vez; un polerón puede ser boxy fit Y con capucha Y con cierre, las 3 cosas no se pisan entre sí):
-
-- **Polera** → "¿Manga larga o manga corta?" (campo `manga`: `larga` / `corta`).
-- **Polerón** → dos preguntas separadas: "¿Con capucha o sin capucha?" (campo `capucha`: `con capucha` / `sin capucha`) y "¿Con cierre o sin cierre (crewneck)?" (campo `cierre`: `con cierre` / `sin cierre`).
-
-Ningún otro tipo de prenda pregunta esto (ni siquiera "Top" ni sus subtipos).
-
-Criterio de tagueo cuando la ficha de un catálogo real no lo diga con esas palabras exactas: esto normalmente SÍ viene explícito o es fácil de ver en fotos/descripción (a diferencia de corte o talla, que a veces hay que inferir) — "poleron sin cierre" es sinónimo de "crewneck" en la mayoría de las tiendas, y "sin capucha" casi siempre se llama "crewneck" o "cuello redondo" también. Si la ficha no menciona ninguna de las dos cosas ni se ve en las fotos, preguntarle al usuario (dueño del proyecto) antes de taguear a ciegas — a diferencia de corte/talla, aquí no hay una tabla de medidas de la cual inferir.
+Normalmente SÍ vienen explícitos o se ven en fotos (a diferencia de corte/talla, que a veces hay que inferir). "Sin cierre" es sinónimo de "crewneck" en la mayoría de las tiendas; "sin capucha" casi siempre se llama "crewneck" o "cuello redondo". Si la ficha no lo menciona ni se ve en fotos, preguntarle al usuario (dueño del proyecto) antes de taguear a ciegas — acá no hay tabla de medidas de la cual inferir, a diferencia de corte/talla.
 
 ## Gorro
 
-Tipo de prenda nuevo, independiente ("Gorro" en el dropdown principal "¿qué buscas?", junto a Prenda superior/Prenda inferior). No usa corte ni las preguntas de subtipo/largo/manga/capucha/cierre — tiene su propio flujo, y tampoco se filtra por talla S/M/L/XL (es talla única/ajustable).
+Tipo de prenda independiente, flujo propio: no usa corte/subtipo/largo/manga/capucha/cierre, y no se filtra por talla S/M/L/XL (talla única/ajustable).
 
-**Paso 1** — "¿Buscas colores específicos o que combine con un outfit?":
-- **Camino A (colores específicos):** checkboxes de selección múltiple — blanco, negro, rojo, azul, amarillo, beige, morado, verde. Filtra productos cuyo `color_dominante` esté entre los marcados.
-- **Camino B (combinar con outfit):** pregunta "¿Cómo es tu outfit?" (Oscuro / Claro / Colorido / Otro), que se traduce a un set de colores permitidos:
+1. **¿Colores específicos o combinar con un outfit?**
+   - *Colores específicos*: checkboxes (blanco, negro, rojo, azul, amarillo, beige, morado, verde) → filtra `color_dominante`.
+   - *Combinar con outfit* → pregunta "¿Cómo es tu outfit?":
 
-| Outfit | Colores de gorro permitidos |
-| --- | --- |
-| Oscuro | Color vivo (rojo, azul, amarillo, morado, verde) como acento, o blanco para contraste limpio |
-| Claro | Negro para contraste, o color vivo como protagonista |
-| Colorido | Solo negro o blanco (un color neutro, para no sobrecargar) |
-| Otro | No filtra por color — muestra variedad |
+     | Outfit | Colores de gorro permitidos |
+     | --- | --- |
+     | Oscuro | Color vivo (rojo/azul/amarillo/morado/verde) como acento, o blanco para contraste limpio |
+     | Claro | Negro para contraste, o color vivo como protagonista |
+     | Colorido | Solo negro o blanco (neutro, para no sobrecargar) |
+     | Otro | No filtra por color — muestra variedad |
 
-**Paso 2** (siempre, sin importar el camino elegido) — "¿Qué tipo de gorro?": filtra por el campo `forma` (`curvo` / `plano` / `lana`). "Gorro de lana" (beanie, sin visera) se agregó como tercera opción de esta misma pregunta.
+2. **¿Qué tipo de gorro?** (siempre se pregunta, sin importar el camino elegido) → filtra `forma`: curvo / plano / lana (beanie, sin visera).
 
-Nota: había otra tabla más simple dando vueltas ("outfit neutro" / "outfit ya colorido" / "buscas armonía") que no llegó a tener opciones de formulario definidas — si esa es la lógica que en verdad quieres, avisar para reemplazar la de arriba.
+Tagueo: en gorros de dos tonos (tipo trucker), `color_dominante` = color del **panel frontal**, no toda la superficie.
 
-**Criterio de tagueo:** en gorros de diseño de dos tonos (tipo trucker), el `color_dominante` se define por el **panel frontal**, no por la superficie total de la prenda.
+Nota: hubo otra tabla más simple dando vueltas ("outfit neutro"/"colorido"/"buscas armonía") que no llegó a tener opciones de formulario definidas — si esa es la lógica que en verdad se quiere, avisar para reemplazar la de arriba.
 
-**Imágenes de referencia:** cada gorro del catálogo mock trae un campo `imagen` que apunta a un SVG ilustrativo en `static/img/gorros/` (generados por `generar_imagenes_gorro.py`, corridos a mano antes de `generar_catalogo_prueba.py`). NO son fotos reales de producto ni de ninguna tienda — son dibujos simples (forma + color plano) hechos desde cero en Python, sin depender de ningún servicio de generación de imágenes externo. Inspirados de forma muy genérica en la estética streetwear (paneles de color, tipografía/forma bold, combinación panel frontal + visera) pero sin copiar logos, nombres ni diseños de ninguna marca real. En el buscador (`static/comun.js`), cada tarjeta de resultado que tiene `imagen` muestra debajo un aviso: "Imagen ilustrativa de referencia, no es el producto real." — para que quede claro que es solo para pruebas visuales, no un catálogo real. Cubren: curvo y plano en color sólido y en dos tonos (panel frontal distinto, según la tabla `PANEL_SUGERIDO` del script), y gorro de lana en color sólido.
+## Imágenes ilustrativas del catálogo mock
 
-## Imágenes de referencia de prendas (no solo gorro)
+Cada producto (prenda o gorro) trae un campo `imagen` → SVG en `static/img/{gorros,prendas}/`, generado a mano por `generar_imagenes_gorro.py` / `generar_imagenes_prendas.py` **antes** de correr `generar_catalogo_prueba.py`. Nunca son fotos reales ni copian logos/diseños de marcas reales — estética streetwear genérica (paneles de color, formas bold). La UI (`static/comun.js`) siempre muestra el aviso "Imagen ilustrativa de referencia, no es el producto real." debajo de la imagen.
 
-Igual que los gorros, cada prenda del catálogo mock (polera, camiseta, camisa, chaqueta, polerón, los 6 subtipos de "Top", pantalón, shorts, falda cargo, bike shorts) trae un campo `imagen` que apunta a un SVG ilustrativo en `static/img/prendas/` (generados por `generar_imagenes_prendas.py`, corrido a mano antes de `generar_catalogo_prueba.py`, mismo estilo de silueta simple + color plano, sin fotos reales ni logos). El aviso "Imagen ilustrativa de referencia, no es el producto real." se muestra igual que en gorro.
+- **Gorro**: el color de la imagen SÍ es el dato real (`color_dominante`). Curvo/plano en sólido y en dos tonos (panel frontal según la tabla `PANEL_SUGERIDO`); lana solo en sólido.
+- **Prendas**: el catálogo mock no tiene campo de color real para prendas, así que `generar_catalogo_prueba.py` le asigna a cada producto un color **inventado** al azar (misma paleta de 8 colores) solo para la imagen — no se guarda como dato del producto ni filtra nada. Siluetas por tipo: polera (manga larga/corta), camiseta, camisa (con botones), chaqueta, polerón (4 combos capucha/cierre), los 6 subtipos de Top, pantalón/shorts/bike shorts/falda cargo (misma silueta para todos los subtipos de pantalón/shorts — ahí la variedad es solo de color).
 
-El color de cada imagen es **inventado**: el catálogo mock no tiene un campo de color real para prendas (a diferencia de gorro, que sí filtra por `color_dominante`), así que `generar_catalogo_prueba.py` le asigna a cada producto un color al azar (de la misma paleta de 8 colores de gorro) solo para que la imagen se vea distinta entre productos — ese color no queda guardado como campo del producto ni se usa para filtrar nada, existe únicamente en el nombre del archivo SVG.
+## Talla — inferencia automática
 
-Siluetas: polera (varía según manga larga/corta), camiseta, camisa (con botones), chaqueta (con cierre al medio), polerón (varía según capucha con/sin y cierre con/sin — 4 combinaciones), los 6 subtipos de Top (croptop, baby tee, halter, corset con líneas de costura, tank top con tirantes, blusa), pantalón, shorts, bike shorts y falda cargo (con bolsillos). Pantalón/shorts usan la misma silueta sin importar el subtipo (buzo/jeans/cargo/tela/baño) — la variedad ahí es solo de color, no de forma.
+Se cruza altura + peso (datos que el formulario ya pide, sin campo nuevo). Se calcula una talla según el peso y otra según la altura (tablas separadas); la **más chica** de las dos es la principal (para no ofrecer algo más ajustado de lo que corresponde), la otra queda como segunda opción. Si empatan, la segunda opción es la vecina más grande (o más chica si ya es XL). Cada resultado muestra TODAS las tallas coincidentes que tenga en stock (`tallas_coincidentes`). Si no calza en ninguna, se avisa en vez de dejar la página vacía sin explicación. Los gorros están exentos (talla única).
 
-## Talla inferida automáticamente
-
-El buscador infiere la talla del usuario cruzando altura y peso — datos que el formulario ya pide, no se agregó ninguna pregunta nueva de talla. Calcula una talla según el peso y otra según la altura (cada una por separado, contra su propia tabla), y usa la MÁS CHICA de las dos como principal (para no ofrecer algo más ajustado de lo que corresponde); la otra talla calculada queda como segunda opción. Si peso y altura dan la misma talla, la segunda opción es la vecina más grande (o más chica si ya es XL). Muestra en cada resultado cuál de esas tallas tiene ese producto ("Disponible en tu talla: M"). Si no calza en ninguna, se muestra un aviso en vez de dejar la página vacía sin explicación.
-
-Tabla orientativa (los rangos de la encuesta original se solapan entre tallas; para el cálculo se usan como topes fijos y no exactos):
-
-| Talla | Altura — mujer | Peso — mujer | Altura — hombre | Peso — hombre |
+| Talla | Altura mujer | Peso mujer | Altura hombre | Peso hombre |
 | --- | --- | --- | --- | --- |
 | S | hasta 1.65m | hasta 60kg | hasta 1.70m | hasta 68kg |
 | M | hasta 1.70m | hasta 70kg | hasta 1.78m | hasta 80kg |
 | L | hasta 1.75m | hasta 80kg | hasta 1.85m | hasta 92kg |
 | XL | más de 1.75m | más de 80kg | más de 1.85m | más de 92kg |
 
-## Cómo taguear catálogo real que no trae estos datos explícitos
+Rangos orientativos (la encuesta original se solapa entre tallas; para el cálculo se usan como topes fijos, no exactos).
 
-Ni "corte" ni "talla" van a venir siempre explícitos en la ficha de una tienda real. Cuando eso pase, el criterio no es preguntarle al usuario ni dejar el campo vacío — es que yo (Claude) asocie el dato manualmente, producto por producto, usando la descripción y las medidas que sí traiga la ficha, contra las tablas de este documento:
+## Taguear catálogo real que no trae estos datos explícitos
 
-- **Corte**: comparar la descripción/medidas del producto contra la tabla de "Criterios de tagueo manual de corte" de arriba (y los rangos en cm cuando la ficha dé medidas concretas de holgura).
-- **Talla (`tallas_disponibles`)**: mismo principio, pero al revés — la tabla de altura/peso de la sección de talla describe qué cuerpo le calza a cada talla. Si la ficha del producto da medidas propias de la prenda (ej: ancho de pecho, largo), usar esas medidas para inferir a qué talla(s) de esa tabla le quedarían bien, y taguear el producto con esa(s) talla(s).
+Ni corte ni talla vienen siempre explícitos en la ficha de una tienda real. El criterio es que Claude infiera el dato producto por producto contra las tablas de arriba — **no** preguntar de entrada ni dejar el campo vacío:
+- **Corte**: comparar descripción/medidas contra la tabla de corte (y los cm cuando la ficha dé medidas concretas de holgura).
+- **Talla** (`tallas_disponibles`): si la ficha da medidas propias de la prenda (ancho de pecho, largo), cruzarlas contra la tabla de talla de arriba para inferir a qué talla(s) le calzarían.
 
-Si la ficha no da ni descripción ni medidas suficientes para inferir con algo de confianza, no inventar el dato — mejor preguntarle al usuario (dueño del proyecto) antes de taguear a ciegas.
+Si la ficha no da ni descripción ni medidas suficientes para inferir con confianza, no inventar el dato — preguntarle al usuario (dueño del proyecto) antes de taguear a ciegas.
 
-## Datos de referencia sin usar
+## "Mostrar más opciones" — alternativas de corte
 
-`data/referencia_no_oficial.json` guarda dos respuestas de Mica (carrete/fiesta y universidad/polerón) que sí calzan con el enfoque streetwear, pero que NO son parte de las reglas oficiales validadas arriba. Son solo contexto extra por ahora.
+Cuando ya no queda ningún producto que cumpla TODOS los filtros pedidos (incluido el corte específico, ej: "jeans baggy"), el Plan B ya no deja la búsqueda vacía:
+1. Completa primero con más productos del corte exacto pedido (todos los demás filtros intactos).
+2. Si no alcanza a `CANTIDAD_RESULTADOS`, rellena el resto relajando **solo el corte** (mismo tipo de prenda, otro ajuste) — nunca el tipo de prenda ni los demás filtros estrictos.
+3. No se relaja nada más por ahora (el catálogo mock suele alcanzar a llenar con el paso 2).
 
-## "Mostrar más opciones" con alternativas de corte
+Estas alternativas nunca se mezclan en silencio con las que sí cumplen todo: van en un campo aparte (`alternativas` + `aviso_alternativas`), y el frontend (`static/resultados.js`) las pinta con un aviso destacado antes de las tarjetas (ej: `No encontramos más opciones en "boxy fit", pero esto también podría interesarte...`).
 
-Cuando el usuario aprieta "Mostrar más opciones" (Plan B) y ya no queda ningún producto más que cumpla TODOS los filtros pedidos (tipo de prenda, subtipo, largo, manga, capucha/cierre, ocasión, precio, y el corte específico — ej: "jeans baggy"), el buscador ya no deja la búsqueda vacía: completa los cupos que faltan relajando **solo el corte**, mostrando otros ajustes de la misma prenda (ej: skinny, regular, straight en vez de baggy).
-
-Orden de prioridad al ampliar (`buscar_plan_b` en `app.py`):
-1. Primero se completa con más productos que sigan cumpliendo el corte pedido exacto (tipo de prenda + subtipo + largo + manga + capucha/cierre + corte, todo intacto).
-2. Si con eso no se llega a `CANTIDAD_RESULTADOS`, se rellenan los cupos restantes relajando solo el corte — nunca el tipo de prenda ni los demás filtros estrictos.
-3. No se relaja nada más allá de eso por ahora (no hay una tercera prioridad de "relajar ocasión/precio" implementada — el catálogo mock es lo bastante grande para que la prioridad 2 casi siempre alcance a llenar los 5 resultados).
-
-Estas alternativas de corte relajado nunca se mezclan en silencio con las que sí cumplen todo: el backend las devuelve en un campo aparte (`alternativas`, junto con `aviso_alternativas` con el texto del aviso, ej: `No encontramos más opciones en "boxy fit", pero esto también podría interesarte (mismo tipo de prenda, otro corte):`). El frontend (`static/resultados.js`) las pinta en su propia sección, con ese aviso como encabezado antes de las tarjetas (estilo `.aviso-alternativas` en `style.css`: color de acento, cursiva, borde punteado arriba — para que se note a simple vista que es una alternativa, no una coincidencia exacta).
-
-Ojo técnico: para que la relajación de corte se active, hay que sacar los productos ya mostrados del catálogo ANTES de llamar a `elegir_candidatos(permitir_otros_cortes=True)`, no filtrarlos después — si no, la función ve que "todavía existen" productos del corte pedido (los que ya se mostraron) y nunca relaja nada, aunque para el usuario ya no quede ninguno nuevo.
+Ojo técnico (`buscar_plan_b` en `app.py`): hay que sacar los productos ya mostrados del catálogo **antes** de llamar `elegir_candidatos(permitir_otros_cortes=True)`, no filtrarlos después — si no, la función ve que "todavía existen" productos del corte pedido (los ya mostrados) y nunca relaja nada.
 
 ## Volver atrás sin perder los filtros
 
-Antes, si el usuario llegaba a `/resultados` y apretaba el botón "atrás" del navegador, `index.html` no se acordaba de nada: volvía siempre al primer paso del formulario (perfil o "¿para quién es esta búsqueda?"), perdiendo la categoría/tipo de prenda/corte/etc. que ya había elegido.
+Si el navegador restaura `/` desde su caché (bfcache), el estado del formulario queda intacto solo. Si el navegador SÍ recarga la página de cero al volver atrás (`performance.getEntriesByType("navigation")[0].type === "back_forward"`) y hay una búsqueda guardada (`sessionStorage.ultimoPayload`), `static/script.js` salta directo a la sección de filtros ya llena (función `restaurarFiltros()`) en vez de reiniciar el formulario.
 
-Ahora `static/script.js` detecta ese caso puntual (usando `performance.getEntriesByType("navigation")[0].type === "back_forward"`, la forma estándar de saber si la página se cargó por un "atrás"/"adelante" del navegador y no por una visita normal) y, si además hay una búsqueda guardada de esta sesión (`sessionStorage.ultimoPayload`, el mismo dato que ya se usaba para pintar `/resultados`), salta directo a la sección de filtros (`seccion-busqueda-yo` o `seccion-busqueda-regalo`, según corresponda) con todos los campos ya rellenados como habían quedado — función `restaurarFiltros()`.
+Casos particulares: un valor que no calza con ninguna opción del select (era texto libre en "Otro") selecciona "Otro" y rellena ese input; un valor vacío (era "Me da igual") deja esa opción si existe. El link "← Hacer una nueva búsqueda" es navegación normal — no dispara esto, a propósito deja el formulario limpio.
 
-Si el navegador restaura la página desde su caché interna (bfcache) en vez de recargarla, esto ni siquiera hace falta: el estado queda congelado tal cual estaba. `restaurarFiltros()` es el respaldo para cuando el navegador SÍ recarga la página de cero.
+## Datos de referencia sin usar
 
-Casos que se manejan aparte:
-- Si un select no encuentra el valor guardado entre sus opciones (pasó porque el usuario había escrito algo en el campo libre de "Otro"), se selecciona "Otro" y se rellena ese campo de texto con el valor guardado.
-- Si el valor guardado viene vacío (era "Me da igual"), se deja esa opción seleccionada si existe.
-- El link "← Hacer una nueva búsqueda" de `/resultados` sigue mandando a un formulario limpio, porque es una navegación normal (no "atrás"), no dispara `restaurarFiltros()`.
+`data/referencia_no_oficial.json` guarda dos respuestas de Mica (carrete/fiesta, universidad/polerón) que calzan con el enfoque streetwear pero NO son reglas oficiales validadas. Solo contexto extra.
 
 ## Reglas de trabajo
 
 - Cuando no hay consenso claro en una categoría, mostrar 2-3 opciones en vez de una sola recomendación.
 - Nunca inventar productos o links que no vengan de un catálogo real.
-- El usuario no sabe programar: antes de hacer cambios importantes, explicar en español simple qué se va a hacer y para qué sirve, antes de ejecutarlo.
-- PowerShell en este equipo tiene un límite de ~965 bytes por comando. Cuando pruebes varios casos a la vez, guárdalos en un archivo de script (.py o .ps1) y ejecuta ese archivo con un comando corto, en vez de escribir pruebas largas directo en la terminal.
+- El usuario no sabe programar: antes de hacer cambios importantes, explicar en español simple qué se va a hacer y para qué sirve.
+- PowerShell en este equipo tiene un límite de ~965 bytes por comando. Para probar varios casos a la vez, guardarlos en un archivo de script (.py o .ps1) y ejecutarlo con un comando corto, en vez de escribir pruebas largas directo en la terminal.

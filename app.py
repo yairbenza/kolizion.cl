@@ -178,7 +178,7 @@ CIERRES_CONOCIDOS = {
 # fuera de ese grupo (son los neutros).
 COLORES_GORRO_CONOCIDOS = ["blanco", "negro", "rojo", "azul", "amarillo", "beige", "morado", "verde"]
 COLORES_VIVOS_GORRO = {"rojo", "azul", "amarillo", "morado", "verde"}
-FORMAS_GORRO_CONOCIDAS = ["curvo", "plano"]
+FORMAS_GORRO_CONOCIDAS = ["curvo", "plano", "lana"]
 
 
 def colores_permitidos_por_outfit(outfit):

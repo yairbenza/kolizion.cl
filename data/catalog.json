@@ -18270,18 +18270,18 @@
   },
   {
     "id": "mock_gorro_0013",
-    "nombre": "[MOCK] Gorro Curvo Negro Drift 1",
+    "nombre": "[MOCK] Gorro de Lana Blanco Drift 1",
     "marca": "Static Wear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-curvo-1",
+    "link": "https://mock-no-real.cl/gorro-blanco-lana-1",
     "precio": "$18.490",
     "precio_clp": 18490,
     "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro de lana, color dominante blanco, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "curvo",
+    "color_dominante": "blanco",
+    "forma": "lana",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -18293,24 +18293,24 @@
     "tags": [
       "streetwear",
       "urbano",
-      "negro",
-      "curvo"
+      "blanco",
+      "lana"
     ]
   },
   {
     "id": "mock_gorro_0014",
-    "nombre": "[MOCK] Gorro Curvo Negro Urban 2",
+    "nombre": "[MOCK] Gorro de Lana Blanco Urban 2",
     "marca": "Concrete Co. (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-curvo-2",
+    "link": "https://mock-no-real.cl/gorro-blanco-lana-2",
     "precio": "$22.990",
     "precio_clp": 22990,
     "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro de lana, color dominante blanco, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "curvo",
+    "color_dominante": "blanco",
+    "forma": "lana",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -18322,18 +18322,192 @@
     "tags": [
       "streetwear",
       "urbano",
-      "negro",
-      "curvo"
+      "blanco",
+      "lana"
     ]
   },
   {
     "id": "mock_gorro_0015",
-    "nombre": "[MOCK] Gorro Curvo Negro Urban 3",
+    "nombre": "[MOCK] Gorro de Lana Blanco Urban 3",
     "marca": "Static Wear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-curvo-3",
+    "link": "https://mock-no-real.cl/gorro-blanco-lana-3",
     "precio": "$22.990",
     "precio_clp": 22990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante blanco, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "blanco",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "blanco",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0016",
+    "nombre": "[MOCK] Gorro de Lana Blanco Nocturno 4",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-blanco-lana-4",
+    "precio": "$20.490",
+    "precio_clp": 20490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante blanco, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "blanco",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "blanco",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0017",
+    "nombre": "[MOCK] Gorro de Lana Blanco Loom 5",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-blanco-lana-5",
+    "precio": "$6.490",
+    "precio_clp": 6490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante blanco, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "blanco",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "blanco",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0018",
+    "nombre": "[MOCK] Gorro de Lana Blanco Kraft 6",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-blanco-lana-6",
+    "precio": "$9.990",
+    "precio_clp": 9990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante blanco, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "blanco",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "blanco",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0019",
+    "nombre": "[MOCK] Gorro Curvo Negro Nocturno 1",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-curvo-1",
+    "precio": "$23.990",
+    "precio_clp": 23990,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0020",
+    "nombre": "[MOCK] Gorro Curvo Negro Kraft 2",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-curvo-2",
+    "precio": "$16.990",
+    "precio_clp": 16990,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0021",
+    "nombre": "[MOCK] Gorro Curvo Negro Vertex 3",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-curvo-3",
+    "precio": "$19.990",
+    "precio_clp": 19990,
     "en_oferta": false,
     "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -18356,9 +18530,9 @@
     ]
   },
   {
-    "id": "mock_gorro_0016",
-    "nombre": "[MOCK] Gorro Curvo Negro Nocturno 4",
-    "marca": "Kraft & Sons (marca inventada)",
+    "id": "mock_gorro_0022",
+    "nombre": "[MOCK] Gorro Curvo Negro Drift 4",
+    "marca": "Blackout Co. (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-negro-curvo-4",
     "precio": "$20.490",
@@ -18385,193 +18559,19 @@
     ]
   },
   {
-    "id": "mock_gorro_0017",
-    "nombre": "[MOCK] Gorro Curvo Negro Loom 5",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-curvo-5",
-    "precio": "$6.490",
-    "precio_clp": 6490,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "negro",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0018",
-    "nombre": "[MOCK] Gorro Curvo Negro Kraft 6",
-    "marca": "Blackout Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-curvo-6",
-    "precio": "$9.990",
-    "precio_clp": 9990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "negro",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0019",
-    "nombre": "[MOCK] Gorro Plano Negro Nocturno 1",
-    "marca": "Loom Studio (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-plano-1",
-    "precio": "$23.990",
-    "precio_clp": 23990,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "negro",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0020",
-    "nombre": "[MOCK] Gorro Plano Negro Kraft 2",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-plano-2",
-    "precio": "$16.990",
-    "precio_clp": 16990,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "negro",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0021",
-    "nombre": "[MOCK] Gorro Plano Negro Vertex 3",
-    "marca": "Blackout Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-plano-3",
-    "precio": "$19.990",
-    "precio_clp": 19990,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "negro",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0022",
-    "nombre": "[MOCK] Gorro Plano Negro Drift 4",
-    "marca": "Blackout Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-plano-4",
-    "precio": "$20.490",
-    "precio_clp": 20490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "negro",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "negro",
-      "plano"
-    ]
-  },
-  {
     "id": "mock_gorro_0023",
-    "nombre": "[MOCK] Gorro Plano Negro Aero 5",
+    "nombre": "[MOCK] Gorro Curvo Negro Aero 5",
     "marca": "Aero Street (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-plano-5",
+    "link": "https://mock-no-real.cl/gorro-negro-curvo-5",
     "precio": "$13.490",
     "precio_clp": 13490,
     "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "negro",
-    "forma": "plano",
+    "forma": "curvo",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -18584,17 +18584,46 @@
       "streetwear",
       "urbano",
       "negro",
-      "plano"
+      "curvo"
     ]
   },
   {
     "id": "mock_gorro_0024",
-    "nombre": "[MOCK] Gorro Plano Negro Blend 6",
+    "nombre": "[MOCK] Gorro Curvo Negro Blend 6",
     "marca": "Drift Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-negro-plano-6",
+    "link": "https://mock-no-real.cl/gorro-negro-curvo-6",
     "precio": "$19.990",
     "precio_clp": 19990,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante negro, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0025",
+    "nombre": "[MOCK] Gorro Plano Negro Nocturno 1",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-plano-1",
+    "precio": "$21.490",
+    "precio_clp": 21490,
     "en_oferta": true,
     "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -18617,13 +18646,448 @@
     ]
   },
   {
-    "id": "mock_gorro_0025",
-    "nombre": "[MOCK] Gorro Curvo Rojo Nocturno 1",
+    "id": "mock_gorro_0026",
+    "nombre": "[MOCK] Gorro Plano Negro Nocturno 2",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-plano-2",
+    "precio": "$22.990",
+    "precio_clp": 22990,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0027",
+    "nombre": "[MOCK] Gorro Plano Negro Drift 3",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-plano-3",
+    "precio": "$23.490",
+    "precio_clp": 23490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0028",
+    "nombre": "[MOCK] Gorro Plano Negro Nocturno 4",
     "marca": "Volt Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-plano-4",
+    "precio": "$7.490",
+    "precio_clp": 7490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0029",
+    "nombre": "[MOCK] Gorro Plano Negro Aero 5",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-plano-5",
+    "precio": "$9.990",
+    "precio_clp": 9990,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0030",
+    "nombre": "[MOCK] Gorro Plano Negro Loom 6",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-plano-6",
+    "precio": "$17.990",
+    "precio_clp": 17990,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0031",
+    "nombre": "[MOCK] Gorro de Lana Negro Street 1",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-lana-1",
+    "precio": "$17.490",
+    "precio_clp": 17490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0032",
+    "nombre": "[MOCK] Gorro de Lana Negro Aero 2",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-lana-2",
+    "precio": "$23.490",
+    "precio_clp": 23490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0033",
+    "nombre": "[MOCK] Gorro de Lana Negro Loom 3",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-lana-3",
+    "precio": "$16.990",
+    "precio_clp": 16990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0034",
+    "nombre": "[MOCK] Gorro de Lana Negro Street 4",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-lana-4",
+    "precio": "$18.990",
+    "precio_clp": 18990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0035",
+    "nombre": "[MOCK] Gorro de Lana Negro Nocturno 5",
+    "marca": "Concrete Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-lana-5",
+    "precio": "$16.990",
+    "precio_clp": 16990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante negro, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0036",
+    "nombre": "[MOCK] Gorro de Lana Negro Nova 6",
+    "marca": "Aero Street (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-negro-lana-6",
+    "precio": "$8.490",
+    "precio_clp": 8490,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante negro, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "negro",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "negro",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0037",
+    "nombre": "[MOCK] Gorro Curvo Rojo Loom 1",
+    "marca": "Drift Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-rojo-curvo-1",
-    "precio": "$21.490",
-    "precio_clp": 21490,
+    "precio": "$16.990",
+    "precio_clp": 16990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0038",
+    "nombre": "[MOCK] Gorro Curvo Rojo Aero 2",
+    "marca": "Aero Street (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-curvo-2",
+    "precio": "$18.990",
+    "precio_clp": 18990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0039",
+    "nombre": "[MOCK] Gorro Curvo Rojo Volt 3",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-curvo-3",
+    "precio": "$24.990",
+    "precio_clp": 24990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0040",
+    "nombre": "[MOCK] Gorro Curvo Rojo Urban 4",
+    "marca": "Concrete Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-curvo-4",
+    "precio": "$10.490",
+    "precio_clp": 10490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0041",
+    "nombre": "[MOCK] Gorro Curvo Rojo Volt 5",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-curvo-5",
+    "precio": "$8.490",
+    "precio_clp": 8490,
     "en_oferta": true,
     "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -18646,129 +19110,13 @@
     ]
   },
   {
-    "id": "mock_gorro_0026",
-    "nombre": "[MOCK] Gorro Curvo Rojo Nocturno 2",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-curvo-2",
-    "precio": "$22.990",
-    "precio_clp": 22990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0027",
-    "nombre": "[MOCK] Gorro Curvo Rojo Drift 3",
-    "marca": "Loom Studio (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-curvo-3",
-    "precio": "$23.490",
-    "precio_clp": 23490,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0028",
-    "nombre": "[MOCK] Gorro Curvo Rojo Nocturno 4",
-    "marca": "Volt Label (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-curvo-4",
-    "precio": "$7.490",
-    "precio_clp": 7490,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0029",
-    "nombre": "[MOCK] Gorro Curvo Rojo Aero 5",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-curvo-5",
-    "precio": "$9.990",
-    "precio_clp": 9990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0030",
-    "nombre": "[MOCK] Gorro Curvo Rojo Loom 6",
-    "marca": "Loom Studio (marca inventada)",
+    "id": "mock_gorro_0042",
+    "nombre": "[MOCK] Gorro Curvo Rojo Street 6",
+    "marca": "Riot Streetwear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-rojo-curvo-6",
-    "precio": "$17.990",
-    "precio_clp": 17990,
+    "precio": "$8.990",
+    "precio_clp": 8990,
     "en_oferta": false,
     "descripcion": "Gorro curvo, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -18791,158 +19139,13 @@
     ]
   },
   {
-    "id": "mock_gorro_0031",
-    "nombre": "[MOCK] Gorro Plano Rojo Street 1",
-    "marca": "Blackout Co. (marca inventada)",
+    "id": "mock_gorro_0043",
+    "nombre": "[MOCK] Gorro Plano Rojo Nova 1",
+    "marca": "Nocturno Wear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-rojo-plano-1",
-    "precio": "$17.490",
-    "precio_clp": 17490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0032",
-    "nombre": "[MOCK] Gorro Plano Rojo Aero 2",
-    "marca": "Kraft & Sons (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-plano-2",
-    "precio": "$23.490",
-    "precio_clp": 23490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0033",
-    "nombre": "[MOCK] Gorro Plano Rojo Loom 3",
-    "marca": "Loom Studio (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-plano-3",
-    "precio": "$16.990",
-    "precio_clp": 16990,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0034",
-    "nombre": "[MOCK] Gorro Plano Rojo Street 4",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-plano-4",
-    "precio": "$18.990",
-    "precio_clp": 18990,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0035",
-    "nombre": "[MOCK] Gorro Plano Rojo Nocturno 5",
-    "marca": "Concrete Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-plano-5",
-    "precio": "$16.990",
-    "precio_clp": 16990,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "rojo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "rojo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0036",
-    "nombre": "[MOCK] Gorro Plano Rojo Nova 6",
-    "marca": "Aero Street (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-rojo-plano-6",
-    "precio": "$8.490",
-    "precio_clp": 8490,
+    "precio": "$22.490",
+    "precio_clp": 22490,
     "en_oferta": true,
     "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -18965,48 +19168,19 @@
     ]
   },
   {
-    "id": "mock_gorro_0037",
-    "nombre": "[MOCK] Gorro Curvo Azul Loom 1",
-    "marca": "Drift Label (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-azul-curvo-1",
-    "precio": "$16.990",
-    "precio_clp": 16990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "azul",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "azul",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0038",
-    "nombre": "[MOCK] Gorro Curvo Azul Aero 2",
+    "id": "mock_gorro_0044",
+    "nombre": "[MOCK] Gorro Plano Rojo Nocturno 2",
     "marca": "Aero Street (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-azul-curvo-2",
-    "precio": "$18.990",
-    "precio_clp": 18990,
+    "link": "https://mock-no-real.cl/gorro-rojo-plano-2",
+    "precio": "$8.990",
+    "precio_clp": 8990,
     "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
-    "color_dominante": "azul",
-    "forma": "curvo",
+    "color_dominante": "rojo",
+    "forma": "plano",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -19018,24 +19192,24 @@
     "tags": [
       "streetwear",
       "urbano",
-      "azul",
-      "curvo"
+      "rojo",
+      "plano"
     ]
   },
   {
-    "id": "mock_gorro_0039",
-    "nombre": "[MOCK] Gorro Curvo Azul Volt 3",
-    "marca": "Vertex Supply (marca inventada)",
+    "id": "mock_gorro_0045",
+    "nombre": "[MOCK] Gorro Plano Rojo Volt 3",
+    "marca": "Drift Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-azul-curvo-3",
-    "precio": "$24.990",
-    "precio_clp": 24990,
+    "link": "https://mock-no-real.cl/gorro-rojo-plano-3",
+    "precio": "$15.990",
+    "precio_clp": 15990,
     "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
-    "color_dominante": "azul",
-    "forma": "curvo",
+    "color_dominante": "rojo",
+    "forma": "plano",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -19047,18 +19221,279 @@
     "tags": [
       "streetwear",
       "urbano",
-      "azul",
-      "curvo"
+      "rojo",
+      "plano"
     ]
   },
   {
-    "id": "mock_gorro_0040",
-    "nombre": "[MOCK] Gorro Curvo Azul Urban 4",
+    "id": "mock_gorro_0046",
+    "nombre": "[MOCK] Gorro Plano Rojo Blend 4",
     "marca": "Concrete Co. (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-azul-curvo-4",
-    "precio": "$10.490",
-    "precio_clp": 10490,
+    "link": "https://mock-no-real.cl/gorro-rojo-plano-4",
+    "precio": "$11.490",
+    "precio_clp": 11490,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0047",
+    "nombre": "[MOCK] Gorro Plano Rojo Loom 5",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-plano-5",
+    "precio": "$21.990",
+    "precio_clp": 21990,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0048",
+    "nombre": "[MOCK] Gorro Plano Rojo Drift 6",
+    "marca": "Static Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-plano-6",
+    "precio": "$23.990",
+    "precio_clp": 23990,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante rojo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0049",
+    "nombre": "[MOCK] Gorro de Lana Rojo Blend 1",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-lana-1",
+    "precio": "$11.990",
+    "precio_clp": 11990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0050",
+    "nombre": "[MOCK] Gorro de Lana Rojo Kraft 2",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-lana-2",
+    "precio": "$19.990",
+    "precio_clp": 19990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0051",
+    "nombre": "[MOCK] Gorro de Lana Rojo Blend 3",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-lana-3",
+    "precio": "$13.490",
+    "precio_clp": 13490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0052",
+    "nombre": "[MOCK] Gorro de Lana Rojo Nova 4",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-lana-4",
+    "precio": "$14.490",
+    "precio_clp": 14490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante rojo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0053",
+    "nombre": "[MOCK] Gorro de Lana Rojo Blend 5",
+    "marca": "Nocturno Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-lana-5",
+    "precio": "$10.990",
+    "precio_clp": 10990,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante rojo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0054",
+    "nombre": "[MOCK] Gorro de Lana Rojo Urban 6",
+    "marca": "Static Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-rojo-lana-6",
+    "precio": "$21.990",
+    "precio_clp": 21990,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante rojo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "rojo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "rojo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0055",
+    "nombre": "[MOCK] Gorro Curvo Azul Drift 1",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-curvo-1",
+    "precio": "$25.490",
+    "precio_clp": 25490,
     "en_oferta": false,
     "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -19081,13 +19516,71 @@
     ]
   },
   {
-    "id": "mock_gorro_0041",
-    "nombre": "[MOCK] Gorro Curvo Azul Volt 5",
-    "marca": "Volt Label (marca inventada)",
+    "id": "mock_gorro_0056",
+    "nombre": "[MOCK] Gorro Curvo Azul Loom 2",
+    "marca": "Static Wear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-azul-curvo-5",
-    "precio": "$8.490",
-    "precio_clp": 8490,
+    "link": "https://mock-no-real.cl/gorro-azul-curvo-2",
+    "precio": "$12.990",
+    "precio_clp": 12990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0057",
+    "nombre": "[MOCK] Gorro Curvo Azul Nova 3",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-curvo-3",
+    "precio": "$13.490",
+    "precio_clp": 13490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0058",
+    "nombre": "[MOCK] Gorro Curvo Azul Nova 4",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-curvo-4",
+    "precio": "$18.490",
+    "precio_clp": 18490,
     "en_oferta": true,
     "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -19110,15 +19603,15 @@
     ]
   },
   {
-    "id": "mock_gorro_0042",
-    "nombre": "[MOCK] Gorro Curvo Azul Street 6",
-    "marca": "Riot Streetwear (marca inventada)",
+    "id": "mock_gorro_0059",
+    "nombre": "[MOCK] Gorro Curvo Azul Aero 5",
+    "marca": "Blackout Co. (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-azul-curvo-6",
-    "precio": "$8.990",
-    "precio_clp": 8990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "link": "https://mock-no-real.cl/gorro-azul-curvo-5",
+    "precio": "$13.990",
+    "precio_clp": 13990,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "azul",
@@ -19139,13 +19632,42 @@
     ]
   },
   {
-    "id": "mock_gorro_0043",
-    "nombre": "[MOCK] Gorro Plano Azul Nova 1",
-    "marca": "Nocturno Wear (marca inventada)",
+    "id": "mock_gorro_0060",
+    "nombre": "[MOCK] Gorro Curvo Azul Blend 6",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-curvo-6",
+    "precio": "$14.990",
+    "precio_clp": 14990,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0061",
+    "nombre": "[MOCK] Gorro Plano Azul Nocturno 1",
+    "marca": "Riot Streetwear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-azul-plano-1",
-    "precio": "$22.490",
-    "precio_clp": 22490,
+    "precio": "$10.990",
+    "precio_clp": 10990,
     "en_oferta": true,
     "descripcion": "Gorro plano, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -19168,13 +19690,13 @@
     ]
   },
   {
-    "id": "mock_gorro_0044",
-    "nombre": "[MOCK] Gorro Plano Azul Nocturno 2",
-    "marca": "Aero Street (marca inventada)",
+    "id": "mock_gorro_0062",
+    "nombre": "[MOCK] Gorro Plano Azul Kraft 2",
+    "marca": "Curbside (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-azul-plano-2",
-    "precio": "$8.990",
-    "precio_clp": 8990,
+    "precio": "$20.990",
+    "precio_clp": 20990,
     "en_oferta": false,
     "descripcion": "Gorro plano, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -19197,15 +19719,15 @@
     ]
   },
   {
-    "id": "mock_gorro_0045",
-    "nombre": "[MOCK] Gorro Plano Azul Volt 3",
-    "marca": "Drift Label (marca inventada)",
+    "id": "mock_gorro_0063",
+    "nombre": "[MOCK] Gorro Plano Azul Vertex 3",
+    "marca": "Curbside (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-azul-plano-3",
-    "precio": "$15.990",
-    "precio_clp": 15990,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "precio": "$16.490",
+    "precio_clp": 16490,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "azul",
@@ -19226,9 +19748,9 @@
     ]
   },
   {
-    "id": "mock_gorro_0046",
-    "nombre": "[MOCK] Gorro Plano Azul Blend 4",
-    "marca": "Concrete Co. (marca inventada)",
+    "id": "mock_gorro_0064",
+    "nombre": "[MOCK] Gorro Plano Azul Urban 4",
+    "marca": "Static Wear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-azul-plano-4",
     "precio": "$11.490",
@@ -19255,42 +19777,13 @@
     ]
   },
   {
-    "id": "mock_gorro_0047",
-    "nombre": "[MOCK] Gorro Plano Azul Loom 5",
-    "marca": "Vertex Supply (marca inventada)",
+    "id": "mock_gorro_0065",
+    "nombre": "[MOCK] Gorro Plano Azul Volt 5",
+    "marca": "Concrete Co. (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-azul-plano-5",
-    "precio": "$21.990",
-    "precio_clp": 21990,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "azul",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "azul",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0048",
-    "nombre": "[MOCK] Gorro Plano Azul Drift 6",
-    "marca": "Static Wear (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-azul-plano-6",
-    "precio": "$23.990",
-    "precio_clp": 23990,
+    "precio": "$20.490",
+    "precio_clp": 20490,
     "en_oferta": true,
     "descripcion": "Gorro plano, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -19313,11 +19806,330 @@
     ]
   },
   {
-    "id": "mock_gorro_0049",
-    "nombre": "[MOCK] Gorro Curvo Amarillo Blend 1",
+    "id": "mock_gorro_0066",
+    "nombre": "[MOCK] Gorro Plano Azul Urban 6",
+    "marca": "Concrete Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-plano-6",
+    "precio": "$21.490",
+    "precio_clp": 21490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0067",
+    "nombre": "[MOCK] Gorro de Lana Azul Rustik 1",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-lana-1",
+    "precio": "$17.990",
+    "precio_clp": 17990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0068",
+    "nombre": "[MOCK] Gorro de Lana Azul Loom 2",
+    "marca": "Nocturno Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-lana-2",
+    "precio": "$8.490",
+    "precio_clp": 8490,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0069",
+    "nombre": "[MOCK] Gorro de Lana Azul Street 3",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-lana-3",
+    "precio": "$23.990",
+    "precio_clp": 23990,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0070",
+    "nombre": "[MOCK] Gorro de Lana Azul Nova 4",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-lana-4",
+    "precio": "$6.490",
+    "precio_clp": 6490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0071",
+    "nombre": "[MOCK] Gorro de Lana Azul Vertex 5",
     "marca": "Volt Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-lana-5",
+    "precio": "$18.990",
+    "precio_clp": 18990,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante azul, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0072",
+    "nombre": "[MOCK] Gorro de Lana Azul Vertex 6",
+    "marca": "Nocturno Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-azul-lana-6",
+    "precio": "$20.490",
+    "precio_clp": 20490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante azul, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "azul",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "azul",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0073",
+    "nombre": "[MOCK] Gorro Curvo Amarillo Rustik 1",
+    "marca": "Drift Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-amarillo-curvo-1",
+    "precio": "$18.990",
+    "precio_clp": 18990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0074",
+    "nombre": "[MOCK] Gorro Curvo Amarillo Aero 2",
+    "marca": "Concrete Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-2",
+    "precio": "$7.490",
+    "precio_clp": 7490,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0075",
+    "nombre": "[MOCK] Gorro Curvo Amarillo Drift 3",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-3",
+    "precio": "$12.990",
+    "precio_clp": 12990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0076",
+    "nombre": "[MOCK] Gorro Curvo Amarillo Vertex 4",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-4",
+    "precio": "$9.490",
+    "precio_clp": 9490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0077",
+    "nombre": "[MOCK] Gorro Curvo Amarillo Urban 5",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-5",
     "precio": "$11.990",
     "precio_clp": 11990,
     "en_oferta": false,
@@ -19342,131 +20154,15 @@
     ]
   },
   {
-    "id": "mock_gorro_0050",
-    "nombre": "[MOCK] Gorro Curvo Amarillo Kraft 2",
-    "marca": "Kraft & Sons (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-2",
-    "precio": "$19.990",
-    "precio_clp": 19990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0051",
-    "nombre": "[MOCK] Gorro Curvo Amarillo Blend 3",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-3",
-    "precio": "$13.490",
-    "precio_clp": 13490,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0052",
-    "nombre": "[MOCK] Gorro Curvo Amarillo Nova 4",
-    "marca": "Vertex Supply (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-4",
-    "precio": "$14.490",
-    "precio_clp": 14490,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0053",
-    "nombre": "[MOCK] Gorro Curvo Amarillo Blend 5",
-    "marca": "Nocturno Wear (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-curvo-5",
-    "precio": "$10.990",
-    "precio_clp": 10990,
-    "en_oferta": true,
-    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0054",
-    "nombre": "[MOCK] Gorro Curvo Amarillo Urban 6",
-    "marca": "Static Wear (marca inventada)",
+    "id": "mock_gorro_0078",
+    "nombre": "[MOCK] Gorro Curvo Amarillo Vertex 6",
+    "marca": "Blackout Co. (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-amarillo-curvo-6",
-    "precio": "$21.990",
-    "precio_clp": 21990,
-    "en_oferta": true,
-    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "precio": "$6.490",
+    "precio_clp": 6490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "amarillo",
@@ -19487,9 +20183,9 @@
     ]
   },
   {
-    "id": "mock_gorro_0055",
-    "nombre": "[MOCK] Gorro Plano Amarillo Drift 1",
-    "marca": "Blackout Co. (marca inventada)",
+    "id": "mock_gorro_0079",
+    "nombre": "[MOCK] Gorro Plano Amarillo Rustik 1",
+    "marca": "Volt Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-amarillo-plano-1",
     "precio": "$25.490",
@@ -19516,164 +20212,19 @@
     ]
   },
   {
-    "id": "mock_gorro_0056",
-    "nombre": "[MOCK] Gorro Plano Amarillo Loom 2",
-    "marca": "Static Wear (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-plano-2",
-    "precio": "$12.990",
-    "precio_clp": 12990,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0057",
-    "nombre": "[MOCK] Gorro Plano Amarillo Nova 3",
-    "marca": "Blackout Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-plano-3",
-    "precio": "$13.490",
-    "precio_clp": 13490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0058",
-    "nombre": "[MOCK] Gorro Plano Amarillo Nova 4",
-    "marca": "Kraft & Sons (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-plano-4",
-    "precio": "$18.490",
-    "precio_clp": 18490,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0059",
-    "nombre": "[MOCK] Gorro Plano Amarillo Aero 5",
-    "marca": "Blackout Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-plano-5",
-    "precio": "$13.990",
-    "precio_clp": 13990,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0060",
-    "nombre": "[MOCK] Gorro Plano Amarillo Blend 6",
-    "marca": "Volt Label (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-amarillo-plano-6",
-    "precio": "$14.990",
-    "precio_clp": 14990,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "amarillo",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "amarillo",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0061",
-    "nombre": "[MOCK] Gorro Curvo Beige Nocturno 1",
+    "id": "mock_gorro_0080",
+    "nombre": "[MOCK] Gorro Plano Amarillo Vertex 2",
     "marca": "Riot Streetwear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-curvo-1",
-    "precio": "$10.990",
-    "precio_clp": 10990,
+    "link": "https://mock-no-real.cl/gorro-amarillo-plano-2",
+    "precio": "$11.990",
+    "precio_clp": 11990,
     "en_oferta": true,
-    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
     "categoria": "gorro",
-    "color_dominante": "beige",
-    "forma": "curvo",
+    "color_dominante": "amarillo",
+    "forma": "plano",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -19685,18 +20236,308 @@
     "tags": [
       "streetwear",
       "urbano",
-      "beige",
-      "curvo"
+      "amarillo",
+      "plano"
     ]
   },
   {
-    "id": "mock_gorro_0062",
-    "nombre": "[MOCK] Gorro Curvo Beige Kraft 2",
+    "id": "mock_gorro_0081",
+    "nombre": "[MOCK] Gorro Plano Amarillo Loom 3",
+    "marca": "Aero Street (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-plano-3",
+    "precio": "$7.490",
+    "precio_clp": 7490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0082",
+    "nombre": "[MOCK] Gorro Plano Amarillo Volt 4",
+    "marca": "Concrete Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-plano-4",
+    "precio": "$23.490",
+    "precio_clp": 23490,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0083",
+    "nombre": "[MOCK] Gorro Plano Amarillo Loom 5",
+    "marca": "Drift Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-plano-5",
+    "precio": "$23.990",
+    "precio_clp": 23990,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0084",
+    "nombre": "[MOCK] Gorro Plano Amarillo Volt 6",
     "marca": "Curbside (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-curvo-2",
+    "link": "https://mock-no-real.cl/gorro-amarillo-plano-6",
+    "precio": "$12.490",
+    "precio_clp": 12490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0085",
+    "nombre": "[MOCK] Gorro de Lana Amarillo Volt 1",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-lana-1",
+    "precio": "$10.990",
+    "precio_clp": 10990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0086",
+    "nombre": "[MOCK] Gorro de Lana Amarillo Volt 2",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-lana-2",
     "precio": "$20.990",
     "precio_clp": 20990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0087",
+    "nombre": "[MOCK] Gorro de Lana Amarillo Vertex 3",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-lana-3",
+    "precio": "$24.490",
+    "precio_clp": 24490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0088",
+    "nombre": "[MOCK] Gorro de Lana Amarillo Volt 4",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-lana-4",
+    "precio": "$20.990",
+    "precio_clp": 20990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0089",
+    "nombre": "[MOCK] Gorro de Lana Amarillo Blend 5",
+    "marca": "Aero Street (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-lana-5",
+    "precio": "$11.490",
+    "precio_clp": 11490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0090",
+    "nombre": "[MOCK] Gorro de Lana Amarillo Drift 6",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-amarillo-lana-6",
+    "precio": "$14.990",
+    "precio_clp": 14990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante amarillo, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "amarillo",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "amarillo",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0091",
+    "nombre": "[MOCK] Gorro Curvo Beige Blend 1",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-curvo-1",
+    "precio": "$18.490",
+    "precio_clp": 18490,
     "en_oferta": false,
     "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -19719,11 +20560,98 @@
     ]
   },
   {
-    "id": "mock_gorro_0063",
-    "nombre": "[MOCK] Gorro Curvo Beige Vertex 3",
-    "marca": "Curbside (marca inventada)",
+    "id": "mock_gorro_0092",
+    "nombre": "[MOCK] Gorro Curvo Beige Loom 2",
+    "marca": "Aero Street (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-curvo-2",
+    "precio": "$25.490",
+    "precio_clp": 25490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0093",
+    "nombre": "[MOCK] Gorro Curvo Beige Aero 3",
+    "marca": "Riot Streetwear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-beige-curvo-3",
+    "precio": "$23.990",
+    "precio_clp": 23990,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0094",
+    "nombre": "[MOCK] Gorro Curvo Beige Rustik 4",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-curvo-4",
+    "precio": "$23.490",
+    "precio_clp": 23490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0095",
+    "nombre": "[MOCK] Gorro Curvo Beige Nova 5",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-curvo-5",
     "precio": "$16.490",
     "precio_clp": 16490,
     "en_oferta": true,
@@ -19748,77 +20676,164 @@
     ]
   },
   {
-    "id": "mock_gorro_0064",
-    "nombre": "[MOCK] Gorro Curvo Beige Urban 4",
-    "marca": "Static Wear (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-curvo-4",
-    "precio": "$11.490",
-    "precio_clp": 11490,
-    "en_oferta": true,
-    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "beige",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "beige",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0065",
-    "nombre": "[MOCK] Gorro Curvo Beige Volt 5",
-    "marca": "Concrete Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-curvo-5",
-    "precio": "$20.490",
-    "precio_clp": 20490,
-    "en_oferta": true,
-    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "beige",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "beige",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0066",
-    "nombre": "[MOCK] Gorro Curvo Beige Urban 6",
-    "marca": "Concrete Co. (marca inventada)",
+    "id": "mock_gorro_0096",
+    "nombre": "[MOCK] Gorro Curvo Beige Street 6",
+    "marca": "Kraft & Sons (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-beige-curvo-6",
+    "precio": "$7.490",
+    "precio_clp": 7490,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0097",
+    "nombre": "[MOCK] Gorro Plano Beige Vertex 1",
+    "marca": "Nocturno Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-plano-1",
+    "precio": "$9.990",
+    "precio_clp": 9990,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0098",
+    "nombre": "[MOCK] Gorro Plano Beige Kraft 2",
+    "marca": "Nocturno Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-plano-2",
+    "precio": "$18.990",
+    "precio_clp": 18990,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0099",
+    "nombre": "[MOCK] Gorro Plano Beige Kraft 3",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-plano-3",
+    "precio": "$14.490",
+    "precio_clp": 14490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0100",
+    "nombre": "[MOCK] Gorro Plano Beige Volt 4",
+    "marca": "Aero Street (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-plano-4",
+    "precio": "$8.490",
+    "precio_clp": 8490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0101",
+    "nombre": "[MOCK] Gorro Plano Beige Aero 5",
+    "marca": "Drift Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-plano-5",
     "precio": "$21.490",
     "precio_clp": 21490,
     "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "beige",
-    "forma": "curvo",
+    "forma": "plano",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -19831,15 +20846,15 @@
       "streetwear",
       "urbano",
       "beige",
-      "curvo"
+      "plano"
     ]
   },
   {
-    "id": "mock_gorro_0067",
-    "nombre": "[MOCK] Gorro Plano Beige Rustik 1",
-    "marca": "Loom Studio (marca inventada)",
+    "id": "mock_gorro_0102",
+    "nombre": "[MOCK] Gorro Plano Beige Urban 6",
+    "marca": "Kraft & Sons (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-plano-1",
+    "link": "https://mock-no-real.cl/gorro-beige-plano-6",
     "precio": "$17.990",
     "precio_clp": 17990,
     "en_oferta": false,
@@ -19864,106 +20879,19 @@
     ]
   },
   {
-    "id": "mock_gorro_0068",
-    "nombre": "[MOCK] Gorro Plano Beige Loom 2",
-    "marca": "Nocturno Wear (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-plano-2",
-    "precio": "$8.490",
-    "precio_clp": 8490,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "beige",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "beige",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0069",
-    "nombre": "[MOCK] Gorro Plano Beige Street 3",
-    "marca": "Blackout Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-plano-3",
-    "precio": "$23.990",
-    "precio_clp": 23990,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "beige",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "beige",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0070",
-    "nombre": "[MOCK] Gorro Plano Beige Nova 4",
-    "marca": "Loom Studio (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-plano-4",
-    "precio": "$6.490",
-    "precio_clp": 6490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "beige",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "beige",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0071",
-    "nombre": "[MOCK] Gorro Plano Beige Vertex 5",
+    "id": "mock_gorro_0103",
+    "nombre": "[MOCK] Gorro de Lana Beige Urban 1",
     "marca": "Volt Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-plano-5",
-    "precio": "$18.990",
-    "precio_clp": 18990,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "link": "https://mock-no-real.cl/gorro-beige-lana-1",
+    "precio": "$25.990",
+    "precio_clp": 25990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "beige",
-    "forma": "plano",
+    "forma": "lana",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -19976,23 +20904,23 @@
       "streetwear",
       "urbano",
       "beige",
-      "plano"
+      "lana"
     ]
   },
   {
-    "id": "mock_gorro_0072",
-    "nombre": "[MOCK] Gorro Plano Beige Vertex 6",
-    "marca": "Nocturno Wear (marca inventada)",
+    "id": "mock_gorro_0104",
+    "nombre": "[MOCK] Gorro de Lana Beige Street 2",
+    "marca": "Volt Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-beige-plano-6",
-    "precio": "$20.490",
-    "precio_clp": 20490,
+    "link": "https://mock-no-real.cl/gorro-beige-lana-2",
+    "precio": "$15.490",
+    "precio_clp": 15490,
     "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro de lana, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "beige",
-    "forma": "plano",
+    "forma": "lana",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -20005,110 +20933,23 @@
       "streetwear",
       "urbano",
       "beige",
-      "plano"
+      "lana"
     ]
   },
   {
-    "id": "mock_gorro_0073",
-    "nombre": "[MOCK] Gorro Curvo Morado Rustik 1",
-    "marca": "Drift Label (marca inventada)",
+    "id": "mock_gorro_0105",
+    "nombre": "[MOCK] Gorro de Lana Beige Street 3",
+    "marca": "Static Wear (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-curvo-1",
-    "precio": "$18.990",
-    "precio_clp": 18990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0074",
-    "nombre": "[MOCK] Gorro Curvo Morado Aero 2",
-    "marca": "Concrete Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-curvo-2",
-    "precio": "$7.490",
-    "precio_clp": 7490,
-    "en_oferta": true,
-    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0075",
-    "nombre": "[MOCK] Gorro Curvo Morado Drift 3",
-    "marca": "Kraft & Sons (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-curvo-3",
-    "precio": "$12.990",
-    "precio_clp": 12990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0076",
-    "nombre": "[MOCK] Gorro Curvo Morado Vertex 4",
-    "marca": "Kraft & Sons (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-curvo-4",
+    "link": "https://mock-no-real.cl/gorro-beige-lana-3",
     "precio": "$9.490",
     "precio_clp": 9490,
     "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro de lana, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "curvo",
+    "color_dominante": "beige",
+    "forma": "lana",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -20120,198 +20961,111 @@
     "tags": [
       "streetwear",
       "urbano",
-      "morado",
-      "curvo"
+      "beige",
+      "lana"
     ]
   },
   {
-    "id": "mock_gorro_0077",
-    "nombre": "[MOCK] Gorro Curvo Morado Urban 5",
-    "marca": "Vertex Supply (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-curvo-5",
-    "precio": "$11.990",
-    "precio_clp": 11990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0078",
-    "nombre": "[MOCK] Gorro Curvo Morado Vertex 6",
-    "marca": "Blackout Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-curvo-6",
-    "precio": "$6.490",
-    "precio_clp": 6490,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0079",
-    "nombre": "[MOCK] Gorro Plano Morado Rustik 1",
-    "marca": "Volt Label (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-plano-1",
-    "precio": "$25.490",
-    "precio_clp": 25490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0080",
-    "nombre": "[MOCK] Gorro Plano Morado Vertex 2",
-    "marca": "Riot Streetwear (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-plano-2",
-    "precio": "$11.990",
-    "precio_clp": 11990,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0081",
-    "nombre": "[MOCK] Gorro Plano Morado Loom 3",
-    "marca": "Aero Street (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-plano-3",
-    "precio": "$7.490",
-    "precio_clp": 7490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0082",
-    "nombre": "[MOCK] Gorro Plano Morado Volt 4",
-    "marca": "Concrete Co. (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-plano-4",
-    "precio": "$23.490",
-    "precio_clp": 23490,
-    "en_oferta": true,
-    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "morado",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "morado",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0083",
-    "nombre": "[MOCK] Gorro Plano Morado Loom 5",
+    "id": "mock_gorro_0106",
+    "nombre": "[MOCK] Gorro de Lana Beige Vertex 4",
     "marca": "Drift Label (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-plano-5",
+    "link": "https://mock-no-real.cl/gorro-beige-lana-4",
+    "precio": "$22.490",
+    "precio_clp": 22490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0107",
+    "nombre": "[MOCK] Gorro de Lana Beige Blend 5",
+    "marca": "Concrete Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-lana-5",
     "precio": "$23.990",
     "precio_clp": 23990,
     "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "descripcion": "Gorro de lana, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0108",
+    "nombre": "[MOCK] Gorro de Lana Beige Kraft 6",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-beige-lana-6",
+    "precio": "$17.990",
+    "precio_clp": 17990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante beige, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "beige",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "beige",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0109",
+    "nombre": "[MOCK] Gorro Curvo Morado Street 1",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-curvo-1",
+    "precio": "$11.490",
+    "precio_clp": 11490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
     "categoria": "gorro",
     "color_dominante": "morado",
-    "forma": "plano",
+    "forma": "curvo",
     "ocasiones": [
       "carrete",
       "universidad",
@@ -20324,17 +21078,162 @@
       "streetwear",
       "urbano",
       "morado",
-      "plano"
+      "curvo"
     ]
   },
   {
-    "id": "mock_gorro_0084",
-    "nombre": "[MOCK] Gorro Plano Morado Volt 6",
+    "id": "mock_gorro_0110",
+    "nombre": "[MOCK] Gorro Curvo Morado Loom 2",
+    "marca": "Static Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-curvo-2",
+    "precio": "$11.990",
+    "precio_clp": 11990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0111",
+    "nombre": "[MOCK] Gorro Curvo Morado Blend 3",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-curvo-3",
+    "precio": "$16.990",
+    "precio_clp": 16990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0112",
+    "nombre": "[MOCK] Gorro Curvo Morado Nova 4",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-curvo-4",
+    "precio": "$16.490",
+    "precio_clp": 16490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0113",
+    "nombre": "[MOCK] Gorro Curvo Morado Nova 5",
+    "marca": "Drift Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-curvo-5",
+    "precio": "$23.990",
+    "precio_clp": 23990,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0114",
+    "nombre": "[MOCK] Gorro Curvo Morado Rustik 6",
     "marca": "Curbside (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-morado-plano-6",
-    "precio": "$12.490",
-    "precio_clp": 12490,
+    "link": "https://mock-no-real.cl/gorro-morado-curvo-6",
+    "precio": "$18.490",
+    "precio_clp": 18490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0115",
+    "nombre": "[MOCK] Gorro Plano Morado Kraft 1",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-plano-1",
+    "precio": "$6.490",
+    "precio_clp": 6490,
     "en_oferta": false,
     "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -20357,69 +21256,330 @@
     ]
   },
   {
-    "id": "mock_gorro_0085",
-    "nombre": "[MOCK] Gorro Curvo Verde Volt 1",
+    "id": "mock_gorro_0116",
+    "nombre": "[MOCK] Gorro Plano Morado Urban 2",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-plano-2",
+    "precio": "$15.490",
+    "precio_clp": 15490,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0117",
+    "nombre": "[MOCK] Gorro Plano Morado Urban 3",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-plano-3",
+    "precio": "$14.490",
+    "precio_clp": 14490,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0118",
+    "nombre": "[MOCK] Gorro Plano Morado Loom 4",
+    "marca": "Curbside (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-plano-4",
+    "precio": "$10.490",
+    "precio_clp": 10490,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0119",
+    "nombre": "[MOCK] Gorro Plano Morado Vertex 5",
+    "marca": "Aero Street (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-plano-5",
+    "precio": "$13.990",
+    "precio_clp": 13990,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0120",
+    "nombre": "[MOCK] Gorro Plano Morado Kraft 6",
+    "marca": "Riot Streetwear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-plano-6",
+    "precio": "$18.490",
+    "precio_clp": 18490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0121",
+    "nombre": "[MOCK] Gorro de Lana Morado Loom 1",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-lana-1",
+    "precio": "$21.490",
+    "precio_clp": 21490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0122",
+    "nombre": "[MOCK] Gorro de Lana Morado Volt 2",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-lana-2",
+    "precio": "$24.490",
+    "precio_clp": 24490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0123",
+    "nombre": "[MOCK] Gorro de Lana Morado Urban 3",
+    "marca": "Loom Studio (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-lana-3",
+    "precio": "$24.990",
+    "precio_clp": 24990,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante morado, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0124",
+    "nombre": "[MOCK] Gorro de Lana Morado Loom 4",
+    "marca": "Nocturno Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-lana-4",
+    "precio": "$17.990",
+    "precio_clp": 17990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0125",
+    "nombre": "[MOCK] Gorro de Lana Morado Vertex 5",
+    "marca": "Riot Streetwear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-lana-5",
+    "precio": "$25.490",
+    "precio_clp": 25490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0126",
+    "nombre": "[MOCK] Gorro de Lana Morado Nova 6",
+    "marca": "Kraft & Sons (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-morado-lana-6",
+    "precio": "$7.990",
+    "precio_clp": 7990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante morado, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "morado",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "morado",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0127",
+    "nombre": "[MOCK] Gorro Curvo Verde Blend 1",
     "marca": "Vertex Supply (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-verde-curvo-1",
-    "precio": "$10.990",
-    "precio_clp": 10990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "verde",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "verde",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0086",
-    "nombre": "[MOCK] Gorro Curvo Verde Volt 2",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-verde-curvo-2",
-    "precio": "$20.990",
-    "precio_clp": 20990,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "verde",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "verde",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0087",
-    "nombre": "[MOCK] Gorro Curvo Verde Vertex 3",
-    "marca": "Curbside (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-verde-curvo-3",
     "precio": "$24.490",
     "precio_clp": 24490,
     "en_oferta": false,
@@ -20444,13 +21604,71 @@
     ]
   },
   {
-    "id": "mock_gorro_0088",
-    "nombre": "[MOCK] Gorro Curvo Verde Volt 4",
-    "marca": "Vertex Supply (marca inventada)",
+    "id": "mock_gorro_0128",
+    "nombre": "[MOCK] Gorro Curvo Verde Vertex 2",
+    "marca": "Volt Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-curvo-2",
+    "precio": "$10.490",
+    "precio_clp": 10490,
+    "en_oferta": false,
+    "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0129",
+    "nombre": "[MOCK] Gorro Curvo Verde Rustik 3",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-curvo-3",
+    "precio": "$25.490",
+    "precio_clp": 25490,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0130",
+    "nombre": "[MOCK] Gorro Curvo Verde Nova 4",
+    "marca": "Loom Studio (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-verde-curvo-4",
-    "precio": "$20.990",
-    "precio_clp": 20990,
+    "precio": "$10.490",
+    "precio_clp": 10490,
     "en_oferta": false,
     "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -20473,42 +21691,42 @@
     ]
   },
   {
-    "id": "mock_gorro_0089",
-    "nombre": "[MOCK] Gorro Curvo Verde Blend 5",
-    "marca": "Aero Street (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-verde-curvo-5",
-    "precio": "$11.490",
-    "precio_clp": 11490,
-    "en_oferta": false,
-    "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "verde",
-    "forma": "curvo",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "verde",
-      "curvo"
-    ]
-  },
-  {
-    "id": "mock_gorro_0090",
-    "nombre": "[MOCK] Gorro Curvo Verde Drift 6",
+    "id": "mock_gorro_0131",
+    "nombre": "[MOCK] Gorro Curvo Verde Kraft 5",
     "marca": "Curbside (marca inventada)",
     "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-curvo-5",
+    "precio": "$7.990",
+    "precio_clp": 7990,
+    "en_oferta": true,
+    "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "curvo",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "curvo"
+    ]
+  },
+  {
+    "id": "mock_gorro_0132",
+    "nombre": "[MOCK] Gorro Curvo Verde Blend 6",
+    "marca": "Blackout Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-verde-curvo-6",
-    "precio": "$14.990",
-    "precio_clp": 14990,
+    "precio": "$19.490",
+    "precio_clp": 19490,
     "en_oferta": false,
     "descripcion": "Gorro curvo, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -20531,13 +21749,13 @@
     ]
   },
   {
-    "id": "mock_gorro_0091",
+    "id": "mock_gorro_0133",
     "nombre": "[MOCK] Gorro Plano Verde Blend 1",
-    "marca": "Kraft & Sons (marca inventada)",
+    "marca": "Curbside (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-verde-plano-1",
-    "precio": "$18.490",
-    "precio_clp": 18490,
+    "precio": "$12.990",
+    "precio_clp": 12990,
     "en_oferta": false,
     "descripcion": "Gorro plano, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
     "genero": "unisex",
@@ -20560,42 +21778,13 @@
     ]
   },
   {
-    "id": "mock_gorro_0092",
-    "nombre": "[MOCK] Gorro Plano Verde Loom 2",
+    "id": "mock_gorro_0134",
+    "nombre": "[MOCK] Gorro Plano Verde Vertex 2",
     "marca": "Aero Street (marca inventada)",
     "tienda": "Tienda Mock (no real)",
     "link": "https://mock-no-real.cl/gorro-verde-plano-2",
-    "precio": "$25.490",
-    "precio_clp": 25490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "verde",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "verde",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0093",
-    "nombre": "[MOCK] Gorro Plano Verde Aero 3",
-    "marca": "Riot Streetwear (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-verde-plano-3",
-    "precio": "$23.990",
-    "precio_clp": 23990,
+    "precio": "$23.490",
+    "precio_clp": 23490,
     "en_oferta": true,
     "descripcion": "Gorro plano, color dominante verde, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -20618,40 +21807,11 @@
     ]
   },
   {
-    "id": "mock_gorro_0094",
-    "nombre": "[MOCK] Gorro Plano Verde Rustik 4",
-    "marca": "Kraft & Sons (marca inventada)",
+    "id": "mock_gorro_0135",
+    "nombre": "[MOCK] Gorro Plano Verde Nova 3",
+    "marca": "Loom Studio (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-verde-plano-4",
-    "precio": "$23.490",
-    "precio_clp": 23490,
-    "en_oferta": false,
-    "descripcion": "Gorro plano, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
-    "genero": "unisex",
-    "categoria": "gorro",
-    "color_dominante": "verde",
-    "forma": "plano",
-    "ocasiones": [
-      "carrete",
-      "universidad",
-      "junta social",
-      "junta familiar",
-      "concierto/festival",
-      "junta de amigos/skate park"
-    ],
-    "tags": [
-      "streetwear",
-      "urbano",
-      "verde",
-      "plano"
-    ]
-  },
-  {
-    "id": "mock_gorro_0095",
-    "nombre": "[MOCK] Gorro Plano Verde Nova 5",
-    "marca": "Vertex Supply (marca inventada)",
-    "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-verde-plano-5",
+    "link": "https://mock-no-real.cl/gorro-verde-plano-3",
     "precio": "$16.490",
     "precio_clp": 16490,
     "en_oferta": true,
@@ -20676,13 +21836,13 @@
     ]
   },
   {
-    "id": "mock_gorro_0096",
-    "nombre": "[MOCK] Gorro Plano Verde Street 6",
-    "marca": "Kraft & Sons (marca inventada)",
+    "id": "mock_gorro_0136",
+    "nombre": "[MOCK] Gorro Plano Verde Nova 4",
+    "marca": "Blackout Co. (marca inventada)",
     "tienda": "Tienda Mock (no real)",
-    "link": "https://mock-no-real.cl/gorro-verde-plano-6",
-    "precio": "$7.490",
-    "precio_clp": 7490,
+    "link": "https://mock-no-real.cl/gorro-verde-plano-4",
+    "precio": "$17.990",
+    "precio_clp": 17990,
     "en_oferta": true,
     "descripcion": "Gorro plano, color dominante verde, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
     "genero": "unisex",
@@ -20702,6 +21862,238 @@
       "urbano",
       "verde",
       "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0137",
+    "nombre": "[MOCK] Gorro Plano Verde Kraft 5",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-plano-5",
+    "precio": "$6.990",
+    "precio_clp": 6990,
+    "en_oferta": true,
+    "descripcion": "Gorro plano, color dominante verde, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0138",
+    "nombre": "[MOCK] Gorro Plano Verde Kraft 6",
+    "marca": "Vertex Supply (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-plano-6",
+    "precio": "$20.490",
+    "precio_clp": 20490,
+    "en_oferta": false,
+    "descripcion": "Gorro plano, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "plano",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "plano"
+    ]
+  },
+  {
+    "id": "mock_gorro_0139",
+    "nombre": "[MOCK] Gorro de Lana Verde Vertex 1",
+    "marca": "Drift Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-lana-1",
+    "precio": "$17.490",
+    "precio_clp": 17490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0140",
+    "nombre": "[MOCK] Gorro de Lana Verde Street 2",
+    "marca": "Riot Streetwear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-lana-2",
+    "precio": "$7.490",
+    "precio_clp": 7490,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0141",
+    "nombre": "[MOCK] Gorro de Lana Verde Drift 3",
+    "marca": "Concrete Co. (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-lana-3",
+    "precio": "$6.990",
+    "precio_clp": 6990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0142",
+    "nombre": "[MOCK] Gorro de Lana Verde Drift 4",
+    "marca": "Riot Streetwear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-lana-4",
+    "precio": "$20.990",
+    "precio_clp": 20990,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante verde, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0143",
+    "nombre": "[MOCK] Gorro de Lana Verde Volt 5",
+    "marca": "Drift Label (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-lana-5",
+    "precio": "$23.490",
+    "precio_clp": 23490,
+    "en_oferta": true,
+    "descripcion": "Gorro de lana, color dominante verde, estilo streetwear urbano, producto de prueba (no real). ¡En oferta!",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "lana"
+    ]
+  },
+  {
+    "id": "mock_gorro_0144",
+    "nombre": "[MOCK] Gorro de Lana Verde Drift 6",
+    "marca": "Static Wear (marca inventada)",
+    "tienda": "Tienda Mock (no real)",
+    "link": "https://mock-no-real.cl/gorro-verde-lana-6",
+    "precio": "$23.990",
+    "precio_clp": 23990,
+    "en_oferta": false,
+    "descripcion": "Gorro de lana, color dominante verde, estilo streetwear urbano, producto de prueba (no real).",
+    "genero": "unisex",
+    "categoria": "gorro",
+    "color_dominante": "verde",
+    "forma": "lana",
+    "ocasiones": [
+      "carrete",
+      "universidad",
+      "junta social",
+      "junta familiar",
+      "concierto/festival",
+      "junta de amigos/skate park"
+    ],
+    "tags": [
+      "streetwear",
+      "urbano",
+      "verde",
+      "lana"
     ]
   }
 ]

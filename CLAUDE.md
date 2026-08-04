@@ -103,7 +103,7 @@ Tipo de prenda nuevo, independiente ("Gorro" en el dropdown principal "¿qué bu
 | Colorido | Solo negro o blanco (un color neutro, para no sobrecargar) |
 | Otro | No filtra por color — muestra variedad |
 
-**Paso 2** (siempre, sin importar el camino elegido) — "¿Curvo o plano?": filtra por el campo `forma` (`curvo` / `plano`).
+**Paso 2** (siempre, sin importar el camino elegido) — "¿Qué tipo de gorro?": filtra por el campo `forma` (`curvo` / `plano` / `lana`). "Gorro de lana" (beanie, sin visera) se agregó como tercera opción de esta misma pregunta.
 
 Nota: había otra tabla más simple dando vueltas ("outfit neutro" / "outfit ya colorido" / "buscas armonía") que no llegó a tener opciones de formulario definidas — si esa es la lógica que en verdad quieres, avisar para reemplazar la de arriba.
 

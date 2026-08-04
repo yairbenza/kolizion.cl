@@ -127,8 +127,8 @@ COMBOS_OFERTA_GARANTIZADA = [
 # propia funcion. Deben coincidir con COLORES_GORRO_CONOCIDOS y
 # FORMAS_GORRO_CONOCIDAS en app.py.
 COLORES_GORRO = ["blanco", "negro", "rojo", "azul", "amarillo", "beige", "morado", "verde"]
-FORMAS_GORRO = ["curvo", "plano"]
-NOMBRES_FORMA_GORRO = {"curvo": "Curvo", "plano": "Plano"}
+FORMAS_GORRO = ["curvo", "plano", "lana"]
+NOMBRES_FORMA_GORRO = {"curvo": "Curvo", "plano": "Plano", "lana": "de Lana"}
 
 
 def generar_productos_gorro():

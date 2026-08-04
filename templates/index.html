@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Encuentra tu ropa urbana</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Ropa urbana a tu medida</h1>
+    <p class="subtitulo">Streetwear para carrete, universidad, junta social o junta familiar.</p>
+
+    <!-- Paso 1: crear perfil (una sola vez) -->
+    <section id="seccion-perfil" class="oculto">
+      <h2>Primero, cuéntanos de ti</h2>
+      <p class="ayuda">Esto lo guardamos en tu navegador para no volver a preguntártelo.</p>
+      <form id="form-perfil">
+        <label>
+          Nombre
+          <input type="text" name="nombre" required>
+        </label>
+        <label>
+          Apellido
+          <input type="text" name="apellido" required>
+        </label>
+        <label>
+          Gmail
+          <input type="email" name="gmail" placeholder="ej: tu@gmail.com" required>
+        </label>
+        <label>
+          Género
+          <select name="genero" required>
+            <option value="Mujer">Mujer</option>
+            <option value="Hombre">Hombre</option>
+            <option value="Unisex">Prefiero no decir / unisex</option>
+          </select>
+        </label>
+        <label>
+          Edad
+          <input type="number" name="edad" placeholder="ej: 22" required>
+        </label>
+        <label>
+          Altura
+          <input type="text" name="altura" placeholder="ej: 1.75m" required>
+        </label>
+        <label>
+          Peso
+          <input type="text" name="peso" placeholder="ej: 70kg" required>
+        </label>
+        <label>
+          Hobbie
+          <input type="text" name="hobbie" placeholder="ej: skate, música, gym..." required>
+        </label>
+        <label>
+          Orientación sexual
+          <select name="orientacion_sexual" required>
+            <option value="Heterosexual">Heterosexual</option>
+            <option value="Homosexual">Homosexual</option>
+            <option value="Bisexual">Bisexual</option>
+            <option value="Otra">Otra</option>
+            <option value="Prefiero no decir">Prefiero no decir</option>
+          </select>
+        </label>
+        <button type="submit">Guardar mi perfil</button>
+      </form>
+    </section>
+
+    <!-- Paso 2: para quién es la búsqueda -->
+    <section id="seccion-quien" class="oculto">
+      <h2>¿Para quién es esta búsqueda?</h2>
+      <p id="resumen-perfil" class="ayuda"></p>
+      <div class="botones-quien">
+        <button id="btn-para-mi">Es para mí</button>
+        <button id="btn-para-otro">Es un regalo</button>
+      </div>
+      <p><a href="#" id="link-editar-perfil">Editar mi perfil</a></p>
+    </section>
+
+    <!-- Paso 3a: búsqueda para mí -->
+    <section id="seccion-busqueda-yo" class="oculto">
+      <h2>¿Qué buscas?</h2>
+      <form id="form-busqueda-yo">
+        <label>
+          ¿Qué buscas?
+          <select id="categoria-yo" required>
+            <option value="">Elige una opción</option>
+            <option value="prenda superior">Prenda superior (polerón, camisa, chaqueta, poleras, etc.)</option>
+            <option value="prenda inferior">Prenda inferior (pantalón cargo, jeans, pantalón de buzo, etc.)</option>
+            <option value="me da igual">Me da igual</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
+        <label id="campo-categoria-otro-yo" class="oculto">
+          ¿Qué prenda buscas?
+          <input type="text" placeholder="cuéntanos qué buscas">
+        </label>
+
+        <label id="campo-tipo-prenda-yo" class="oculto">
+          ¿Qué prenda buscas?
+          <select id="tipo-prenda-yo"></select>
+        </label>
+        <label id="campo-tipo-prenda-otro-yo" class="oculto">
+          Cuéntanos qué prenda buscas
+          <input type="text" placeholder="ej: camiseta, chaleco...">
+        </label>
+
+        <label id="campo-subtipo-yo" class="oculto">
+          ¿Qué tipo buscas?
+          <select id="subtipo-yo"></select>
+        </label>
+
+        <label id="campo-largo-yo" class="oculto">
+          ¿Qué largo buscas?
+          <select id="largo-yo"></select>
+        </label>
+
+        <label id="campo-manga-yo" class="oculto">
+          ¿Manga larga o manga corta?
+          <select id="manga-yo"></select>
+        </label>
+
+        <label id="campo-capucha-yo" class="oculto">
+          ¿Con capucha o sin capucha?
+          <select id="capucha-yo"></select>
+        </label>
+
+        <label id="campo-cierre-yo" class="oculto">
+          ¿Con cierre o sin cierre (crewneck)?
+          <select id="cierre-yo"></select>
+        </label>
+
+        <label id="campo-corte-yo" class="oculto">
+          ¿Cómo quieres que te quede?
+          <select id="corte-yo"></select>
+        </label>
+        <label id="campo-corte-otro-yo" class="oculto">
+          Cuéntanos cómo la quieres
+          <input type="text" placeholder="ej: ancha de los hombros...">
+        </label>
+
+        <label>
+          Ocasión
+          <select id="ocasion-yo" required>
+            <option value="carrete">Carrete</option>
+            <option value="universidad">Universidad</option>
+            <option value="junta social">Junta social</option>
+            <option value="junta familiar">Junta familiar</option>
+            <option value="concierto/festival">Concierto/festival</option>
+            <option value="junta de amigos/skate park">Junta de amigos / skate park</option>
+            <option value="me da igual">Me da igual</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
+        <label id="campo-ocasion-otro-yo" class="oculto">
+          Cuéntanos la ocasión
+          <input type="text" placeholder="cuéntanos la ocasión">
+        </label>
+
+        <label>
+          Precio
+          <select id="precio-yo" required>
+            <option value="25000">Máx $25.000</option>
+            <option value="50000">Máx $50.000</option>
+            <option value="75000">Máx $75.000</option>
+            <option value="100000">Máx $100.000</option>
+            <option value="200000">Máx $200.000</option>
+            <option value="oferta">Cualquier precio en oferta</option>
+            <option value="">Cualquier precio</option>
+          </select>
+        </label>
+        <button type="submit">Buscar</button>
+      </form>
+      <p><a href="#" class="volver" data-volver="seccion-quien">Volver</a></p>
+    </section>
+
+    <!-- Paso 3b: búsqueda como regalo -->
+    <section id="seccion-busqueda-regalo" class="oculto">
+      <h2>Cuéntanos sobre la persona</h2>
+      <form id="form-busqueda-regalo">
+        <label>
+          Altura
+          <input type="text" name="altura" placeholder="ej: 1.65m" required>
+        </label>
+        <label>
+          Peso
+          <input type="text" name="peso" placeholder="ej: 60kg" required>
+        </label>
+        <label>
+          Género
+          <select name="genero" required>
+            <option value="Mujer">Mujer</option>
+            <option value="Hombre">Hombre</option>
+            <option value="Unisex">No estoy seguro/a</option>
+          </select>
+        </label>
+        <label>
+          ¿Qué buscas?
+          <select id="categoria-regalo" required>
+            <option value="">Elige una opción</option>
+            <option value="prenda superior">Prenda superior (polerón, camisa, chaqueta, poleras, etc.)</option>
+            <option value="prenda inferior">Prenda inferior (pantalón cargo, jeans, pantalón de buzo, etc.)</option>
+            <option value="me da igual">Me da igual</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
+        <label id="campo-categoria-otro-regalo" class="oculto">
+          ¿Qué prenda buscas?
+          <input type="text" placeholder="cuéntanos qué buscas">
+        </label>
+
+        <label id="campo-tipo-prenda-regalo" class="oculto">
+          ¿Qué prenda buscas?
+          <select id="tipo-prenda-regalo"></select>
+        </label>
+        <label id="campo-tipo-prenda-otro-regalo" class="oculto">
+          Cuéntanos qué prenda buscas
+          <input type="text" placeholder="ej: camiseta, chaleco...">
+        </label>
+
+        <label id="campo-subtipo-regalo" class="oculto">
+          ¿Qué tipo buscas?
+          <select id="subtipo-regalo"></select>
+        </label>
+
+        <label id="campo-largo-regalo" class="oculto">
+          ¿Qué largo buscas?
+          <select id="largo-regalo"></select>
+        </label>
+
+        <label id="campo-manga-regalo" class="oculto">
+          ¿Manga larga o manga corta?
+          <select id="manga-regalo"></select>
+        </label>
+
+        <label id="campo-capucha-regalo" class="oculto">
+          ¿Con capucha o sin capucha?
+          <select id="capucha-regalo"></select>
+        </label>
+
+        <label id="campo-cierre-regalo" class="oculto">
+          ¿Con cierre o sin cierre (crewneck)?
+          <select id="cierre-regalo"></select>
+        </label>
+
+        <label id="campo-corte-regalo" class="oculto">
+          ¿Cómo quieres que le quede?
+          <select id="corte-regalo"></select>
+        </label>
+        <label id="campo-corte-otro-regalo" class="oculto">
+          Cuéntanos cómo la quieres
+          <input type="text" placeholder="ej: ancha de los hombros...">
+        </label>
+
+        <label>
+          Ocasión
+          <select id="ocasion-regalo" required>
+            <option value="carrete">Carrete</option>
+            <option value="universidad">Universidad</option>
+            <option value="junta social">Junta social</option>
+            <option value="junta familiar">Junta familiar</option>
+            <option value="concierto/festival">Concierto/festival</option>
+            <option value="junta de amigos/skate park">Junta de amigos / skate park</option>
+            <option value="me da igual">Me da igual</option>
+            <option value="otro">Otro</option>
+          </select>
+        </label>
+        <label id="campo-ocasion-otro-regalo" class="oculto">
+          Cuéntanos la ocasión
+          <input type="text" placeholder="cuéntanos la ocasión">
+        </label>
+
+        <label>
+          Precio
+          <select id="precio-regalo" required>
+            <option value="25000">Máx $25.000</option>
+            <option value="50000">Máx $50.000</option>
+            <option value="75000">Máx $75.000</option>
+            <option value="100000">Máx $100.000</option>
+            <option value="200000">Máx $200.000</option>
+            <option value="oferta">Cualquier precio en oferta</option>
+            <option value="">Cualquier precio</option>
+          </select>
+        </label>
+        <button type="submit">Buscar</button>
+      </form>
+      <p><a href="#" class="volver" data-volver="seccion-quien">Volver</a></p>
+    </section>
+
+    <div id="estado"></div>
+    <div id="cargando" class="oculto">
+      <div class="spinner"></div>
+      <p id="cargando-texto"></p>
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

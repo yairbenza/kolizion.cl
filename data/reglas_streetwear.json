@@ -1,0 +1,60 @@
+{
+  "nota": "Reglas de recomendacion streetwear validadas por encuestas. Listas para conectarse a la logica de recomendacion cuando se implemente.",
+  "reglas": [
+    {
+      "id": 1,
+      "confianza": "alta",
+      "respuestas_coincidentes": "3-4",
+      "genero": "Hombre",
+      "ocasion": "concierto/festival",
+      "prenda": "polera",
+      "atributos": [
+        "oversize",
+        "colores oscuros (disimulan sudor/manchas)",
+        "marca de streetwear reconocida o nicho valorado",
+        "tela transpirable"
+      ]
+    },
+    {
+      "id": 2,
+      "confianza": "alta",
+      "respuestas_coincidentes": "3-4",
+      "genero": "Hombre",
+      "ocasion": "junta de amigos/skate park",
+      "prenda": "pantalon cargo",
+      "atributos": [
+        "baggy/suelto",
+        "comodo para moverse",
+        "buen precio",
+        "buena caida hasta el tobillo"
+      ]
+    },
+    {
+      "id": 3,
+      "confianza": "alta",
+      "respuestas_coincidentes": "3-4",
+      "genero": "Mujer",
+      "ocasion": "junta de amigos/skate park",
+      "prenda": "pantalon cargo",
+      "atributos": [
+        "baggy",
+        "comodo",
+        "versatil",
+        "corte tiro bajo o cintura alta que estiliza"
+      ]
+    },
+    {
+      "id": 4,
+      "confianza": "alta",
+      "respuestas_coincidentes": "5-6",
+      "genero": "Mujer",
+      "ocasion": "concierto/festival",
+      "prenda": "polera/top",
+      "atributos": [
+        "ajustado, que favorezca la figura",
+        "vibe festival"
+      ],
+      "alternativa_secundaria": "Si no hay stock en corte ajustado, ofrecer oversize/boxy fit como alternativa secundaria (no como recomendacion principal)."
+    }
+  ]
+}

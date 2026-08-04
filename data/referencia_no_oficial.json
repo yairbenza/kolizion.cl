@@ -1,0 +1,21 @@
+{
+  "nota": "Respuestas originales de Mica (fuera del proyecto de validacion de reglas streetwear). Se guardan solo como referencia -- NO se usan todavia como regla oficial. Los catalog_id originales ya no aplican porque el catalogo cambio a productos urbanos (u01-u12).",
+  "casos": [
+    {
+      "descripcion": {
+        "genero": "Mujer", "altura": "1.72m", "peso": "62kg", "ocasion": "Carrete/fiesta",
+        "prenda": "Pantalon o falda", "que_busca": "Verse arreglada pero comoda para bailar",
+        "presupuesto": "Puede ser un poco mas caro"
+      },
+      "razon_original": "Muy a la moda, low waist, comodo. No es barato, pero dada la calidad, el calce y los detalles, vale totalmente la pena"
+    },
+    {
+      "descripcion": {
+        "genero": "Mujer", "altura": "1.55m", "peso": "45kg", "ocasion": "Universidad/casual",
+        "prenda": "Poleron", "que_busca": "Bien oversize, comoda",
+        "presupuesto": "Barato si o si"
+      },
+      "razon_original": "Muy versatil, para uso diario, oversized, lindo diseno atras / Muy barato (pocos polerones se encuentran a este precio), hay varios colores, oversized"
+    }
+  ]
+}

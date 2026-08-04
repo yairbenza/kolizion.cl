@@ -1,0 +1,412 @@
+const PERFIL_KEY = "miPerfil";
+
+const secciones = [
+  "seccion-perfil",
+  "seccion-quien",
+  "seccion-busqueda-yo",
+  "seccion-busqueda-regalo",
+];
+
+// Las opciones pueden ser un texto simple ("Otro") o un par
+// [texto, definicion corta] cuando conviene explicarle al usuario que
+// significa cada una. La definicion solo cambia lo que se VE en el select
+// -- el value que manda el buscador sigue siendo el texto solo, en
+// minuscula, para no arriesgar que una palabra de la definicion choque con
+// otra palabra clave del buscador.
+const TIPO_PRENDA_OPCIONES = {
+  "prenda superior": ["Polera", "Poleron", "Chaqueta", "Camisa", "Camiseta", "Top", "Me da igual", "Otro"],
+  "prenda inferior": [
+    "Pantalon", "Shorts",
+    ["Falda cargo", "con bolsillos grandes al costado"],
+    ["Bike shorts / shorts ciclista", "ajustados, tipo ciclista"],
+    "Me da igual", "Otro",
+  ],
+};
+
+const CORTE_OPCIONES = {
+  "prenda superior": [
+    ["Slim fit", "se pega al cuerpo"],
+    ["Regular fit", "calce normal, ni ajustado ni suelto"],
+    ["Straight", "cae recto, sin marcar la cintura"],
+    ["Boxy fit", "ancho y cuadrado, largo normal"],
+    ["Oversized", "grande y holgado, hombros caídos"],
+    "Me da igual", "Otro",
+  ],
+  "prenda inferior": [
+    ["Skinny", "bien pegado a la pierna"],
+    ["Slim fit", "ajustado, con un poco de espacio"],
+    ["Straight fit", "calce parejo, ni ajustado ni suelto"],
+    ["Baggy", "holgado y suelto en toda la pierna"],
+    "Me da igual", "Otro",
+  ],
+};
+
+// Solo aplica cuando el tipo de prenda elegido es "pantalon", "shorts" o "top".
+const SUBTIPO_OPCIONES = {
+  "pantalon": ["Pantalón de buzo", "Pantalón de jeans", "Pantalón cargo", "Cualquiera"],
+  "shorts": ["Short de jeans", "Short de tela", "Short cargo", "Short de baño", "Cualquiera"],
+  "top": [
+    ["Crop top / crop hoodie", "corto, deja el abdomen a la vista"],
+    ["Baby tee", "corto y ajustado"],
+    ["Top con breteles / halter", "sin mangas, amarrado al cuello"],
+    ["Corset top", "ajustado, con costuras marcadas"],
+    ["Tank top", "musculosa, sin mangas"],
+    ["Camisas/blusas", "con botones, más estructurada"],
+    "Cualquiera",
+  ],
+};
+
+// El largo es independiente del corte (una prenda puede ser oversize Y
+// crop al mismo tiempo). Solo aplica a las prendas tipo "top". Las claves
+// tienen que calzar con el value que arma poblarOpciones (el texto de
+// TIPO_PRENDA_OPCIONES en minuscula).
+const LARGO_TIPOS = ["polera", "camiseta", "top"];
+const LARGO_OPCIONES_LISTA = ["Corto/crop", "Largo normal", "Extra largo (longline)", "Cualquiera"];
+const LARGO_OPCIONES = Object.fromEntries(LARGO_TIPOS.map((t) => [t, LARGO_OPCIONES_LISTA]));
+
+// Manga solo aplica a "polera"; capucha y cierre solo a "poleron". Los 3
+// son independientes del corte (una polera puede ser oversize Y manga
+// larga a la vez).
+const MANGA_OPCIONES = {
+  "polera": ["Manga larga", "Manga corta", "Cualquiera"],
+};
+const CAPUCHA_OPCIONES = {
+  "poleron": ["Con capucha", "Sin capucha", "Cualquiera"],
+};
+const CIERRE_OPCIONES = {
+  "poleron": ["Con cierre", "Sin cierre (crewneck)", "Cualquiera"],
+};
+
+// Llena un select con una lista de opciones. Cada opcion puede ser texto
+// simple o [texto, definicion] -- el value que manda el buscador siempre
+// es el texto solo, en minuscula; la definicion solo se agrega a lo que
+// se ve, entre parentesis.
+function poblarOpciones(select, opciones) {
+  select.innerHTML = "";
+  for (const opcion of opciones) {
+    const [texto, definicion] = Array.isArray(opcion) ? opcion : [opcion, null];
+    const option = document.createElement("option");
+    option.value = texto.toLowerCase();
+    option.textContent = definicion ? `${texto} (${definicion})` : texto;
+    select.appendChild(option);
+  }
+}
+
+// Muestra/oculta un select dependiente (tipo de prenda o corte) segun la
+// categoria elegida, y deja listo su campo de texto libre para "Otro".
+function actualizarSelectDependiente(valorCategoria, opcionesPorCategoria, campo, select, otroCampo, otroInput) {
+  otroCampo.classList.add("oculto");
+  otroInput.required = false;
+  otroInput.value = "";
+
+  const opciones = opcionesPorCategoria[valorCategoria];
+  if (opciones) {
+    campo.classList.remove("oculto");
+    poblarOpciones(select, opciones);
+  } else {
+    campo.classList.add("oculto");
+    select.innerHTML = "";
+  }
+}
+
+// Muestra/oculta un select dependiente que no necesita campo de texto libre
+// (ej: subtipo de pantalon/shorts), segun el valor del select del que
+// depende.
+function actualizarSelectSimple(valorDelQueDepende, opcionesPorValor, campo, select) {
+  const opciones = opcionesPorValor[valorDelQueDepende];
+  if (opciones) {
+    campo.classList.remove("oculto");
+    poblarOpciones(select, opciones);
+  } else {
+    campo.classList.add("oculto");
+    select.innerHTML = "";
+  }
+}
+
+// El genero para "yo" sale del perfil guardado; para "regalo" sale del
+// select de genero de ese mismo formulario.
+function obtenerGeneroActual(prefix) {
+  if (prefix === "yo") {
+    const perfil = getPerfil();
+    return perfil ? perfil.genero : "";
+  }
+  const generoSelect = document.querySelector(`#form-busqueda-${prefix} select[name="genero"]`);
+  return generoSelect ? generoSelect.value : "";
+}
+
+// El largo solo se pregunta para mujer (u otro/sin especificar) -- para
+// hombre se oculta aunque la prenda elegida sea de las que normalmente
+// preguntan largo (polera, camiseta, top).
+function actualizarLargo(prefix, valorTipoPrenda, largoCampo, largoSelect) {
+  const esHombre = (obtenerGeneroActual(prefix) || "").toLowerCase() === "hombre";
+  actualizarSelectSimple(valorTipoPrenda, esHombre ? {} : LARGO_OPCIONES, largoCampo, largoSelect);
+}
+
+// Para hombre, "Top" no se ofrece como opcion de prenda superior.
+function opcionesTipoPrendaFiltradas(prefix) {
+  const esHombre = (obtenerGeneroActual(prefix) || "").toLowerCase() === "hombre";
+  if (!esHombre) return TIPO_PRENDA_OPCIONES;
+  return {
+    ...TIPO_PRENDA_OPCIONES,
+    "prenda superior": TIPO_PRENDA_OPCIONES["prenda superior"].filter(
+      (opcion) => (Array.isArray(opcion) ? opcion[0] : opcion).toLowerCase() !== "top"
+    ),
+  };
+}
+
+// Muestra/oculta los selects de tipo de prenda y corte segun la categoria
+// elegida, y maneja el campo de texto libre que aparece cuando se elige
+// "Otro" en cualquiera de los selects (categoria, tipo de prenda, corte,
+// ocasion).
+function configurarBusquedaPrenda(prefix) {
+  const categoriaSelect = document.getElementById(`categoria-${prefix}`);
+  const categoriaOtroCampo = document.getElementById(`campo-categoria-otro-${prefix}`);
+  const categoriaOtroInput = categoriaOtroCampo.querySelector("input");
+
+  const tipoPrendaCampo = document.getElementById(`campo-tipo-prenda-${prefix}`);
+  const tipoPrendaSelect = document.getElementById(`tipo-prenda-${prefix}`);
+  const tipoPrendaOtroCampo = document.getElementById(`campo-tipo-prenda-otro-${prefix}`);
+  const tipoPrendaOtroInput = tipoPrendaOtroCampo.querySelector("input");
+
+  const subtipoCampo = document.getElementById(`campo-subtipo-${prefix}`);
+  const subtipoSelect = document.getElementById(`subtipo-${prefix}`);
+
+  const largoCampo = document.getElementById(`campo-largo-${prefix}`);
+  const largoSelect = document.getElementById(`largo-${prefix}`);
+
+  const mangaCampo = document.getElementById(`campo-manga-${prefix}`);
+  const mangaSelect = document.getElementById(`manga-${prefix}`);
+
+  const capuchaCampo = document.getElementById(`campo-capucha-${prefix}`);
+  const capuchaSelect = document.getElementById(`capucha-${prefix}`);
+
+  const cierreCampo = document.getElementById(`campo-cierre-${prefix}`);
+  const cierreSelect = document.getElementById(`cierre-${prefix}`);
+
+  const corteCampo = document.getElementById(`campo-corte-${prefix}`);
+  const corteSelect = document.getElementById(`corte-${prefix}`);
+  const corteOtroCampo = document.getElementById(`campo-corte-otro-${prefix}`);
+  const corteOtroInput = corteOtroCampo.querySelector("input");
+
+  const ocasionSelect = document.getElementById(`ocasion-${prefix}`);
+  const ocasionOtroCampo = document.getElementById(`campo-ocasion-otro-${prefix}`);
+  const ocasionOtroInput = ocasionOtroCampo.querySelector("input");
+
+  // Reevalua subtipo/largo/manga/capucha/cierre segun el tipo de prenda
+  // elegido ahora mismo -- se llama cada vez que cambia el tipo de prenda,
+  // o cada vez que se repuebla su select (cambio de categoria o de genero).
+  function refrescarCamposDependientesDeTipo() {
+    actualizarSelectSimple(tipoPrendaSelect.value, SUBTIPO_OPCIONES, subtipoCampo, subtipoSelect);
+    actualizarLargo(prefix, tipoPrendaSelect.value, largoCampo, largoSelect);
+    actualizarSelectSimple(tipoPrendaSelect.value, MANGA_OPCIONES, mangaCampo, mangaSelect);
+    actualizarSelectSimple(tipoPrendaSelect.value, CAPUCHA_OPCIONES, capuchaCampo, capuchaSelect);
+    actualizarSelectSimple(tipoPrendaSelect.value, CIERRE_OPCIONES, cierreCampo, cierreSelect);
+  }
+
+  categoriaSelect.addEventListener("change", () => {
+    const valor = categoriaSelect.value;
+    const esOtro = valor === "otro";
+    categoriaOtroCampo.classList.toggle("oculto", !esOtro);
+    categoriaOtroInput.required = esOtro;
+
+    actualizarSelectDependiente(
+      valor, opcionesTipoPrendaFiltradas(prefix), tipoPrendaCampo, tipoPrendaSelect, tipoPrendaOtroCampo, tipoPrendaOtroInput
+    );
+    actualizarSelectDependiente(
+      valor, CORTE_OPCIONES, corteCampo, corteSelect, corteOtroCampo, corteOtroInput
+    );
+    // El tipo de prenda se acaba de repoblar y el navegador deja
+    // seleccionada su primera opcion sola, sin disparar "change" -- por eso
+    // refrescarCamposDependientesDeTipo lee tipoPrendaSelect.value directo
+    // en vez de asumir que quedo vacio.
+    refrescarCamposDependientesDeTipo();
+  });
+
+  tipoPrendaSelect.addEventListener("change", () => {
+    const esOtro = tipoPrendaSelect.value === "otro";
+    tipoPrendaOtroCampo.classList.toggle("oculto", !esOtro);
+    tipoPrendaOtroInput.required = esOtro;
+
+    refrescarCamposDependientesDeTipo();
+  });
+
+  // Si cambia el genero (solo aplica al formulario de regalo -- en "yo" el
+  // genero viene fijo del perfil), hay que repoblar el tipo de prenda
+  // (para sacar/agregar "Top") y re-evaluar los campos que dependen de el.
+  const generoSelect = document.querySelector(`#form-busqueda-${prefix} select[name="genero"]`);
+  if (generoSelect) {
+    generoSelect.addEventListener("change", () => {
+      actualizarSelectDependiente(
+        categoriaSelect.value, opcionesTipoPrendaFiltradas(prefix),
+        tipoPrendaCampo, tipoPrendaSelect, tipoPrendaOtroCampo, tipoPrendaOtroInput
+      );
+      refrescarCamposDependientesDeTipo();
+    });
+  }
+
+  corteSelect.addEventListener("change", () => {
+    const esOtro = corteSelect.value === "otro";
+    corteOtroCampo.classList.toggle("oculto", !esOtro);
+    corteOtroInput.required = esOtro;
+  });
+
+  ocasionSelect.addEventListener("change", () => {
+    const esOtro = ocasionSelect.value === "otro";
+    ocasionOtroCampo.classList.toggle("oculto", !esOtro);
+    ocasionOtroInput.required = esOtro;
+  });
+}
+
+// Si el select vale "otro", usa lo que el usuario escribio en el campo
+// libre. Si vale "me da igual", no manda nada -- asi esa pregunta no
+// filtra la busqueda.
+function valorFinal(select, otroCampo) {
+  if (select.value === "otro") {
+    return otroCampo.querySelector("input").value;
+  }
+  if (select.value === "me da igual") {
+    return "";
+  }
+  return select.value;
+}
+
+function leerBusquedaPrenda(prefix) {
+  return {
+    categoria: valorFinal(
+      document.getElementById(`categoria-${prefix}`),
+      document.getElementById(`campo-categoria-otro-${prefix}`)
+    ),
+    tipo_prenda: valorFinal(
+      document.getElementById(`tipo-prenda-${prefix}`),
+      document.getElementById(`campo-tipo-prenda-otro-${prefix}`)
+    ),
+    subtipo: document.getElementById(`subtipo-${prefix}`).value,
+    largo: document.getElementById(`largo-${prefix}`).value,
+    manga: document.getElementById(`manga-${prefix}`).value,
+    capucha: document.getElementById(`capucha-${prefix}`).value,
+    cierre: document.getElementById(`cierre-${prefix}`).value,
+    corte: valorFinal(
+      document.getElementById(`corte-${prefix}`),
+      document.getElementById(`campo-corte-otro-${prefix}`)
+    ),
+    ocasion: valorFinal(
+      document.getElementById(`ocasion-${prefix}`),
+      document.getElementById(`campo-ocasion-otro-${prefix}`)
+    ),
+    precio: document.getElementById(`precio-${prefix}`).value,
+  };
+}
+
+function mostrarSeccion(id) {
+  for (const s of secciones) {
+    document.getElementById(s).classList.toggle("oculto", s !== id);
+  }
+  document.getElementById("estado").textContent = "";
+}
+
+function getPerfil() {
+  const raw = localStorage.getItem(PERFIL_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+
+function guardarPerfil(perfil) {
+  localStorage.setItem(PERFIL_KEY, JSON.stringify(perfil));
+}
+
+function mostrarPasoInicial() {
+  const perfil = getPerfil();
+  if (perfil) {
+    document.getElementById("resumen-perfil").textContent =
+      `Hola ${perfil.nombre}, tu perfil: ${perfil.genero}, ${perfil.edad} años.`;
+    mostrarSeccion("seccion-quien");
+  } else {
+    mostrarSeccion("seccion-perfil");
+  }
+}
+
+// Llena el formulario de perfil con los datos ya guardados, para poder
+// editarlos en vez de tener que volver a escribir todo desde cero.
+function precargarPerfil(perfil) {
+  const form = document.getElementById("form-perfil");
+  for (const campo of form.elements) {
+    if (campo.name && perfil[campo.name] !== undefined) {
+      campo.value = perfil[campo.name];
+    }
+  }
+}
+
+// Corre la busqueda (con la animacion de carga de comun.js) y, cuando
+// termina, guarda el resultado y manda al usuario a /resultados -- ahi se
+// ve solo el resultado, en una pagina aparte, no mezclado con el formulario.
+async function buscar(payload) {
+  const estado = document.getElementById("estado");
+  estado.textContent = "";
+
+  try {
+    const data = await buscarConAnimacion(payload);
+    sessionStorage.setItem("ultimoPayload", JSON.stringify(payload));
+    sessionStorage.setItem("resultados", JSON.stringify(data.recomendaciones || []));
+    sessionStorage.setItem("sinTalla", String(Boolean(data.sin_talla)));
+    window.location.href = "/resultados";
+  } catch (err) {
+    estado.textContent = "Algo salió mal: " + err.message;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  mostrarPasoInicial();
+  configurarBusquedaPrenda("yo");
+  configurarBusquedaPrenda("regalo");
+
+  document.getElementById("form-perfil").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const datos = Object.fromEntries(new FormData(e.target).entries());
+    guardarPerfil(datos);
+    mostrarPasoInicial();
+  });
+
+  document.getElementById("btn-para-mi").addEventListener("click", () => {
+    mostrarSeccion("seccion-busqueda-yo");
+  });
+
+  document.getElementById("btn-para-otro").addEventListener("click", () => {
+    mostrarSeccion("seccion-busqueda-regalo");
+  });
+
+  document.getElementById("link-editar-perfil").addEventListener("click", (e) => {
+    e.preventDefault();
+    const perfil = getPerfil();
+    if (perfil) {
+      precargarPerfil(perfil);
+    }
+    mostrarSeccion("seccion-perfil");
+  });
+
+  document.querySelectorAll(".volver").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      mostrarSeccion(link.dataset.volver);
+    });
+  });
+
+  document.getElementById("form-busqueda-yo").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const perfilCompleto = getPerfil() || {};
+    // Solo mandamos al servidor lo necesario para buscar, nunca datos
+    // personales sensibles (nombre, gmail, orientacion sexual).
+    const perfilParaBuscar = {
+      genero: perfilCompleto.genero,
+      edad: perfilCompleto.edad,
+      altura: perfilCompleto.altura,
+      peso: perfilCompleto.peso,
+      hobbie: perfilCompleto.hobbie,
+    };
+    buscar({ modo: "yo", perfil: perfilParaBuscar, ...leerBusquedaPrenda("yo") });
+  });
+
+  document.getElementById("form-busqueda-regalo").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const datos = Object.fromEntries(new FormData(e.target).entries());
+    buscar({ modo: "regalo", ...datos, ...leerBusquedaPrenda("regalo") });
+  });
+});

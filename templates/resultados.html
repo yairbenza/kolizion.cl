@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tus recomendaciones</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Tus recomendaciones</h1>
+    <p class="subtitulo">Esto encontramos para ti en tiendas chicas.</p>
+
+    <div id="estado"></div>
+    <div id="cargando" class="oculto">
+      <div class="spinner"></div>
+      <p id="cargando-texto"></p>
+    </div>
+    <div id="resultados"></div>
+
+    <div id="feedback-busqueda" class="oculto">
+      <p>¿Encontraste lo que buscabas?</p>
+      <div class="botones-quien">
+        <button id="btn-si-encontre">Sí</button>
+        <button id="btn-mas-opciones">Mostrar más opciones</button>
+      </div>
+    </div>
+
+    <div id="resultados-plan-b"></div>
+
+    <p><a href="/" class="volver">← Hacer una nueva búsqueda</a></p>
+  </main>
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='resultados.js') }}"></script>
+</body>
+</html>

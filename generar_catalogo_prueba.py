@@ -14,7 +14,8 @@ import json
 import random
 from pathlib import Path
 
-from generar_imagenes_gorro import PANEL_SUGERIDO
+from generar_imagenes_gorro import COLOR_HEX, PANEL_SUGERIDO
+from generar_imagenes_prendas import TOP_SUBTIPOS
 
 random.seed(42)
 
@@ -124,6 +125,29 @@ COMBOS_OFERTA_GARANTIZADA = [
     ("shorts", "straight fit"),
 ]
 
+# Color de cada imagen ilustrativa de prenda: INVENTADO solo para que la
+# imagen se vea distinta segun el producto (el catalogo mock no tenia campo
+# de color para prendas, a diferencia de gorro que si usa color_dominante
+# como filtro real). No se agrega como campo del producto ni se usa para
+# filtrar -- existe unicamente en el nombre del archivo SVG.
+COLORES_PRENDA = list(COLOR_HEX.keys())
+
+
+def _imagen_prenda(tipo, subtipo, manga, capucha, cierre, color):
+    """Arma la ruta a la imagen ilustrativa (static/img/prendas/, generadas
+    por generar_imagenes_prendas.py) que corresponde a este producto."""
+    if tipo == "polera":
+        return f"img/prendas/prenda-polera-manga-{manga}-{color}.svg"
+    if tipo == "poleron":
+        slug = f"{capucha.replace(' ', '-')}-{cierre.replace(' ', '-')}"
+        return f"img/prendas/prenda-poleron-{slug}-{color}.svg"
+    if tipo == "top" and subtipo in TOP_SUBTIPOS:
+        return f"img/prendas/prenda-top-{subtipo}-{color}.svg"
+    if tipo in ("camiseta", "camisa", "chaqueta", "pantalon", "shorts", "faldacargo", "bikeshorts"):
+        return f"img/prendas/prenda-{tipo}-{color}.svg"
+    return None
+
+
 # Gorro no tiene corte ni tallas S/M/L/XL (es su propio flujo: color +
 # forma) -- por eso no usa _crear_producto/generar_productos, tiene su
 # propia funcion. Deben coincidir con COLORES_GORRO_CONOCIDOS y
@@ -191,6 +215,7 @@ def _crear_producto(contador, tipo, corte, i, subtipo=None, largo=None, manga=No
     precio_clp = random.randint(9, 190) * 1000 + random.choice([490, 990])
     en_oferta = random.random() < 0.3  # ~30% marcados en oferta, inventado solo para probar el filtro
     tallas_disponibles = random.sample(TALLAS, k=random.randint(2, 4))  # variado, inventado solo para probar el filtro
+    color_imagen = random.choice(COLORES_PRENDA)
 
     nombre_subtipo = f" {NOMBRES_SUBTIPO.get(subtipo, subtipo.capitalize() if subtipo else '')}" if subtipo else ""
     nombre_largo = f" {NOMBRES_LARGO[largo]}" if largo else ""
@@ -217,6 +242,8 @@ def _crear_producto(contador, tipo, corte, i, subtipo=None, largo=None, manga=No
     if en_oferta:
         descripcion += " ¡En oferta!"
 
+    imagen = _imagen_prenda(tipo, subtipo, manga, capucha, cierre, color_imagen)
+
     producto = {
         "id": f"mock_{contador:04d}",
         "nombre": (
@@ -231,6 +258,7 @@ def _crear_producto(contador, tipo, corte, i, subtipo=None, largo=None, manga=No
         "en_oferta": en_oferta,
         "tallas_disponibles": tallas_disponibles,
         "descripcion": descripcion,
+        "imagen": f"/static/{imagen}" if imagen else "",
         "genero": "unisex",
         "categoria": tipo,
         "ocasiones": OCASIONES,

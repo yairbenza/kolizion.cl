@@ -122,6 +122,51 @@ COMBOS_OFERTA_GARANTIZADA = [
     ("shorts", "straight fit"),
 ]
 
+# Gorro no tiene corte ni tallas S/M/L/XL (es su propio flujo: color +
+# forma) -- por eso no usa _crear_producto/generar_productos, tiene su
+# propia funcion. Deben coincidir con COLORES_GORRO_CONOCIDOS y
+# FORMAS_GORRO_CONOCIDAS en app.py.
+COLORES_GORRO = ["blanco", "negro", "rojo", "azul", "amarillo", "beige", "morado", "verde"]
+FORMAS_GORRO = ["curvo", "plano"]
+NOMBRES_FORMA_GORRO = {"curvo": "Curvo", "plano": "Plano"}
+
+
+def generar_productos_gorro():
+    productos = []
+    contador = 1
+    for color in COLORES_GORRO:
+        for forma in FORMAS_GORRO:
+            for i in range(1, 7):
+                marca = random.choice(MARCAS)
+                adjetivo = random.choice(ADJETIVOS)
+                precio_clp = random.randint(6, 25) * 1000 + random.choice([490, 990])
+                en_oferta = random.random() < 0.3
+                descripcion = (
+                    f"Gorro {NOMBRES_FORMA_GORRO[forma].lower()}, color dominante {color}, "
+                    "estilo streetwear urbano, producto de prueba (no real)."
+                )
+                if en_oferta:
+                    descripcion += " ¡En oferta!"
+                productos.append({
+                    "id": f"mock_gorro_{contador:04d}",
+                    "nombre": f"[MOCK] Gorro {NOMBRES_FORMA_GORRO[forma]} {color.capitalize()} {adjetivo} {i}",
+                    "marca": f"{marca} (marca inventada)",
+                    "tienda": "Tienda Mock (no real)",
+                    "link": f"https://mock-no-real.cl/gorro-{color}-{forma}-{i}",
+                    "precio": f"${precio_clp:,}".replace(",", "."),
+                    "precio_clp": precio_clp,
+                    "en_oferta": en_oferta,
+                    "descripcion": descripcion,
+                    "genero": "unisex",
+                    "categoria": "gorro",
+                    "color_dominante": color,
+                    "forma": forma,
+                    "ocasiones": OCASIONES,
+                    "tags": ["streetwear", "urbano", color, forma],
+                })
+                contador += 1
+    return productos
+
 
 def _crear_producto(contador, tipo, corte, i, subtipo=None, largo=None, manga=None, capucha=None, cierre=None):
     marca = random.choice(MARCAS)
@@ -247,7 +292,7 @@ def generar_productos_oferta():
 
 
 if __name__ == "__main__":
-    productos = generar_productos() + generar_productos_oferta()
+    productos = generar_productos() + generar_productos_oferta() + generar_productos_gorro()
     OUT_PATH.write_text(
         json.dumps(productos, ensure_ascii=False, indent=2), encoding="utf-8"
     )

@@ -111,7 +111,7 @@ TIPOS_PRENDA_CONOCIDOS = {
     "pantalon": ["pantalon"],
     "shorts": ["shorts", "short"],
     "falda": ["falda"],
-    "jockey": ["jockey", "gorra"],
+    "gorro": ["gorro", "gorra", "jockey", "cap"],
     "accesorio": ["accesorio", "mochila", "cinturon"],
 }
 
@@ -169,6 +169,63 @@ CIERRES_CONOCIDOS = {
     "con cierre": ["con cierre"],
     "sin cierre": ["sin cierre", "crewneck"],
 }
+
+# Gorro: no tiene corte (slim/oversize no aplica) -- en cambio tiene su
+# propio flujo de color y forma. El color viene de dos caminos posibles:
+# 1) colores especificos elegidos a mano (checkboxes), o 2) que combine con
+# el outfit (se traduce a un set de colores permitidos segun esta tabla).
+# "vivos" son los colores fuertes/de acento; blanco/negro/beige quedan
+# fuera de ese grupo (son los neutros).
+COLORES_GORRO_CONOCIDOS = ["blanco", "negro", "rojo", "azul", "amarillo", "beige", "morado", "verde"]
+COLORES_VIVOS_GORRO = {"rojo", "azul", "amarillo", "morado", "verde"}
+FORMAS_GORRO_CONOCIDAS = ["curvo", "plano"]
+
+
+def colores_permitidos_por_outfit(outfit):
+    """Devuelve el set de color_dominante que tiene sentido para un gorro
+    segun como es el outfit de la persona."""
+    outfit = (outfit or "").strip().lower()
+    if outfit == "oscuro":
+        # Color fuerte como acento, o blanco para contraste limpio.
+        return COLORES_VIVOS_GORRO | {"blanco"}
+    if outfit == "claro":
+        # Negro para contraste, o color vivo como protagonista.
+        return COLORES_VIVOS_GORRO | {"negro"}
+    if outfit == "colorido":
+        # Un solo color neutro para no sobrecargar el look.
+        return {"negro", "blanco"}
+    # "otro" (o cualquier valor no reconocido): no filtramos por color.
+    return set(COLORES_GORRO_CONOCIDOS)
+
+
+def filtrar_gorros_por_color(catalog, camino, colores_elegidos, outfit):
+    """Filtro estricto de color_dominante para gorros -- nunca se relaja.
+    Solo afecta productos categoria "gorro"; el resto del catalogo pasa
+    sin tocar. "camino" es "colores" (usa colores_elegidos tal cual) o
+    "outfit" (usa colores_permitidos_por_outfit)."""
+    camino = (camino or "").strip().lower()
+    if camino == "colores" and colores_elegidos:
+        permitidos = {c.strip().lower() for c in colores_elegidos}
+    elif camino == "outfit":
+        permitidos = colores_permitidos_por_outfit(outfit)
+    else:
+        return catalog
+    return [
+        p for p in catalog
+        if p.get("categoria", "").lower() != "gorro" or p.get("color_dominante", "").lower() in permitidos
+    ]
+
+
+def filtrar_gorros_por_forma(catalog, forma):
+    """Filtro estricto de forma (curvo/plano) para gorros -- nunca se
+    relaja. Solo afecta productos categoria "gorro"."""
+    forma = (forma or "").strip().lower()
+    if forma not in FORMAS_GORRO_CONOCIDAS:
+        return catalog
+    return [
+        p for p in catalog
+        if p.get("categoria", "").lower() != "gorro" or p.get("forma", "").lower() == forma
+    ]
 
 
 def _contiene_palabra(texto, variante):
@@ -352,12 +409,14 @@ def estimar_tallas(genero, peso_texto, altura_texto):
 def filtrar_por_talla(catalog, tallas_usuario):
     """Filtra el catalogo dejando solo productos que tengan stock en AL
     MENOS UNA de las tallas estimadas. Si no se pudo estimar ninguna talla
-    (ej: no hay dato de peso), no filtra nada."""
+    (ej: no hay dato de peso), no filtra nada. Los gorros quedan exentos --
+    son talla unica/ajustable, no usan S/M/L/XL."""
     if not tallas_usuario:
         return catalog
     return [
         p for p in catalog
-        if any(t in p.get("tallas_disponibles", []) for t in tallas_usuario)
+        if p.get("categoria", "").lower() == "gorro"
+        or any(t in p.get("tallas_disponibles", []) for t in tallas_usuario)
     ]
 
 
@@ -576,8 +635,14 @@ def recommend():
     corte = data.get("corte", "")
     ocasion = data.get("ocasion", "")
     precio = data.get("precio", "")
+    gorro_camino = data.get("gorro_camino", "")
+    gorro_colores = data.get("gorro_colores") or []
+    gorro_outfit = data.get("gorro_outfit", "")
+    gorro_forma = data.get("gorro_forma", "")
 
     catalog = filtrar_por_precio(catalog, precio)
+    catalog = filtrar_gorros_por_color(catalog, gorro_camino, gorro_colores, gorro_outfit)
+    catalog = filtrar_gorros_por_forma(catalog, gorro_forma)
 
     campos_pedido = [categoria, tipo_prenda, subtipo, largo, manga, capucha, cierre, corte, ocasion]
     if modo == "yo":

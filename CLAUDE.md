@@ -88,6 +88,27 @@ Ningún otro tipo de prenda pregunta esto (ni siquiera "Top" ni sus subtipos).
 
 Criterio de tagueo cuando la ficha de un catálogo real no lo diga con esas palabras exactas: esto normalmente SÍ viene explícito o es fácil de ver en fotos/descripción (a diferencia de corte o talla, que a veces hay que inferir) — "poleron sin cierre" es sinónimo de "crewneck" en la mayoría de las tiendas, y "sin capucha" casi siempre se llama "crewneck" o "cuello redondo" también. Si la ficha no menciona ninguna de las dos cosas ni se ve en las fotos, preguntarle al usuario (dueño del proyecto) antes de taguear a ciegas — a diferencia de corte/talla, aquí no hay una tabla de medidas de la cual inferir.
 
+## Gorro
+
+Tipo de prenda nuevo, independiente ("Gorro" en el dropdown principal "¿qué buscas?", junto a Prenda superior/Prenda inferior). No usa corte ni las preguntas de subtipo/largo/manga/capucha/cierre — tiene su propio flujo, y tampoco se filtra por talla S/M/L/XL (es talla única/ajustable).
+
+**Paso 1** — "¿Buscas colores específicos o que combine con un outfit?":
+- **Camino A (colores específicos):** checkboxes de selección múltiple — blanco, negro, rojo, azul, amarillo, beige, morado, verde. Filtra productos cuyo `color_dominante` esté entre los marcados.
+- **Camino B (combinar con outfit):** pregunta "¿Cómo es tu outfit?" (Oscuro / Claro / Colorido / Otro), que se traduce a un set de colores permitidos:
+
+| Outfit | Colores de gorro permitidos |
+| --- | --- |
+| Oscuro | Color vivo (rojo, azul, amarillo, morado, verde) como acento, o blanco para contraste limpio |
+| Claro | Negro para contraste, o color vivo como protagonista |
+| Colorido | Solo negro o blanco (un color neutro, para no sobrecargar) |
+| Otro | No filtra por color — muestra variedad |
+
+**Paso 2** (siempre, sin importar el camino elegido) — "¿Curvo o plano?": filtra por el campo `forma` (`curvo` / `plano`).
+
+Nota: había otra tabla más simple dando vueltas ("outfit neutro" / "outfit ya colorido" / "buscas armonía") que no llegó a tener opciones de formulario definidas — si esa es la lógica que en verdad quieres, avisar para reemplazar la de arriba.
+
+**Criterio de tagueo:** en gorros de diseño de dos tonos (tipo trucker), el `color_dominante` se define por el **panel frontal**, no por la superficie total de la prenda.
+
 ## Talla inferida automáticamente
 
 El buscador infiere la talla del usuario cruzando altura y peso — datos que el formulario ya pide, no se agregó ninguna pregunta nueva de talla. Calcula una talla según el peso y otra según la altura (cada una por separado, contra su propia tabla), y usa la MÁS CHICA de las dos como principal (para no ofrecer algo más ajustado de lo que corresponde); la otra talla calculada queda como segunda opción. Si peso y altura dan la misma talla, la segunda opción es la vecina más grande (o más chica si ya es XL). Muestra en cada resultado cuál de esas tallas tiene ese producto ("Disponible en tu talla: M"). Si no calza en ninguna, se muestra un aviso en vez de dejar la página vacía sin explicación.

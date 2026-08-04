@@ -49,6 +49,21 @@ label {
   font-weight: 600;
 }
 
+.campo-checkboxes { display: flex; flex-direction: column; gap: 0.5rem; }
+.campo-checkboxes .ayuda { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.grid-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+.checkbox-inline {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 400 !important;
+}
+.checkbox-inline input { width: auto; padding: 0; }
+
 input, select, textarea {
   font-size: 1rem;
   padding: 0.6rem;

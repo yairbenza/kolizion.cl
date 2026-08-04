@@ -192,6 +192,13 @@ function configurarBusquedaPrenda(prefix) {
   const ocasionOtroCampo = document.getElementById(`campo-ocasion-otro-${prefix}`);
   const ocasionOtroInput = ocasionOtroCampo.querySelector("input");
 
+  const gorroCaminoCampo = document.getElementById(`campo-gorro-camino-${prefix}`);
+  const gorroCaminoSelect = document.getElementById(`gorro-camino-${prefix}`);
+  const gorroColoresCampo = document.getElementById(`campo-gorro-colores-${prefix}`);
+  const gorroOutfitCampo = document.getElementById(`campo-gorro-outfit-${prefix}`);
+  const gorroFormaCampo = document.getElementById(`campo-gorro-forma-${prefix}`);
+  const gorroFormaSelect = document.getElementById(`gorro-forma-${prefix}`);
+
   // Reevalua subtipo/largo/manga/capucha/cierre segun el tipo de prenda
   // elegido ahora mismo -- se llama cada vez que cambia el tipo de prenda,
   // o cada vez que se repuebla su select (cambio de categoria o de genero).
@@ -202,6 +209,30 @@ function configurarBusquedaPrenda(prefix) {
     actualizarSelectSimple(tipoPrendaSelect.value, CAPUCHA_OPCIONES, capuchaCampo, capuchaSelect);
     actualizarSelectSimple(tipoPrendaSelect.value, CIERRE_OPCIONES, cierreCampo, cierreSelect);
   }
+
+  // Gorro no usa corte/subtipo -- tiene su propio flujo (camino de color +
+  // forma). "campo-gorro-camino" y "campo-gorro-forma" se muestran/ocultan
+  // segun si la categoria elegida es "gorro"; dentro de eso, cual de los 2
+  // caminos (colores especificos / combinar con outfit) se ve depende de
+  // gorroCaminoSelect.
+  function refrescarCamposGorro() {
+    const esGorro = categoriaSelect.value === "gorro";
+    gorroCaminoCampo.classList.toggle("oculto", !esGorro);
+    gorroFormaCampo.classList.toggle("oculto", !esGorro);
+    gorroCaminoSelect.required = esGorro;
+    gorroFormaSelect.required = esGorro;
+
+    if (!esGorro) {
+      gorroColoresCampo.classList.add("oculto");
+      gorroOutfitCampo.classList.add("oculto");
+      return;
+    }
+    const camino = gorroCaminoSelect.value || "colores";
+    gorroColoresCampo.classList.toggle("oculto", camino !== "colores");
+    gorroOutfitCampo.classList.toggle("oculto", camino !== "outfit");
+  }
+
+  gorroCaminoSelect.addEventListener("change", refrescarCamposGorro);
 
   categoriaSelect.addEventListener("change", () => {
     const valor = categoriaSelect.value;
@@ -220,6 +251,7 @@ function configurarBusquedaPrenda(prefix) {
     // refrescarCamposDependientesDeTipo lee tipoPrendaSelect.value directo
     // en vez de asumir que quedo vacio.
     refrescarCamposDependientesDeTipo();
+    refrescarCamposGorro();
   });
 
   tipoPrendaSelect.addEventListener("change", () => {
@@ -294,6 +326,12 @@ function leerBusquedaPrenda(prefix) {
       document.getElementById(`campo-ocasion-otro-${prefix}`)
     ),
     precio: document.getElementById(`precio-${prefix}`).value,
+    gorro_camino: document.getElementById(`gorro-camino-${prefix}`).value,
+    gorro_colores: Array.from(
+      document.querySelectorAll(`#campo-gorro-colores-${prefix} input[type="checkbox"]:checked`)
+    ).map((el) => el.value),
+    gorro_outfit: document.getElementById(`gorro-outfit-${prefix}`).value,
+    gorro_forma: document.getElementById(`gorro-forma-${prefix}`).value,
   };
 }
 

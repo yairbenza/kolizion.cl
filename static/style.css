@@ -25,6 +25,12 @@ main {
 h1 { margin-bottom: 0.25rem; }
 .subtitulo { color: #666; margin-top: 0; margin-bottom: 1.5rem; }
 
+/* Mensaje de bienvenida -- por ahora solo negro y rojo, se puede afinar despues. */
+h1.bienvenida { color: #000; margin-bottom: 0.5rem; }
+h1.bienvenida .marca { color: #d40000; }
+.tagline { color: #000; margin: 0 0 0.5rem; }
+.pregunta-bienvenida { color: #d40000; font-weight: 600; margin: 0 0 1.5rem; }
+
 form {
   background: var(--card);
   border: 1px solid var(--border);

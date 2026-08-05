@@ -204,6 +204,161 @@ a.volver, #link-editar-perfil {
 .resultado-card .razon { margin: 0.5rem 0; }
 .resultado-card a { color: var(--accent); font-weight: 600; }
 
+/* --- Koko: boton de acceso, panel de chat, burbujas, animacion --- */
+
+.barra-koko {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.btn-koko {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.4rem 1rem 0.4rem 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.avatar-koko {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Overlay del chat: seccion aparte del formulario, encima de todo. */
+.panel-koko-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.panel-koko {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.panel-koko-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-koko-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.avatar-koko-chat {
+  width: 40px;
+  height: 40px;
+}
+
+.btn-cerrar-koko {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.mensajes-koko {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.burbuja-koko {
+  max-width: 85%;
+  padding: 0.55rem 0.8rem;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.burbuja-koko-koko {
+  align-self: flex-start;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
+.burbuja-koko-usuario {
+  align-self: flex-end;
+  background: var(--accent);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.sugerencia-koko {
+  margin: 0 1rem 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px dashed var(--accent);
+  border-radius: 10px;
+}
+
+.sugerencia-koko p {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sugerencia-koko .botones-quien {
+  margin: 0;
+}
+
+.form-koko {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.form-koko input {
+  flex: 1;
+}
+
+/* Rebote/balanceo mientras Koko "esta pensando" una respuesta -- se agrega
+   y saca la clase desde koko.js, nunca queda pegada. */
+@keyframes koko-rebote {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+
+.koko-pensando {
+  animation: koko-rebote 0.6s ease-in-out infinite;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1c1a18;

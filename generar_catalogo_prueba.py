@@ -261,6 +261,7 @@ def _crear_producto(contador, tipo, corte, i, subtipo=None, largo=None, manga=No
         "imagen": f"/static/{imagen}" if imagen else "",
         "genero": "unisex",
         "categoria": tipo,
+        "corte": corte,
         "ocasiones": OCASIONES,
         "tags": ["streetwear", "urbano", corte],
     }

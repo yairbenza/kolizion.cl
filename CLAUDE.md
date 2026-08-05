@@ -140,6 +140,26 @@ Si el navegador restaura `/` desde su caché (bfcache), el estado del formulario
 
 Casos particulares: un valor que no calza con ninguna opción del select (era texto libre en "Otro") selecciona "Otro" y rellena ese input; un valor vacío (era "Me da igual") deja esa opción si existe. El link "← Hacer una nueva búsqueda" es navegación normal — no dispara esto, a propósito deja el formulario limpio.
 
+## Koko — asistente de estilo con chat
+
+Mascota-perrito de Kolizion. Ícono "Conversemos con Koko" arriba a la derecha de `index.html` (no en `resultados.html` todavía) que abre un panel de chat aparte (overlay `#panel-koko`, fuera de las secciones del formulario) — nunca mezclado con el flujo normal de búsqueda.
+
+**Motor:** IA real vía API de Anthropic (decisión explícita del usuario, no un árbol de reglas fijo — así Koko conversa libre de verdad). Requiere `ANTHROPIC_API_KEY` configurada como variable de entorno o en un archivo `.env` local (gitignored, ver `.env.example`); si falta, `/api/koko/chat` responde con un aviso en vez de caerse. Tiene costo por mensaje y necesita internet — a diferencia del resto de la app, que es 100% local/mock.
+
+**Cómo sugiere una búsqueda:** Koko da consejo en conversación libre (nunca busca productos él mismo) y, cuando ya tiene claro qué ofrecer, llama una tool (`sugerir_busqueda`, con `categoria`/`tipo_prenda`/`corte`) en vez de que el backend tenga que parsear su texto. El frontend (`static/koko.js`) muestra esa sugerencia como una mini-tarjeta "¿Buscamos X para ti?"; si el usuario confirma, arma el mismo payload que usa una búsqueda normal (modo "yo") y llama a `buscar()` de `script.js` — reusa 100% el pipeline existente, no hay lógica de búsqueda duplicada.
+
+**Animación:** clase `.koko-pensando` (`@keyframes koko-rebote` en `style.css`) se agrega al avatar justo antes de mandar el mensaje y se saca en el `finally` de `enviarMensajeKoko` — así nunca queda pegada, prenda o falle la respuesta.
+
+**Historial y personalización (`data/historial_usuarios.json`, gitignored — es dato real de uso, no mock):** dict keyado por email en minúscula, con `busquedas` (ocasión/categoria/tipo_prenda/corte de cada búsqueda que el usuario hace **para sí mismo**) y `productos_interes` (clics en "Ver producto"). Dos señales de interés, ambas se registran:
+- `registrar_busqueda` se llama desde `/api/recommend` solo cuando `modo=="yo"` y no es "mostrar más opciones" (para no duplicar la misma búsqueda).
+- `registrar_interes` se llama desde el nuevo endpoint `/api/koko/interes`, disparado por un listener en `renderResultados` (`comun.js`) al hacer clic en "Ver producto" — solo si la búsqueda activa es "yo" y hay email guardado. Las búsquedas "regalo" nunca se registran (son sobre el estilo de otra persona).
+
+`resumen_historial_para_prompt(email)` arma el texto que se mete en el prompt de Koko; devuelve `None` si el usuario es nuevo (Koko da consejo general basado en `data/reglas_streetwear.json`, sin inventar gustos). Con historial, el prompt le pide a Koko mencionar explícitamente el motivo (ej. "como sueles preferir oversize...").
+
+**Nota de privacidad (cambio respecto a una decisión anterior):** el formulario "yo" antes mandaba el perfil al servidor sin el gmail a propósito (ver `static/script.js`). Ahora el gmail SÍ viaja como campo `email` aparte de `perfil`, solo para identificar el historial — nombre y orientación sexual siguen sin mandarse nunca.
+
+**Sin login:** el email es solo un identificador de texto libre, no hay contraseña ni autenticación — cualquiera que escriba el mismo correo ve "su" historial.
+
 ## Datos de referencia sin usar
 
 `data/referencia_no_oficial.json` guarda dos respuestas de Mica (carrete/fiesta, universidad/polerón) que calzan con el enfoque streetwear pero NO son reglas oficiales validadas. Solo contexto extra.

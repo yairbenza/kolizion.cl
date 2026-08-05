@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .claude/
 flask_log.txt
+.env
+data/historial_usuarios.json

@@ -1,4 +1,5 @@
-const PERFIL_KEY = "miPerfil";
+// PERFIL_KEY/getPerfil/guardarPerfil ahora viven en comun.js (los necesitan
+// koko.js y resultados.html tambien, y comun.js se carga antes que este).
 
 const secciones = [
   "seccion-perfil",
@@ -342,15 +343,6 @@ function mostrarSeccion(id) {
   document.getElementById("estado").textContent = "";
 }
 
-function getPerfil() {
-  const raw = localStorage.getItem(PERFIL_KEY);
-  return raw ? JSON.parse(raw) : null;
-}
-
-function guardarPerfil(perfil) {
-  localStorage.setItem(PERFIL_KEY, JSON.stringify(perfil));
-}
-
 // Pone en un select el valor guardado de una busqueda anterior. Como
 // valorFinal() ya convirtio "otro" en el texto libre y "me da igual" en ""
 // al guardar, aca hacemos el camino inverso: si el valor calza con alguna
@@ -548,7 +540,10 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     const perfilCompleto = getPerfil() || {};
     // Solo mandamos al servidor lo necesario para buscar, nunca datos
-    // personales sensibles (nombre, gmail, orientacion sexual).
+    // personales sensibles (nombre, orientacion sexual). El gmail SI se
+    // manda ahora (como "email", aparte de "perfil") -- es el identificador
+    // que usa Koko para guardar el historial de este usuario y
+    // personalizar sus consejos. Ver seccion "Koko" en CLAUDE.md.
     const perfilParaBuscar = {
       genero: perfilCompleto.genero,
       edad: perfilCompleto.edad,
@@ -556,7 +551,10 @@ document.addEventListener("DOMContentLoaded", () => {
       peso: perfilCompleto.peso,
       hobbie: perfilCompleto.hobbie,
     };
-    buscar({ modo: "yo", perfil: perfilParaBuscar, ...leerBusquedaPrenda("yo") });
+    buscar({
+      modo: "yo", email: perfilCompleto.gmail || "", perfil: perfilParaBuscar,
+      ...leerBusquedaPrenda("yo"),
+    });
   });
 
   document.getElementById("form-busqueda-regalo").addEventListener("submit", (e) => {

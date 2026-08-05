@@ -1,7 +1,10 @@
 import json
+import os
 import re
+from datetime import datetime, timezone
 from pathlib import Path
 
+import anthropic
 from flask import Flask, request, jsonify, render_template
 
 app = Flask(__name__)
@@ -9,6 +12,7 @@ app = Flask(__name__)
 BASE_DIR = Path(__file__).parent
 CATALOG_PATH = BASE_DIR / "data" / "catalog.json"
 REGLAS_PATH = BASE_DIR / "data" / "reglas_streetwear.json"
+HISTORIAL_PATH = BASE_DIR / "data" / "historial_usuarios.json"
 
 # Cuantos productos mostrar por busqueda (primaria y "mostrar mas
 # opciones"), mientras se usa catalogo de prueba. La regla de "sin
@@ -17,9 +21,120 @@ REGLAS_PATH = BASE_DIR / "data" / "reglas_streetwear.json"
 CANTIDAD_RESULTADOS = 5
 
 
+def _cargar_env_local():
+    """Carga variables desde un archivo .env local (si existe, nunca se
+    commitea) al entorno del proceso -- sin agregar una dependencia nueva
+    solo para esto. No pisa una variable que ya este seteada afuera."""
+    env_path = BASE_DIR / ".env"
+    if not env_path.exists():
+        return
+    for linea in env_path.read_text(encoding="utf-8").splitlines():
+        linea = linea.strip()
+        if not linea or linea.startswith("#") or "=" not in linea:
+            continue
+        clave, _, valor = linea.partition("=")
+        clave = clave.strip()
+        if clave and clave not in os.environ:
+            os.environ[clave] = valor.strip().strip('"').strip("'")
+
+
+_cargar_env_local()
+
+# Clave de la API de Anthropic para el chat de Koko (ver seccion "Koko" en
+# CLAUDE.md). Se lee de una variable de entorno real o de un archivo .env
+# local -- nunca hardcodeada ni pedida por chat. Si falta, /api/koko/chat
+# responde con un aviso en vez de caerse.
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
+
 def load_json(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
+
+
+# --- Historial por email, para personalizar el chat de Koko -----------------
+# Un solo archivo JSON (mismo patron que catalog.json/reglas_streetwear.json),
+# dict keyado por email en minuscula. Nunca se registra nada de busquedas
+# "regalo" -- son sobre otra persona, no sobre el estilo de quien busca.
+
+def cargar_historial():
+    if not HISTORIAL_PATH.exists():
+        return {}
+    return load_json(HISTORIAL_PATH)
+
+
+def guardar_historial(historial):
+    HISTORIAL_PATH.write_text(json.dumps(historial, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _normalizar_email(email):
+    return (email or "").strip().lower()
+
+
+def registrar_busqueda(email, ocasion, categoria, tipo_prenda, corte):
+    """Guarda una busqueda que el usuario hizo para si mismo (modo "yo") en
+    su historial, para que Koko pueda basarse en ella despues."""
+    email = _normalizar_email(email)
+    if not email:
+        return
+    historial = cargar_historial()
+    entrada = historial.setdefault(email, {"busquedas": [], "productos_interes": []})
+    entrada["busquedas"].append({
+        "fecha": datetime.now(timezone.utc).isoformat(),
+        "ocasion": ocasion or "",
+        "categoria": categoria or "",
+        "tipo_prenda": tipo_prenda or "",
+        "corte": corte or "",
+    })
+    guardar_historial(historial)
+
+
+def registrar_interes(email, producto):
+    """Guarda que el usuario hizo clic en "Ver producto" de una tarjeta de
+    resultado (tambien solo aplica a busquedas "yo")."""
+    email = _normalizar_email(email)
+    if not email:
+        return
+    historial = cargar_historial()
+    entrada = historial.setdefault(email, {"busquedas": [], "productos_interes": []})
+    entrada["productos_interes"].append({
+        "fecha": datetime.now(timezone.utc).isoformat(),
+        "nombre": producto.get("nombre", ""),
+        "tienda": producto.get("tienda", ""),
+        "categoria": producto.get("categoria", ""),
+        "corte": producto.get("corte", ""),
+    })
+    guardar_historial(historial)
+
+
+def resumen_historial_para_prompt(email):
+    """Arma un resumen en texto plano del historial del usuario para meter
+    en el prompt de Koko. Devuelve None si todavia no hay nada guardado
+    (usuario nuevo -- Koko debe dar consejo general, no inventar gustos)."""
+    email = _normalizar_email(email)
+    if not email:
+        return None
+    entrada = cargar_historial().get(email)
+    if not entrada or not (entrada.get("busquedas") or entrada.get("productos_interes")):
+        return None
+
+    lineas = []
+    busquedas = entrada.get("busquedas", [])
+    cortes = [b["corte"] for b in busquedas if b.get("corte")]
+    tipos = [b["tipo_prenda"] for b in busquedas if b.get("tipo_prenda")]
+    ocasiones = [b["ocasion"] for b in busquedas if b.get("ocasion")]
+    if cortes:
+        lineas.append(f"Cortes que ha buscado antes: {', '.join(cortes[-5:])}.")
+    if tipos:
+        lineas.append(f"Tipos de prenda que ha buscado antes: {', '.join(tipos[-5:])}.")
+    if ocasiones:
+        lineas.append(f"Ocasiones para las que ha buscado antes: {', '.join(ocasiones[-5:])}.")
+
+    nombres_interes = [p["nombre"] for p in entrada.get("productos_interes", [])[-5:] if p.get("nombre")]
+    if nombres_interes:
+        lineas.append(f"Productos en los que hizo clic para ver mas: {', '.join(nombres_interes)}.")
+
+    return " ".join(lineas) if lineas else None
 
 
 def texto_producto(producto):
@@ -45,6 +160,8 @@ def formatear_producto(producto, razon, tallas_usuario=None):
         "nombre": producto["nombre"],
         "marca": producto.get("marca", ""),
         "tienda": producto["tienda"],
+        "categoria": producto.get("categoria", ""),
+        "corte": producto.get("corte", ""),
         "precio": producto.get("precio", ""),
         "descripcion": producto.get("descripcion", ""),
         "link": producto["link"],
@@ -659,6 +776,148 @@ def buscar_plan_b(genero, ocasion, categoria, texto_pedido, catalog, reglas, tal
     return [formatear_producto(p, razon_exacta(p), tallas_usuario) for p in exactos], alternativas, aviso
 
 
+# --- Koko: asistente de estilo con chat (API de Anthropic) ------------------
+# Ver seccion "Koko" en CLAUDE.md. Koko da consejo en conversacion libre y,
+# cuando ya tiene claro que ofrecer, llama la tool "sugerir_busqueda" en vez
+# de que el backend tenga que parsear texto libre para saber que buscar.
+
+KOKO_SYSTEM_PROMPT_BASE = """Eres Koko, la mascota-perrito asistente de estilo de KLLE-0, una app que \
+recomienda streetwear de tiendas chicas segun altura, peso, ocasion y presupuesto. Tu personalidad: \
+cercano, entusiasta, metido en la cultura streetwear, hablas en espanol simple y de tu (nunca "usted"). \
+Das consejo de estilo en conversacion libre -- vos NO buscas productos directamente, para eso esta el \
+buscador de la app.
+
+Reglas de recomendacion streetwear ya validadas (usalas como base de tu consejo, no las repitas literal \
+ni las nombres como "reglas"):
+{reglas}
+
+{historial}
+
+Cuando ya tengas claro que prenda y que corte le conviene a la persona (despues de conversar un poco, \
+NUNCA en el primer mensaje), decilo en texto -- algo como "quieres que busque poleras oversize para \
+ti?" -- y llama la herramienta sugerir_busqueda con esos mismos valores. No llames la herramienta si \
+todavia no diste ningun consejo o si la persona no parece lista para buscar."""
+
+KOKO_TOOL_SUGERIR_BUSQUEDA = {
+    "name": "sugerir_busqueda",
+    "description": (
+        "Propone activar el buscador real de la app con una prenda (y opcionalmente un corte) "
+        "concretos, despues de haber dado consejo de estilo en la conversacion."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "categoria": {
+                "type": "string",
+                "enum": ["prenda superior", "prenda inferior", "gorro"],
+            },
+            "tipo_prenda": {
+                "type": "string",
+                "enum": list(TIPOS_PRENDA_CONOCIDOS.keys()),
+            },
+            "corte": {
+                "type": "string",
+                "enum": list(CORTES_CONOCIDOS.keys()),
+            },
+        },
+        "required": ["categoria", "tipo_prenda"],
+    },
+}
+
+
+def _texto_reglas_para_prompt(reglas):
+    lineas = []
+    for regla in reglas.get("reglas", []):
+        atributos = ", ".join(regla.get("atributos", []))
+        lineas.append(f'- {regla["genero"]} + {regla["ocasion"]} + {regla["prenda"]}: {atributos}')
+    return "\n".join(lineas) if lineas else "(sin reglas validadas todavia)"
+
+
+def construir_system_prompt_koko(email, reglas):
+    resumen = resumen_historial_para_prompt(email)
+    if resumen:
+        bloque_historial = (
+            "Historial de este usuario en la app (usalo para personalizar tu consejo, y MENCIONA "
+            'explicitamente por que recomiendas algo en base a esto, ej: "como sueles preferir '
+            f'oversize..."): {resumen}'
+        )
+    else:
+        bloque_historial = (
+            "Este usuario todavia no tiene historial en la app (es nuevo o no ha buscado nada) -- "
+            "da consejo general basado en las reglas de arriba, sin inventar gustos que no conoces."
+        )
+    return KOKO_SYSTEM_PROMPT_BASE.format(
+        reglas=_texto_reglas_para_prompt(reglas), historial=bloque_historial
+    )
+
+
+@app.route("/api/koko/chat", methods=["POST"])
+def koko_chat():
+    if not ANTHROPIC_API_KEY:
+        return jsonify({
+            "respuesta_texto": (
+                "Guau... todavia no puedo responder: falta configurar la clave de la API de Anthropic "
+                "en el servidor. Avisale al dueno del proyecto."
+            ),
+            "sugerencia": None,
+        })
+
+    data = request.get_json()
+    email = data.get("email", "")
+    mensajes = data.get("mensajes") or []
+
+    mensajes_api = [
+        {"role": "user" if m.get("rol") == "usuario" else "assistant", "content": m.get("texto", "")}
+        for m in mensajes
+        if m.get("texto")
+    ]
+    if not mensajes_api:
+        return jsonify({"respuesta_texto": "", "sugerencia": None})
+
+    reglas = load_json(REGLAS_PATH)
+    system_prompt = construir_system_prompt_koko(email, reglas)
+
+    cliente = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    try:
+        respuesta = cliente.messages.create(
+            model="claude-sonnet-5",
+            max_tokens=300,
+            system=system_prompt,
+            tools=[KOKO_TOOL_SUGERIR_BUSQUEDA],
+            messages=mensajes_api,
+        )
+    except Exception as exc:
+        return jsonify({
+            "respuesta_texto": f"Guau, tuve un problema para responder ({exc}). Intenta de nuevo.",
+            "sugerencia": None,
+        })
+
+    texto_partes = []
+    sugerencia = None
+    for bloque in respuesta.content:
+        if bloque.type == "text":
+            texto_partes.append(bloque.text)
+        elif bloque.type == "tool_use" and bloque.name == "sugerir_busqueda":
+            sugerencia = bloque.input
+
+    return jsonify({
+        "respuesta_texto": " ".join(texto_partes).strip(),
+        "sugerencia": sugerencia,
+    })
+
+
+@app.route("/api/koko/interes", methods=["POST"])
+def koko_interes():
+    """Se llama cuando el usuario hace clic en "Ver producto" de una tarjeta
+    de resultado -- una de las 2 senales de "interes" que usa el historial
+    de Koko (la otra es lo que ya busca, registrado en /api/recommend)."""
+    data = request.get_json()
+    email = data.get("email", "")
+    producto = data.get("producto") or {}
+    registrar_interes(email, producto)
+    return jsonify({"ok": True})
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -693,6 +952,13 @@ def recommend():
     gorro_colores = data.get("gorro_colores") or []
     gorro_outfit = data.get("gorro_outfit", "")
     gorro_forma = data.get("gorro_forma", "")
+    email = data.get("email", "")
+
+    # Historial para Koko: solo se registra la busqueda primaria (no cada
+    # "mostrar mas opciones" de la misma busqueda) y solo modo "yo" -- una
+    # busqueda "regalo" es sobre el estilo de otra persona, no del usuario.
+    if modo == "yo" and not plan_b:
+        registrar_busqueda(email, ocasion, categoria, tipo_prenda, corte)
 
     catalog = filtrar_por_precio(catalog, precio)
     catalog = filtrar_gorros_por_color(catalog, gorro_camino, gorro_colores, gorro_outfit)

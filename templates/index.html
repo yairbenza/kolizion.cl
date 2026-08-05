@@ -7,6 +7,13 @@
 </head>
 <body>
   <main>
+    <div class="barra-koko">
+      <button id="btn-abrir-koko" class="btn-koko" type="button">
+        <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="Koko" class="avatar-koko">
+        <span>Conversemos con Koko</span>
+      </button>
+    </div>
+
     <h1 class="bienvenida">¡Bienvenido a <span class="marca">KLLE-0</span>!</h1>
     <p class="tagline">Tu punto de partida hacia un estilo que todavía nadie más tiene.</p>
     <p class="pregunta-bienvenida">¿Listo para entrar a la calle?</p>
@@ -372,7 +379,29 @@
     </div>
   </main>
 
+  <!-- Chat de Koko: seccion aparte, fuera de <main> y del formulario de
+       busqueda a proposito -- se abre como overlay encima de todo, nunca
+       mezclado con el flujo normal del buscador. -->
+  <div id="panel-koko" class="oculto panel-koko-overlay">
+    <div class="panel-koko">
+      <div class="panel-koko-header">
+        <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="Koko" id="avatar-koko-chat" class="avatar-koko avatar-koko-chat">
+        <h2>Koko</h2>
+        <button id="btn-cerrar-koko" class="btn-cerrar-koko" type="button" aria-label="Cerrar chat">×</button>
+      </div>
+      <div id="mensajes-koko" class="mensajes-koko">
+        <div class="burbuja-koko burbuja-koko-koko">¡Hola! Soy Koko 🐶 Cuéntame qué buscas o para qué ocasión necesitas ideas de outfit, y te doy consejo.</div>
+      </div>
+      <div id="sugerencia-koko" class="oculto sugerencia-koko"></div>
+      <form id="form-koko" class="form-koko">
+        <input type="text" id="input-koko" placeholder="Escríbele a Koko..." autocomplete="off">
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </div>
+
   <script src="{{ url_for('static', filename='comun.js') }}"></script>
   <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="{{ url_for('static', filename='koko.js') }}"></script>
 </body>
 </html>

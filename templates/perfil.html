@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Mi perfil</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Mi perfil</h1>
+    <p class="subtitulo">Tus datos guardados en este navegador.</p>
+
+    <div id="estado"></div>
+    {% include "_cargando.html" %}
+
+    <div class="fila-ajuste">
+      <span>Modo oscuro</span>
+      <label class="interruptor">
+        <input type="checkbox" id="toggle-tema">
+        <span class="interruptor-riel"></span>
+      </label>
+    </div>
+
+    <!-- Cuenta real (Google/email+contraseña, ver docs/cuentas.md) -- esto
+         es aparte del "perfil" de localStorage de mas abajo, que sigue
+         existiendo igual que siempre (se usa para personalizar busquedas
+         sin necesitar cuenta). La cuenta solo hace falta para comprar. -->
+    {% if usuario %}
+    <section class="resultado-card">
+      <h2>Tu cuenta</h2>
+      <div class="fila-ajuste">
+        <img id="foto-perfil-actual"
+             src="{{ url_for('static', filename=usuario.foto_perfil) if usuario.foto_perfil else url_for('static', filename='img/kolizion-logo.png') }}"
+             alt="" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover;">
+        <label style="flex: 1;">
+          Cambiar foto
+          <input type="file" id="input-foto-perfil" accept=".jpg,.jpeg,.png,.webp">
+        </label>
+      </div>
+      <p class="ayuda" id="estado-foto-perfil"></p>
+
+      <form method="post" action="/perfil/actualizar">
+        <label>
+          Nombre
+          <input type="text" name="nombre" value="{{ usuario.nombre or '' }}">
+        </label>
+        <label>
+          Apellido
+          <input type="text" name="apellido" value="{{ usuario.apellido or '' }}">
+        </label>
+        <label>
+          Correo
+          <input type="email" value="{{ usuario.email }}" disabled>
+        </label>
+        <label>
+          Teléfono <span class="ayuda">(opcional)</span>
+          <input type="tel" name="telefono" value="{{ usuario.telefono or '' }}">
+        </label>
+        <label>
+          Altura
+          <input type="text" name="altura" value="{{ usuario.altura or '' }}" placeholder="ej: 1.75m">
+        </label>
+        <label>
+          Peso
+          <input type="text" name="peso" value="{{ usuario.peso or '' }}" placeholder="ej: 70kg">
+        </label>
+        <label>
+          Dirección <span class="ayuda">(para "Llegan rápido a ti" en Descubre)</span>
+          <input type="text" name="direccion" value="{{ usuario.direccion or '' }}">
+        </label>
+        <button type="submit">Guardar cambios</button>
+      </form>
+
+      <form method="post" action="/logout" style="margin-top: 0.75rem;">
+        <button type="submit" class="btn-ubicacion-actual">Cerrar sesión</button>
+      </form>
+    </section>
+    {% else %}
+    <section class="resultado-card">
+      <h2>Tu cuenta</h2>
+      <p class="descripcion">Crea una cuenta (o inicia sesión) para poder comprar en KOLIZION.</p>
+      <a href="/registro" class="btn-editar-perfil">Crear cuenta</a>
+      <p class="ayuda">¿Ya tienes una? <a href="/login">Inicia sesión</a>.</p>
+    </section>
+    {% endif %}
+
+    <h2>Perfil de búsqueda</h2>
+    <p class="ayuda">Se usa para personalizar tus búsquedas -- no hace falta cuenta para esto.</p>
+    <div id="perfil-resumen" class="perfil-resumen"></div>
+    <p id="link-editar" class="oculto"><a href="/?editar_perfil=1" class="btn-editar-perfil">Editar mi perfil</a></p>
+
+    <div id="sin-perfil" class="oculto">
+      <p>Todavía no tienes un perfil guardado.</p>
+      <p><a href="/" class="volver">Crear mi perfil</a></p>
+    </div>
+  </main>
+
+  {% include "_panel_koko.html" %}
+  {% include "_guia_bienvenida.html" %}
+  {% include "_barra_nav.html" %}
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='perfil.js') }}"></script>
+  <script src="{{ url_for('static', filename='koko.js') }}"></script>
+</body>
+</html>

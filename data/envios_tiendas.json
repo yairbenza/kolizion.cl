@@ -1,0 +1,125 @@
+{
+  "_meta": {
+    "descripcion": "Politica de envio por tienda, revisada a mano entrando al sitio real de cada una. Usado para 'Llegan rapido a ti' (comparar comuna del usuario vs RM/regiones/retiro en tienda). Si una tienda no publica el dato claramente, se deja como 'no especificado' en vez de asumir.",
+    "ultima_revision": "2026-08-24"
+  },
+  "AbsolutelyWrong": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://absolutelywrong.cl/",
+    "notas": "Banner del sitio dice 'Envios a todo Chile y el mundo', pero no publican plazos en dias. No hay pagina de politica de envio (da 404)."
+  },
+  "BANG GANG": {
+    "envio_rm": {"disponible": true, "dias_habiles": "2 a 6 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "3 a 9 dias habiles"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://bvnggvng.cl/policies/shipping-policy",
+    "notas": "Envio via Bluexpress; sector rural va a Punto Blue en vez de domicilio."
+  },
+  "Doslobos": {
+    "envio_rm": {"disponible": true, "dias_habiles": "10 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "12 dias habiles"},
+    "retiro_tienda": {"disponible": true, "comuna": "Providencia", "es_rm": true},
+    "fuente": "https://dosloboschile.cl/policies/shipping-policy",
+    "notas": "Tienda fisica 'La Guarida', Av. Providencia 2124 local 03R (Galeria Drugstore / Metro Los Leones). Retiro en tienda: 7 dias habiles de preparacion, plazo de retiro 15 dias antes de devolver a oficina."
+  },
+  "El Pulento Style": {
+    "envio_rm": {"disponible": true, "dias_habiles": "aprox 1 a 5 dias habiles de transito (mas 1 a 7 dias habiles de preparacion previa)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "aprox 1 a 15 dias habiles de transito (hasta 15 para Punta Arenas; mas preparacion previa)"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://www.elpulentostyle.cl/envios-y-plazos-de-envio/",
+    "notas": "El sitio aclara explicitamente 'NO HACEMOS ENTREGAS PRESENCIALES' -- el 'retiro' que mencionan es de la empresa de despacho (Bluexpress/Correos de Chile) en su tienda, no retiro para el cliente."
+  },
+  "Floating": {
+    "envio_rm": {"disponible": true, "dias_habiles": "1 a 5 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "3 a 9 dias habiles"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://floating.cl/blogs/noticias",
+    "notas": "Envio via Paket (RM) y Bluexpress (regiones). En alta demanda puede tardar hasta 10 dias habiles."
+  },
+  "ForceBlack": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://forceblack.cl/",
+    "notas": "No tienen pagina de politica de envio (404). Solo banners de marketing ('Envios en 24 horas', 'Despacho express a todo Chile') sin plazos reales verificables."
+  },
+  "OVA Chile": {
+    "envio_rm": {"disponible": true, "dias_habiles": "2 a 4 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "2 a 10 dias habiles (varia bastante segun region -- ver detalle completo en la fuente)"},
+    "retiro_tienda": {"disponible": true, "comuna": "Linares", "es_rm": false},
+    "fuente": "https://ovachile.cl/policies/shipping-policy",
+    "notas": "Sucursal OVA en Manuel Rodriguez 339 A, Linares (Region del Maule) -- NO es RM. Retiro en tienda: 1 a 2 dias habiles. Envio via Starken o Bluexpress. Preventas: 14 a 20 dias habiles aparte."
+  },
+  "Oversaints": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://studioversaints.com/",
+    "notas": "No publican informacion de envio en ninguna parte del sitio. La pagina /policies/shipping-policy existe pero esta vacia."
+  },
+  "Rapt": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado el transito (solo dan 2 a 6 dias habiles de preparacion/despacho, sin incluir tiempo de la empresa de transporte)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado el transito (mismo caso que RM)"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://www.rapt.cl/terminos-y-condiciones",
+    "notas": "Envio a todo Chile via Chilexpress o Starken; el sitio dice explicitamente que el tiempo de transito depende de la empresa de transporte y no lo detalla."
+  },
+  "Roots South": {
+    "envio_rm": {"disponible": true, "dias_habiles": "mismo dia o dia habil siguiente en Provincia de Santiago; resto de la RM cada 48 horas segun comuna"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "2 a 5 dias habiles"},
+    "retiro_tienda": {"disponible": true, "comuna": "Providencia", "es_rm": true},
+    "fuente": "https://rootsouth.cl/pages/envios-cambios-devoluciones",
+    "notas": "Logistica propia Wareclouds (RM) + Blue Express (regiones). Retiro en bodega Providencia sin costo, mismo dia o dia habil siguiente."
+  },
+  "Rotten": {
+    "envio_rm": {"disponible": true, "dias_habiles": "aprox 2 a 5 dias habiles (1 a 3 de preparacion + ~48 horas tras despacho)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado ('depende completamente de la comuna o region de destino')"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://rottenbrand.cl/pages/envios",
+    "notas": "Envio via Starken, Blue Express o Correos de Chile segun destino."
+  },
+  "Selvanegrawear": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://selvanegrawear.cl/",
+    "notas": "No publican politica de envio en ningun lado del sitio (ni footer, ni ficha de producto). Ofrecen 'Comprar por Whatsapp' como alternativa."
+  },
+  "Simpl.": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado el transito (solo dan 4 a 6 dias habiles de procesamiento antes de despachar)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado el transito (mismo caso que RM)"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://simpl.cl/blogs/info-de-envio",
+    "notas": "Todos los pedidos se envian desde Santiago. El tiempo de transito exacto depende de la empresa de envio, no lo detallan."
+  },
+  "UNK Chile": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://unkchile.cl/",
+    "notas": "No tienen pagina de politica de envio funcional (los links del footer no llevan a ningun lado, y las URLs comunes de Shopify dan 404). Solo un banner: 'ENVIOS GRATIS SANTIAGO, SOBRE $70.000'."
+  },
+  "Novorich": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://www.novorich.cl/",
+    "notas": "No tienen pagina de politica de envio (404 en /policies/shipping-policy). El sitio dice 'Envios a todo Chile', sin diferenciar RM/regiones ni nombrar empresa de transporte. Aparte del despacho, aclaran que el TIEMPO DE CONFECCION es de 5 a 7 dias habiles antes de despachar (produccion bajo pedido, no stock inmediato)."
+  },
+  "Shatters": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://shatters.cl/policies/shipping-policy",
+    "notas": "La pagina da un plazo GENERAL de 2 a 9 dias habiles desde la compra, pero no lo separa por RM/regiones ni nombra la empresa de transporte -- por eso queda 'no especificado' en ambos campos en vez de inventar la separacion."
+  },
+  "Stuffies Concept": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://stuffiesconcept.com/policies/shipping-policy",
+    "notas": "Envio via Starken y/o BlueExpress a todo Chile. Un banner dice 'Envios rapidos: 2-3 dias habiles', pero la politica de envio aclara que 'el plazo de entrega varia segun la region y el metodo de envio' sin dar numeros -- mismo caso que ForceBlack (banner de marketing vs. politica real sin plazo verificable), asi que no se toma el '2-3 dias' como dato confiable."
+  }
+}

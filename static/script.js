@@ -8,53 +8,201 @@ const secciones = [
   "seccion-busqueda-regalo",
 ];
 
+// "Usar mi ubicación actual" (campo Dirección del perfil) -- misma logica
+// de "preguntar antes de preguntar" que tenia el mapa que sacamos: antes
+// de que el navegador muestre su propio permiso nativo, la app pregunta
+// con su propio modal (#modal-ubicacion-pregunta), solo la primera vez
+// (localStorage). Una vez con las coordenadas, se usa el geocoder inverso
+// gratis de OpenStreetMap (Nominatim, sin clave de API -- mismo servicio
+// que ya usabamos para el mapa) para convertirlas en un texto de comuna +
+// region, y se completa solo el campo Dirección. Si algo falla (sin
+// permiso, sin internet, Nominatim no responde), el campo se deja como
+// estaba -- nunca rompe el formulario.
+const UBICACION_PREGUNTADA_KEY = "kolizionUbicacionPreguntada";
+
+// El modal #modal-ubicacion-pregunta lo dispara 2 lugares distintos: el
+// boton "Usar mi ubicacion actual" del formulario (llena un input) y el
+// flujo de bienvenida la primera vez que se crea un perfil (guarda directo
+// en el perfil ya guardado, sin pasar por el formulario). Esta variable
+// le dice a los botones Si/No del modal cual de los 2 flujos continuar.
+let origenModalUbicacion = "form";
+
+async function usarUbicacionActual() {
+  const boton = document.getElementById("btn-usar-ubicacion");
+  const input = document.querySelector('#form-perfil input[name="direccion"]');
+  if (!navigator.geolocation || !input) return;
+
+  boton.disabled = true;
+  boton.textContent = "Buscando tu ubicación...";
+
+  const restaurarBoton = () => {
+    boton.disabled = false;
+    boton.textContent = "📍 Usar mi ubicación actual";
+  };
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const resp = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`
+        );
+        const data = await resp.json();
+        const direccion = data.address || {};
+        const comuna = direccion.city || direccion.town || direccion.municipality || direccion.suburb || "";
+        const region = direccion.state || "";
+        const texto = [comuna, region].filter(Boolean).join(", ");
+        if (texto) input.value = texto;
+      } catch (e) {
+        // Best-effort: si el servicio de mapas falla, el campo se deja como estaba.
+      } finally {
+        restaurarBoton();
+      }
+    },
+    () => {
+      // Permiso denegado, sin GPS, o timeout -- silencioso a proposito,
+      // igual que en el mapa original.
+      restaurarBoton();
+    },
+    { enableHighAccuracy: false, timeout: 10000 }
+  );
+}
+
+// Igual que usarUbicacionActual(), pero para el flujo de bienvenida: en vez
+// de llenar un input del formulario (que ya no esta visible en ese momento
+// -- el perfil ya se guardo), escribe la direccion directo en el perfil
+// guardado en localStorage. Mismo "best-effort": si algo falla, el perfil
+// simplemente queda sin direccion, nunca rompe el flujo de bienvenida.
+async function usarUbicacionActualOnboarding() {
+  if (!navigator.geolocation) {
+    continuarConGuiaBienvenida();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude } = pos.coords;
+      try {
+        const resp = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`
+        );
+        const data = await resp.json();
+        const direccion = data.address || {};
+        const comuna = direccion.city || direccion.town || direccion.municipality || direccion.suburb || "";
+        const region = direccion.state || "";
+        const texto = [comuna, region].filter(Boolean).join(", ");
+        if (texto) {
+          const perfil = getPerfil();
+          if (perfil) {
+            perfil.direccion = texto;
+            guardarPerfil(perfil);
+          }
+        }
+      } catch (e) {
+        // Best-effort: si el servicio de mapas falla, el perfil queda sin direccion.
+      } finally {
+        continuarConGuiaBienvenida();
+      }
+    },
+    () => {
+      // Permiso denegado, sin GPS, o timeout -- silencioso, sigue el flujo igual.
+      continuarConGuiaBienvenida();
+    },
+    { enableHighAccuracy: false, timeout: 10000 }
+  );
+}
+
+// Primer eslabon del flujo de bienvenida (solo perfil nuevo): si el usuario
+// no escribio direccion a mano en el formulario, se le ofrece usar su
+// ubicacion actual antes de pasar a la pregunta del tour -- asi "Llegan
+// rapido a ti" puede funcionar sin que tenga que ir a Mi perfil a
+// escribirla despues. Si ya escribio una direccion, o ya se le pregunto
+// por el permiso antes, se salta directo a la guia.
+function iniciarFlujoPrimeraVez(datosPerfil) {
+  if (datosPerfil.direccion) {
+    continuarConGuiaBienvenida();
+    return;
+  }
+  if (!localStorage.getItem(UBICACION_PREGUNTADA_KEY)) {
+    origenModalUbicacion = "onboarding";
+    document.getElementById("modal-ubicacion-pregunta").classList.remove("oculto");
+  } else {
+    usarUbicacionActualOnboarding();
+  }
+}
+
+// Segundo eslabon: la pregunta de siempre ("quieres que te enseñemos").
+function continuarConGuiaBienvenida() {
+  if (!localStorage.getItem(ONBOARDING_KEY)) {
+    document.getElementById("modal-onboarding-pregunta").classList.remove("oculto");
+  } else {
+    mostrarPasoInicial();
+  }
+}
+
+// Onboarding (pregunta "quieres que te enseñemos") -- solo la primera vez
+// que se crea el perfil (nunca al editarlo despues). El tour en si
+// (abrirTourOnboarding, ONBOARDING_KEY, etc.) vive en comun.js -- se
+// comparte con el icono fijo "?" de las 4 paginas. Ver mas abajo, dentro
+// del listener de "form-perfil", donde se decide si mostrar la pregunta.
+
 // Las opciones pueden ser un texto simple ("Otro") o un par
 // [texto, definicion corta] cuando conviene explicarle al usuario que
 // significa cada una. La definicion solo cambia lo que se VE en el select
 // -- el value que manda el buscador sigue siendo el texto solo, en
 // minuscula, para no arriesgar que una palabra de la definicion choque con
 // otra palabra clave del buscador.
+// 2026-08-22 -- "Me da igual"/"Cualquiera" van PRIMERO en todas las listas
+// de esta seccion a proposito (ver docs/buscador.md, bug encontrado
+// probando "Cambiar requisitos de busqueda"): un <select> sin tocar queda
+// en su primera opcion sola, asi que si la opcion neutra no es la primera,
+// un usuario que no toca ese campo termina filtrando por la primera opcion
+// real sin querer, en vez de no filtrar nada. "Otro" si puede quedar al
+// final -- no es neutro, es un camino aparte (texto libre).
 const TIPO_PRENDA_OPCIONES = {
-  "prenda superior": ["Polera", "Poleron", "Chaqueta", "Camisa", "Camiseta", "Top", "Me da igual", "Otro"],
+  "prenda superior": ["Me da igual", "Polera", "Poleron", "Chaqueta", "Camisa", "Camiseta", "Top", "Otro"],
   "prenda inferior": [
-    "Pantalon", "Shorts",
+    "Me da igual", "Pantalon", "Shorts",
     ["Falda cargo", "con bolsillos grandes al costado"],
     ["Bike shorts / shorts ciclista", "ajustados, tipo ciclista"],
-    "Me da igual", "Otro",
+    "Otro",
   ],
 };
 
 const CORTE_OPCIONES = {
   "prenda superior": [
+    "Me da igual",
     ["Slim fit", "se pega al cuerpo"],
     ["Regular fit", "calce normal, ni ajustado ni suelto"],
     ["Straight", "cae recto, sin marcar la cintura"],
     ["Boxy fit", "ancho y cuadrado, largo normal"],
     ["Oversized", "grande y holgado, hombros caídos"],
-    "Me da igual", "Otro",
+    "Otro",
   ],
   "prenda inferior": [
+    "Me da igual",
     ["Skinny", "bien pegado a la pierna"],
     ["Slim fit", "ajustado, con un poco de espacio"],
     ["Straight fit", "calce parejo, ni ajustado ni suelto"],
     ["Baggy", "holgado y suelto en toda la pierna"],
-    "Me da igual", "Otro",
+    "Otro",
   ],
 };
 
-// Solo aplica cuando el tipo de prenda elegido es "pantalon", "shorts" o "top".
+// Solo aplica cuando el tipo de prenda elegido es "pantalon", "shorts", "top" o "chaqueta".
 const SUBTIPO_OPCIONES = {
-  "pantalon": ["Pantalón de buzo", "Pantalón de jeans", "Pantalón cargo", "Cualquiera"],
-  "shorts": ["Short de jeans", "Short de tela", "Short cargo", "Short de baño", "Cualquiera"],
+  "pantalon": ["Cualquiera", "Pantalón de buzo", "Pantalón de jeans", "Pantalón cargo"],
+  "shorts": ["Cualquiera", "Short de jeans", "Short de tela", "Short cargo", "Short de baño"],
   "top": [
+    "Cualquiera",
     ["Crop top / crop hoodie", "corto, deja el abdomen a la vista"],
     ["Baby tee", "corto y ajustado"],
     ["Top con breteles / halter", "sin mangas, amarrado al cuello"],
     ["Corset top", "ajustado, con costuras marcadas"],
     ["Tank top", "musculosa, sin mangas"],
     ["Camisas/blusas", "con botones, más estructurada"],
-    "Cualquiera",
   ],
+  "chaqueta": ["Cualquiera", "Bomber", "Mezclilla", "Cuero"],
 };
 
 // El largo es independiente del corte (una prenda puede ser oversize Y
@@ -62,20 +210,20 @@ const SUBTIPO_OPCIONES = {
 // tienen que calzar con el value que arma poblarOpciones (el texto de
 // TIPO_PRENDA_OPCIONES en minuscula).
 const LARGO_TIPOS = ["polera", "camiseta", "top"];
-const LARGO_OPCIONES_LISTA = ["Corto/crop", "Largo normal", "Extra largo (longline)", "Cualquiera"];
+const LARGO_OPCIONES_LISTA = ["Cualquiera", "Corto/crop", "Largo normal", "Extra largo (longline)"];
 const LARGO_OPCIONES = Object.fromEntries(LARGO_TIPOS.map((t) => [t, LARGO_OPCIONES_LISTA]));
 
 // Manga solo aplica a "polera"; capucha y cierre solo a "poleron". Los 3
 // son independientes del corte (una polera puede ser oversize Y manga
 // larga a la vez).
 const MANGA_OPCIONES = {
-  "polera": ["Manga larga", "Manga corta", "Cualquiera"],
+  "polera": ["Cualquiera", "Manga larga", "Manga corta"],
 };
 const CAPUCHA_OPCIONES = {
-  "poleron": ["Con capucha", "Sin capucha", "Cualquiera"],
+  "poleron": ["Cualquiera", "Con capucha", "Sin capucha"],
 };
 const CIERRE_OPCIONES = {
-  "poleron": ["Con cierre", "Sin cierre (crewneck)", "Cualquiera"],
+  "poleron": ["Cualquiera", "Con cierre", "Sin cierre (crewneck)"],
 };
 
 // Llena un select con una lista de opciones. Cada opcion puede ser texto
@@ -333,6 +481,8 @@ function leerBusquedaPrenda(prefix) {
     ).map((el) => el.value),
     gorro_outfit: document.getElementById(`gorro-outfit-${prefix}`).value,
     gorro_forma: document.getElementById(`gorro-forma-${prefix}`).value,
+    priorizar_material_natural: document.getElementById(`prioridad-material-${prefix}`).checked,
+    solo_marca_autor: document.getElementById(`solo-marca-autor-${prefix}`).checked,
   };
 }
 
@@ -423,6 +573,9 @@ function restaurarFiltros(prefix, payload) {
   const precioSelect = document.getElementById(`precio-${prefix}`);
   if (payload.precio !== undefined) precioSelect.value = payload.precio;
 
+  document.getElementById(`prioridad-material-${prefix}`).checked = Boolean(payload.priorizar_material_natural);
+  document.getElementById(`solo-marca-autor-${prefix}`).checked = Boolean(payload.solo_marca_autor);
+
   const gorroCaminoSelect = document.getElementById(`gorro-camino-${prefix}`);
   if (payload.gorro_camino) gorroCaminoSelect.value = payload.gorro_camino;
   const gorroOutfitSelect = document.getElementById(`gorro-outfit-${prefix}`);
@@ -440,6 +593,22 @@ function restaurarFiltros(prefix, payload) {
   mostrarSeccion(`seccion-busqueda-${prefix}`);
 }
 
+// Boton "Limpiar filtros" (dentro de la pantalla de filtros, para cuando el
+// usuario llego con valores ya guardados -- por el boton atras o por
+// "Cambiar requisitos de busqueda" -- y quiere partir de cero en vez de
+// ajustar). form.reset() solo limpia los VALORES; los campos "otro" y los
+// selects que se repueblan segun categoria/tipo de prenda (subtipo, largo,
+// manga, capucha, cierre, corte, gorro) no se actualizan solos porque
+// reset() no dispara eventos "change" -- por eso se disparan a mano, igual
+// que hace restaurarFiltros() con los valores guardados.
+function limpiarFiltros(prefix) {
+  const form = document.getElementById(`form-busqueda-${prefix}`);
+  form.reset();
+  document.getElementById(`categoria-${prefix}`).dispatchEvent(new Event("change"));
+  document.getElementById(`corte-${prefix}`).dispatchEvent(new Event("change"));
+  document.getElementById(`ocasion-${prefix}`).dispatchEvent(new Event("change"));
+}
+
 function mostrarPasoInicial() {
   const perfil = getPerfil();
   if (perfil) {
@@ -451,33 +620,52 @@ function mostrarPasoInicial() {
   }
 }
 
+// Hobbies con un segundo grupo de sub-opciones (musica -> generos,
+// deportes -> deportes concretos) -- mismo patron para los 2 hoy, y para
+// cualquier hobby nuevo que sume sub-opciones despues.
+const SUBGRUPOS_HOBBIE = [
+  { hobby: "musica", campoSub: "campo-hobbie-musica-genero", nombreSub: "hobbie_musica_genero" },
+  { hobby: "deportes", campoSub: "campo-hobbie-deportes-subtipo", nombreSub: "hobbie_deportes_subtipo" },
+];
+
 // Llena el formulario de perfil con los datos ya guardados, para poder
 // editarlos en vez de tener que volver a escribir todo desde cero.
 function precargarPerfil(perfil) {
   const form = document.getElementById("form-perfil");
   for (const campo of form.elements) {
+    // Los checkboxes de hobbies (varios inputs comparten el mismo "name",
+    // ver mas abajo) no se llenan con .value -- se marcan aparte.
+    if (campo.type === "checkbox") continue;
     if (campo.name && perfil[campo.name] !== undefined) {
       campo.value = perfil[campo.name];
     }
   }
+
+  const hobbiesGuardados = Array.isArray(perfil.hobbie) ? perfil.hobbie : [];
+  form.querySelectorAll('input[name="hobbie"]').forEach((cb) => {
+    cb.checked = hobbiesGuardados.includes(cb.value);
+  });
+  for (const { hobby, campoSub, nombreSub } of SUBGRUPOS_HOBBIE) {
+    const guardados = Array.isArray(perfil[nombreSub]) ? perfil[nombreSub] : [];
+    form.querySelectorAll(`input[name="${nombreSub}"]`).forEach((cb) => {
+      cb.checked = guardados.includes(cb.value);
+    });
+    document.getElementById(campoSub).classList.toggle("oculto", !hobbiesGuardados.includes(hobby));
+  }
 }
 
-// Corre la busqueda (con la animacion de carga de comun.js) y, cuando
-// termina, guarda el resultado y manda al usuario a /resultados -- ahi se
-// ve solo el resultado, en una pagina aparte, no mezclado con el formulario.
-async function buscar(payload) {
-  const estado = document.getElementById("estado");
-  estado.textContent = "";
+// buscar() ahora vive en comun.js (la necesita tambien koko.js, que corre
+// en index.html y en resultados.html).
 
-  try {
-    const data = await buscarConAnimacion(payload);
-    sessionStorage.setItem("ultimoPayload", JSON.stringify(payload));
-    sessionStorage.setItem("resultados", JSON.stringify(data.recomendaciones || []));
-    sessionStorage.setItem("sinTalla", String(Boolean(data.sin_talla)));
-    window.location.href = "/resultados";
-  } catch (err) {
-    estado.textContent = "Algo salió mal: " + err.message;
+// Precarga el perfil guardado (si hay) y muestra el formulario de perfil
+// en modo edicion. La usan tanto el link "Editar mi perfil" de esta misma
+// pagina como la pagina /perfil (via ?editar_perfil=1).
+function abrirEdicionPerfil() {
+  const perfil = getPerfil();
+  if (perfil) {
+    precargarPerfil(perfil);
   }
+  mostrarSeccion("seccion-perfil");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -494,7 +682,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const vieneDeAtras = navegacion && navegacion.type === "back_forward";
   const ultimoPayloadGuardado = sessionStorage.getItem("ultimoPayload");
 
-  if (vieneDeAtras && ultimoPayloadGuardado) {
+  // Si se llega desde "Mi perfil" (link "Editar mi perfil", /?editar_perfil=1),
+  // eso manda por sobre cualquier otra cosa -- el usuario quiere editar, no
+  // seguir donde quedo la busqueda. Se limpia el parametro de la URL para
+  // que un refresh despues no vuelva a abrir el formulario de edicion solo.
+  const paramsUrl = new URLSearchParams(window.location.search);
+  if (paramsUrl.get("editar_perfil")) {
+    abrirEdicionPerfil();
+    window.history.replaceState({}, "", "/");
+  } else if (paramsUrl.get("volver_filtros") && ultimoPayloadGuardado) {
+    // Atajo directo desde el boton "Cambiar requisitos de busqueda" en
+    // /resultados -- mismo restaurarFiltros() que el boton atras, pero sin
+    // depender de que el navegador reporte "back_forward".
+    try {
+      const payload = JSON.parse(ultimoPayloadGuardado);
+      restaurarFiltros(payload.modo === "regalo" ? "regalo" : "yo", payload);
+    } catch (e) {
+      mostrarPasoInicial();
+    }
+    window.history.replaceState({}, "", "/");
+  } else if (vieneDeAtras && ultimoPayloadGuardado) {
     try {
       const payload = JSON.parse(ultimoPayloadGuardado);
       restaurarFiltros(payload.modo === "regalo" ? "regalo" : "yo", payload);
@@ -505,10 +712,52 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarPasoInicial();
   }
 
+  for (const { hobby, campoSub } of SUBGRUPOS_HOBBIE) {
+    document.getElementById(`hobbie-${hobby}`).addEventListener("change", (e) => {
+      document.getElementById(campoSub).classList.toggle("oculto", !e.target.checked);
+    });
+  }
+
   document.getElementById("form-perfil").addEventListener("submit", (e) => {
     e.preventDefault();
+    const esPerfilNuevo = !getPerfil();
+    // FormData.entries() solo se queda con el ULTIMO valor de cada "name"
+    // repetido -- por eso los checkboxes de hobbies (varios inputs con el
+    // mismo name) se recolectan aparte, como listas, y se pisan encima de
+    // lo que haya quedado de Object.fromEntries.
     const datos = Object.fromEntries(new FormData(e.target).entries());
+    datos.hobbie = Array.from(
+      e.target.querySelectorAll('input[name="hobbie"]:checked')
+    ).map((cb) => cb.value);
+    for (const { nombreSub } of SUBGRUPOS_HOBBIE) {
+      datos[nombreSub] = Array.from(
+        e.target.querySelectorAll(`input[name="${nombreSub}"]:checked`)
+      ).map((cb) => cb.value);
+    }
     guardarPerfil(datos);
+    if (esPerfilNuevo) {
+      iniciarFlujoPrimeraVez(datos);
+    } else {
+      mostrarPasoInicial();
+    }
+  });
+
+  // "Si, mostrarme" abre el tour compartido (comun.js). "No, gracias" cierra
+  // directo sin pasar por el tour. Los 2 caminos terminan en
+  // mostrarPasoInicial() para seguir con el flujo normal -- "No" lo hace de
+  // inmediato aca; "Si" lo hace al cerrar el tour, mediante el evento
+  // "onboarding:completado" (solo se dispara si el tour se abrio desde esta
+  // pregunta -- ver huboPreguntaPrevia en comun.js -- para no reiniciar el
+  // formulario si mas tarde el usuario reabre el tour a mano con el icono
+  // fijo "?").
+  document.getElementById("btn-onboarding-si").addEventListener("click", abrirTourOnboarding);
+  document.getElementById("btn-onboarding-no").addEventListener("click", () => {
+    localStorage.setItem(ONBOARDING_KEY, "1");
+    document.getElementById("modal-onboarding-pregunta").classList.add("oculto");
+    mostrarPasoInicial();
+  });
+  document.addEventListener("onboarding:completado", () => {
+    document.getElementById("modal-onboarding-pregunta").classList.add("oculto");
     mostrarPasoInicial();
   });
 
@@ -522,11 +771,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("link-editar-perfil").addEventListener("click", (e) => {
     e.preventDefault();
-    const perfil = getPerfil();
-    if (perfil) {
-      precargarPerfil(perfil);
+    abrirEdicionPerfil();
+  });
+
+  document.getElementById("btn-usar-ubicacion").addEventListener("click", () => {
+    origenModalUbicacion = "form";
+    if (!localStorage.getItem(UBICACION_PREGUNTADA_KEY)) {
+      document.getElementById("modal-ubicacion-pregunta").classList.remove("oculto");
+    } else {
+      usarUbicacionActual();
     }
-    mostrarSeccion("seccion-perfil");
+  });
+  document.getElementById("btn-ubicacion-si").addEventListener("click", () => {
+    localStorage.setItem(UBICACION_PREGUNTADA_KEY, "1");
+    document.getElementById("modal-ubicacion-pregunta").classList.add("oculto");
+    if (origenModalUbicacion === "onboarding") {
+      usarUbicacionActualOnboarding();
+    } else {
+      usarUbicacionActual();
+    }
+  });
+  document.getElementById("btn-ubicacion-no").addEventListener("click", () => {
+    localStorage.setItem(UBICACION_PREGUNTADA_KEY, "1");
+    document.getElementById("modal-ubicacion-pregunta").classList.add("oculto");
+    if (origenModalUbicacion === "onboarding") {
+      continuarConGuiaBienvenida();
+    }
   });
 
   document.querySelectorAll(".volver").forEach((link) => {
@@ -536,11 +806,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.getElementById("btn-limpiar-filtros-yo").addEventListener("click", (e) => {
+    e.preventDefault();
+    limpiarFiltros("yo");
+  });
+  document.getElementById("btn-limpiar-filtros-regalo").addEventListener("click", (e) => {
+    e.preventDefault();
+    limpiarFiltros("regalo");
+  });
+
   document.getElementById("form-busqueda-yo").addEventListener("submit", (e) => {
     e.preventDefault();
     const perfilCompleto = getPerfil() || {};
     // Solo mandamos al servidor lo necesario para buscar, nunca datos
-    // personales sensibles (nombre, orientacion sexual). El gmail SI se
+    // personales sensibles (nombre, telefono). El gmail SI se
     // manda ahora (como "email", aparte de "perfil") -- es el identificador
     // que usa Koko para guardar el historial de este usuario y
     // personalizar sus consejos. Ver seccion "Koko" en CLAUDE.md.
@@ -550,6 +829,8 @@ document.addEventListener("DOMContentLoaded", () => {
       altura: perfilCompleto.altura,
       peso: perfilCompleto.peso,
       hobbie: perfilCompleto.hobbie,
+      hobbie_musica_genero: perfilCompleto.hobbie_musica_genero,
+      hobbie_deportes_subtipo: perfilCompleto.hobbie_deportes_subtipo,
     };
     buscar({
       modo: "yo", email: perfilCompleto.gmail || "", perfil: perfilParaBuscar,

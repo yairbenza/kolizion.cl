@@ -3,9 +3,21 @@
 // el boton "Mostrar mas opciones" (que si hace una llamada nueva, con su
 // propia animacion, sin salir de esta pagina).
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const estado = document.getElementById("estado");
   const feedback = document.getElementById("feedback-busqueda");
+
+  // "Cambiar requisitos de busqueda": atajo directo a los filtros ya
+  // llenos, sin depender del boton atras del navegador. script.js detecta
+  // el parametro "volver_filtros" al cargar "/" y llama a restaurarFiltros()
+  // con lo ultimo guardado en sessionStorage -- mismo mecanismo que ya usa
+  // el boton atras, solo que disparado a mano.
+  const btnCambiarFiltros = document.getElementById("btn-cambiar-filtros");
+  if (btnCambiarFiltros) {
+    btnCambiarFiltros.addEventListener("click", () => {
+      window.location.href = "/?volver_filtros=1";
+    });
+  }
 
   const payloadGuardado = sessionStorage.getItem("ultimoPayload");
   const resultadosGuardados = sessionStorage.getItem("resultados");
@@ -19,13 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const ultimoPayload = JSON.parse(payloadGuardado);
   const recomendaciones = JSON.parse(resultadosGuardados);
   const sinTalla = sessionStorage.getItem("sinTalla") === "true";
+  const favoritosSet = await cargarFavoritosSet();
 
   if (recomendaciones.length === 0) {
     estado.textContent = sinTalla
       ? "No encontramos tu talla en las opciones actuales."
       : "No encontramos nada en el catálogo todavía para esto.";
   } else {
-    renderResultados("resultados", recomendaciones);
+    renderResultados("resultados", recomendaciones, { favoritosSet });
     feedback.classList.remove("oculto");
   }
 
@@ -57,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const titulo = document.createElement("h3");
         titulo.textContent = "Más opciones:";
         contenedor.appendChild(titulo);
-        renderResultados("resultados-plan-b", data.recomendaciones);
+        renderResultados("resultados-plan-b", data.recomendaciones, { favoritosSet });
       }
 
       if (hayAlternativas) {
@@ -65,8 +78,14 @@ document.addEventListener("DOMContentLoaded", () => {
         aviso.className = "aviso-alternativas";
         aviso.textContent = data.aviso_alternativas || "Esto también podría interesarte:";
         contenedor.appendChild(aviso);
-        renderResultados("resultados-plan-b", data.alternativas);
+        renderResultados("resultados-plan-b", data.alternativas, { favoritosSet });
       }
+
+      // Los resultados nuevos se agregan al final de la pagina -- sin esto,
+      // si ya se estaba viendo la parte de abajo, pueden quedar fuera de lo
+      // visible (mas todavia con la barra de navegacion fija) y parecer que
+      // no paso nada.
+      contenedor.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
       estado.textContent = "Algo salió mal: " + err.message;
     }

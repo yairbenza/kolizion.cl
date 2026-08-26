@@ -1,0 +1,10 @@
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="icon" href="{{ url_for('static', filename='img/icons/icon-192.png') }}">
+<!-- iOS no lee manifest.json -- necesita estas etiquetas aparte para
+     "Agregar a inicio" (pantalla completa, sin barra de Safari, icono
+     propio). -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KOLIZION">
+<link rel="apple-touch-icon" href="{{ url_for('static', filename='img/icons/apple-touch-icon.png') }}">

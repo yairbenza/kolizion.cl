@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Admin tiendas</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <nav class="admin-nav">
+      <a href="/admin/tiendas" class="admin-nav-activo">Tiendas</a>
+      <a href="/admin/clics">Clics</a>
+      <a href="/admin/usuarios">Usuarios</a>
+      <form method="post" action="/admin/logout" class="admin-nav-logout">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </nav>
+
+    <h1>Tiendas</h1>
+    <p class="subtitulo">
+      Página interna para el dueño del proyecto -- acceso con contraseña. Con sitio web: link automático con
+      descuento aplicado + clics medidos solos. Sin sitio web: marca los reportes a mano.
+    </p>
+
+    {% for t in tiendas %}
+    <div class="resultado-card">
+      <h3>{{ t.nombre }}</h3>
+      <p class="descripcion">
+        ID: <code>{{ t.id }}</code> ·
+        {% if t.tipo == "con_sitio_web" %}Con sitio web{% else %}Sin sitio web{% endif %}
+      </p>
+
+      {% if t.tipo == "con_sitio_web" %}
+        <p class="descripcion">Dominio: {{ t.dominio }} · Código: {{ t.codigo_descuento }}</p>
+        <p class="precio">{{ t.clics }} clic{{ "s" if t.clics != 1 else "" }} registrados</p>
+        <p class="descripcion">
+          Link para compartir un producto: <code>/ir/{{ t.id }}/&lt;slug-del-producto&gt;</code>
+        </p>
+      {% else %}
+        <p class="precio">${{ "{:,}".format(t.total_reportado).replace(",", ".") }} reportado en total</p>
+
+        <form method="post" action="/admin/tiendas/{{ t.id }}/reporte" class="form-reporte">
+          <label>
+            Fecha
+            <input type="date" name="fecha" required>
+          </label>
+          <label>
+            Monto (CLP)
+            <input type="number" name="monto" min="1" placeholder="ej: 45000" required>
+          </label>
+          <button type="submit">Marcar reporte recibido</button>
+        </form>
+
+        {% if t.reportes %}
+        <p class="descripcion" style="margin-top:0.75rem;"><strong>Reportes:</strong></p>
+        <ul class="lista-reportes">
+          {% for r in t.reportes %}
+          <li>{{ r.fecha }} — ${{ "{:,}".format(r.monto).replace(",", ".") }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      {% endif %}
+
+      <p class="descripcion" style="margin-top:0.75rem;">
+        <strong>Ubicación:</strong>
+        {% if t.comuna %}{{ t.comuna }}{% if t.region %}, {{ t.region }}{% endif %} -- se usa para estimar el envío en "Llegan rápido a ti".
+        {% else %}sin cargar -- por ahora aparece con la estimación de envío más lenta.{% endif %}
+      </p>
+      <form method="post" action="/admin/tiendas/{{ t.id }}/ubicacion" class="form-reporte form-ubicacion">
+        <label>
+          Comuna
+          <input type="text" name="comuna" placeholder="ej: Providencia" value="{{ t.comuna }}" required>
+        </label>
+        <label>
+          Región
+          <select name="region" required>
+            {% for r in regiones %}
+            <option value="{{ r }}" {% if r == t.region %}selected{% endif %}>{{ r }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button type="submit">Guardar ubicación</button>
+      </form>
+    </div>
+    {% else %}
+    <p class="descripcion">Todavía no agregaste ninguna tienda.</p>
+    {% endfor %}
+
+    <h2 style="margin-top:2rem;">Agregar tienda</h2>
+    <form method="post" action="/admin/tiendas/nueva" id="form-nueva-tienda">
+      <label>
+        Nombre
+        <input type="text" name="nombre" required>
+      </label>
+      <label>
+        ID (sin espacios, ej: mi-tienda)
+        <input type="text" name="id" pattern="[a-z0-9\-]+" required>
+      </label>
+      <label>
+        Tipo
+        <select name="tipo" id="tipo-tienda-nueva" required>
+          <option value="con_sitio_web">Con sitio web (Shopify u otro)</option>
+          <option value="sin_sitio_web">Sin sitio web (Instagram/WhatsApp)</option>
+        </select>
+      </label>
+      <label id="campo-dominio">
+        Dominio (ej: tienda.cl)
+        <input type="text" name="dominio">
+      </label>
+      <label id="campo-codigo">
+        Código de descuento
+        <input type="text" name="codigo_descuento">
+      </label>
+      <label>
+        Comuna (opcional -- para "Llegan rápido a ti")
+        <input type="text" name="comuna" placeholder="ej: Providencia">
+      </label>
+      <label>
+        Región (opcional)
+        <select name="region">
+          <option value="">Elige una opción</option>
+          {% for r in regiones %}
+          <option value="{{ r }}">{{ r }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button type="submit">Agregar tienda</button>
+    </form>
+  </main>
+
+  <script>
+    const tipoSelect = document.getElementById("tipo-tienda-nueva");
+    const campoDominio = document.getElementById("campo-dominio");
+    const campoCodigo = document.getElementById("campo-codigo");
+
+    function actualizarCampos() {
+      const esConSitio = tipoSelect.value === "con_sitio_web";
+      campoDominio.style.display = esConSitio ? "flex" : "none";
+      campoCodigo.style.display = esConSitio ? "flex" : "none";
+      campoDominio.querySelector("input").required = esConSitio;
+      campoCodigo.querySelector("input").required = esConSitio;
+    }
+    tipoSelect.addEventListener("change", actualizarCampos);
+    actualizarCampos();
+  </script>
+</body>
+</html>

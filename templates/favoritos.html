@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Favoritos</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Favoritos</h1>
+    <p class="subtitulo">Los productos que marcaste con la estrella.</p>
+
+    <div id="estado"></div>
+    {% include "_cargando.html" %}
+
+    <p id="favoritos-vacio" class="ayuda oculto">Todavía no tienes productos favoritos. Toca la estrella de un producto para guardarlo aquí.</p>
+    <p id="favoritos-sin-perfil" class="ayuda oculto">Necesitas crear tu perfil primero. <a href="/" class="volver">Crear mi perfil</a></p>
+    <button type="button" id="btn-borrar-favoritos" class="btn-borrar-favoritos oculto">Borrar todos mis favoritos</button>
+    <div id="favoritos-lista" class="lista-resultados"></div>
+  </main>
+
+  {% include "_panel_koko.html" %}
+  {% include "_guia_bienvenida.html" %}
+  {% include "_vista_previa.html" %}
+  {% include "_redireccion.html" %}
+  {% include "_barra_nav.html" %}
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='favoritos.js') }}"></script>
+  <script src="{{ url_for('static', filename='koko.js') }}"></script>
+</body>
+</html>

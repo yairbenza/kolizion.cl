@@ -5,3 +5,11 @@ __pycache__/
 flask_log.txt
 .env
 data/historial_usuarios.json
+data/chats_koko.json
+data/tiendas.json
+data/clics_tiendas.json
+data/reportes_manuales.json
+data/favoritos.json
+data/limite_koko.json
+data/kolizion.db
+static/img/usuarios/

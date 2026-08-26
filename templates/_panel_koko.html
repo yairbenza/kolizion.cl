@@ -1,0 +1,47 @@
+<!-- Chat de Koko: parcial compartido por todas las paginas (index, resultados,
+     vitrina, perfil) para no repetir el bloque 4 veces. Dos formas de
+     abrirlo, mismo panel para las dos (ver koko.js):
+     - #btn-abrir-koko (en la barra de navegacion) -> pantalla completa.
+     - #btn-abrir-koko-chico (icono flotante de aca abajo) -> ventana chica.
+
+     Estructura en 2 bloques (.panel-koko-personaje + .panel-koko-chat) a
+     proposito -- en pantalla completa y pantalla ancha se acomodan lado a
+     lado (columna izquierda fija + columna derecha con el chat, ver
+     style.css); en ventana chica y en celular angosto se apilan igual que
+     antes (personaje arriba, chat abajo). Mismo HTML para los 2 layouts,
+     solo cambia el CSS segun el ancho de pantalla.
+-->
+<button id="btn-abrir-koko-chico" class="fab-koko" type="button" aria-label="Hablar con Koko">
+  <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="">
+</button>
+
+<div id="panel-koko" class="oculto panel-koko-overlay">
+  <div class="panel-koko">
+    <!-- Personaje de cuerpo completo (no la fotito circular chica) -- se
+         anima (clase "koko-pensando", ver style.css/koko.js) mientras Koko
+         esta generando una respuesta. -->
+    <div class="panel-koko-personaje">
+      <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="Koko" id="personaje-koko" class="personaje-koko">
+    </div>
+
+    <div class="panel-koko-chat">
+      <div class="panel-koko-header">
+        <h2>Koko</h2>
+        <button id="btn-reiniciar-koko" class="btn-cerrar-koko" type="button" aria-label="Reiniciar conversación">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+        </button>
+        <button id="btn-cerrar-koko" class="btn-cerrar-koko" type="button" aria-label="Cerrar chat">×</button>
+      </div>
+
+      <div id="mensajes-koko" class="mensajes-koko"></div>
+      <div id="sugerencia-koko" class="oculto sugerencia-koko"></div>
+      <form id="form-koko" class="form-koko">
+        <input type="text" id="input-koko" placeholder="Escríbele a Koko..." autocomplete="off">
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+  </div>
+</div>

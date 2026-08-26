@@ -50,6 +50,9 @@ NOMBRES_SUBTIPO = {
     "corset": "Corset",
     "tanktop": "Tank Top",
     "blusa": "Blusa",
+    "bomber": "Bomber",
+    "mezclilla": "de Mezclilla",
+    "cuero": "de Cuero",
 }
 NOMBRES_CORTE = {
     "slim fit": "Slim Fit",
@@ -102,11 +105,17 @@ OCASIONES = [
 ]
 
 # Subtipos deben coincidir con SUBTIPO_OPCIONES en static/script.js. Solo
-# aplican a pantalon/shorts/top -- para el resto de tipos no se genera este campo.
+# aplican a pantalon/shorts/top/chaqueta -- para el resto de tipos no se
+# genera este campo. Chaqueta agregado 2026-08-17 (ver
+# agregar_subtipos_chaqueta.py -- ese script es el que de verdad genero los
+# productos actuales en data/catalog.json de forma aditiva, sin rehacer
+# todo el catalogo; esto queda documentado aca para que una futura corrida
+# completa de este generador tambien los incluya).
 SUBTIPOS = {
     "pantalon": ["buzo", "jeans", "cargo"],
     "shorts": ["jeans", "tela", "cargo", "bano"],
     "top": ["croptop", "babytee", "halter", "corset", "tanktop", "blusa"],
+    "chaqueta": ["bomber", "mezclilla", "cuero"],
 }
 
 # Combinaciones fijas para las que SIEMPRE generamos un producto marcado
@@ -148,6 +157,29 @@ def _imagen_prenda(tipo, subtipo, manga, capucha, cierre, color):
     return None
 
 
+DESCUENTOS_POSIBLES = [10, 15, 20, 25, 30, 35, 40, 50]
+
+
+def _decidir_oferta(precio_clp, en_oferta=None):
+    """Decide (si en_oferta es None) o fuerza si el producto esta en oferta,
+    y si lo esta calcula un precio ORIGINAL mas alto + el % de descuento
+    correspondiente -- para que la seccion "Ofertas" de /vitrina pueda
+    mostrar un porcentaje real y ordenar de mayor a menor descuento, en vez
+    de un simple flag sin numero detras. precio_clp (el precio final que
+    paga el comprador) nunca cambia."""
+    if en_oferta is None:
+        en_oferta = random.random() < 0.3
+    if not en_oferta:
+        return en_oferta, None, None
+    descuento_pct = random.choice(DESCUENTOS_POSIBLES)
+    precio_original_clp = round(precio_clp / (1 - descuento_pct / 100) / 100) * 100
+    return en_oferta, precio_original_clp, descuento_pct
+
+
+def _formatear_clp(valor):
+    return f"${valor:,}".replace(",", ".")
+
+
 # Gorro no tiene corte ni tallas S/M/L/XL (es su propio flujo: color +
 # forma) -- por eso no usa _crear_producto/generar_productos, tiene su
 # propia funcion. Deben coincidir con COLORES_GORRO_CONOCIDOS y
@@ -166,7 +198,7 @@ def generar_productos_gorro():
                 marca = random.choice(MARCAS)
                 adjetivo = random.choice(ADJETIVOS)
                 precio_clp = random.randint(6, 25) * 1000 + random.choice([490, 990])
-                en_oferta = random.random() < 0.3
+                en_oferta, precio_original_clp, descuento_pct = _decidir_oferta(precio_clp)
                 descripcion = (
                     f"Gorro {NOMBRES_FORMA_GORRO[forma].lower()}, color dominante {color}, "
                     "estilo streetwear urbano, producto de prueba (no real)."
@@ -191,8 +223,10 @@ def generar_productos_gorro():
                     "marca": f"{marca} (marca inventada)",
                     "tienda": "Tienda Mock (no real)",
                     "link": f"https://mock-no-real.cl/gorro-{color}-{forma}-{i}",
-                    "precio": f"${precio_clp:,}".replace(",", "."),
+                    "precio": _formatear_clp(precio_clp),
                     "precio_clp": precio_clp,
+                    "precio_original": _formatear_clp(precio_original_clp) if en_oferta else "",
+                    "descuento_pct": descuento_pct,
                     "en_oferta": en_oferta,
                     "descripcion": descripcion,
                     "imagen": f"/static/{imagen}",
@@ -213,7 +247,7 @@ def _crear_producto(contador, tipo, corte, i, subtipo=None, largo=None, manga=No
     # Rango amplio a proposito para poder probar los 5 tramos de precio del
     # formulario (25k/50k/75k/100k/200k).
     precio_clp = random.randint(9, 190) * 1000 + random.choice([490, 990])
-    en_oferta = random.random() < 0.3  # ~30% marcados en oferta, inventado solo para probar el filtro
+    en_oferta, precio_original_clp, descuento_pct = _decidir_oferta(precio_clp)
     tallas_disponibles = random.sample(TALLAS, k=random.randint(2, 4))  # variado, inventado solo para probar el filtro
     color_imagen = random.choice(COLORES_PRENDA)
 
@@ -253,8 +287,10 @@ def _crear_producto(contador, tipo, corte, i, subtipo=None, largo=None, manga=No
         "marca": f"{marca} (marca inventada)",
         "tienda": "Tienda Mock (no real)",
         "link": f"https://mock-no-real.cl/{slug}",
-        "precio": f"${precio_clp:,}".replace(",", "."),
+        "precio": _formatear_clp(precio_clp),
         "precio_clp": precio_clp,
+        "precio_original": _formatear_clp(precio_original_clp) if en_oferta else "",
+        "descuento_pct": descuento_pct,
         "en_oferta": en_oferta,
         "tallas_disponibles": tallas_disponibles,
         "descripcion": descripcion,
@@ -327,6 +363,14 @@ def generar_productos_oferta():
             manga=manga, capucha=capucha, cierre=cierre,
         )
         producto["id"] = f"mock_oferta_{n:02d}"
+        # _crear_producto ya pudo haber decidido en_oferta=True por si solo
+        # (30% de las veces) y en ese caso ya trae precio_original/descuento
+        # calculados -- si no, hay que calcularlos aca al forzarlo.
+        if not producto["en_oferta"]:
+            _, precio_original_clp, producto["descuento_pct"] = _decidir_oferta(
+                producto["precio_clp"], en_oferta=True
+            )
+            producto["precio_original"] = _formatear_clp(precio_original_clp)
         producto["en_oferta"] = True
         if "¡En oferta!" not in producto["descripcion"]:
             producto["descripcion"] += " ¡En oferta!"

@@ -10,10 +10,44 @@ logos, nombres ni disenos de ninguna marca real.
 No es parte de la app -- se corre a mano antes de generar_catalogo_prueba.py
 para dejar listos los archivos en static/img/gorros/.
 """
+import re
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
 OUT_DIR = BASE_DIR / "static" / "img" / "gorros"
+
+_RE_VIEWBOX = re.compile(r'viewBox="([\d.\-]+) ([\d.\-]+) ([\d.\-]+) ([\d.\-]+)"')
+_RE_DIMENSIONES = re.compile(r'width="(\d+)" height="(\d+)"')
+
+
+def variantes_svg(svg_frontal):
+    """A partir de una imagen SVG ya armada ("vista frontal", una prenda o
+    un gorro), arma 2 variantes mas reusando el mismo dibujo -- sin
+    escribir arte nuevo por cada tipo de prenda/gorro:
+    - "trasera": el mismo dibujo espejado horizontalmente.
+    - "detalle": un recorte con zoom a la mitad superior del dibujo.
+
+    Sirve para probar de punta a punta el mecanismo de "3 fotos por
+    producto" de la vista previa rapida (ver CLAUDE.md) mientras el
+    catalogo sigue siendo de prueba -- son inventadas, no fotos reales.
+    Cuando haya catalogo real con fotos de verdad, estas 3 rutas se
+    reemplazan por las fotos reales de cada producto.
+    """
+    x0, y0, ancho, alto = (float(v) for v in _RE_VIEWBOX.search(svg_frontal).groups())
+    ancho_px, alto_px = _RE_DIMENSIONES.search(svg_frontal).groups()
+
+    tx = -(2 * x0 + ancho)
+    trasera = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{x0:g} {y0:g} {ancho:g} {alto:g}" '
+        f'width="{ancho_px}" height="{alto_px}">'
+        f'<g transform="scale(-1,1) translate({tx:g},0)">{svg_frontal}</g>'
+        f'</svg>'
+    )
+
+    viewbox_detalle = f'{x0 + ancho * 0.1:g} {y0 + alto * 0.12:g} {ancho * 0.8:g} {alto * 0.42:g}'
+    detalle = _RE_VIEWBOX.sub(f'viewBox="{viewbox_detalle}"', svg_frontal, count=1)
+
+    return svg_frontal, trasera, detalle
 
 COLOR_HEX = {
     "blanco": "#f2f0ea",
@@ -95,21 +129,21 @@ def generar():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     generados = []
 
-    for forma in ("curvo", "plano"):
-        for color in COLOR_HEX:
-            nombre = f"gorro-{forma}-{color}.svg"
-            (OUT_DIR / nombre).write_text(svg_gorro_visera(forma, color), encoding="utf-8")
+    def _guardar_con_variantes(nombre_base, svg_frontal):
+        frontal, trasera, detalle = variantes_svg(svg_frontal)
+        for sufijo, contenido in (("", frontal), ("-trasera", trasera), ("-detalle", detalle)):
+            nombre = f"{nombre_base}{sufijo}.svg"
+            (OUT_DIR / nombre).write_text(contenido, encoding="utf-8")
             generados.append(nombre)
 
+    for forma in ("curvo", "plano"):
+        for color in COLOR_HEX:
+            _guardar_con_variantes(f"gorro-{forma}-{color}", svg_gorro_visera(forma, color))
             panel = PANEL_SUGERIDO[color]
-            nombre2 = f"gorro-{forma}-{color}-panel-{panel}.svg"
-            (OUT_DIR / nombre2).write_text(svg_gorro_visera(forma, color, panel), encoding="utf-8")
-            generados.append(nombre2)
+            _guardar_con_variantes(f"gorro-{forma}-{color}-panel-{panel}", svg_gorro_visera(forma, color, panel))
 
     for color in COLOR_HEX:
-        nombre = f"gorro-lana-{color}.svg"
-        (OUT_DIR / nombre).write_text(svg_gorro_lana(color), encoding="utf-8")
-        generados.append(nombre)
+        _guardar_con_variantes(f"gorro-lana-{color}", svg_gorro_lana(color))
 
     return generados
 

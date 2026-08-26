@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Iniciar sesión</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Iniciar sesión</h1>
+    <p class="subtitulo">Necesitas una cuenta para comprar en KOLIZION.</p>
+
+    {% if error %}
+    <p class="descripcion" style="color: var(--accent); font-weight: 600;">{{ error }}</p>
+    {% endif %}
+
+    {% if google_disponible %}
+    <button type="button" id="btn-google-login" class="btn-google">Continuar con Google</button>
+    <p class="ayuda" style="text-align: center;">o con tu correo</p>
+    {% endif %}
+
+    <form method="post" action="/login">
+      <input type="hidden" name="siguiente" value="{{ siguiente }}">
+      <label>
+        Correo
+        <input type="email" name="email" autofocus required>
+      </label>
+      <label>
+        Contraseña
+        <input type="password" name="password" required>
+      </label>
+      {% if es_safari %}
+      <p class="ayuda">En Safari siempre te vamos a pedir iniciar sesión de nuevo cada vez que vuelvas.</p>
+      {% else %}
+      <label class="checkbox-inline">
+        <input type="checkbox" name="recordar" value="1" id="chk-recordar" checked>
+        Mantener la sesión iniciada en este dispositivo
+      </label>
+      {% endif %}
+      <button type="submit">Entrar</button>
+    </form>
+
+    <p class="ayuda">¿No tienes cuenta? <a href="/registro?siguiente={{ siguiente }}">Crea una</a>.</p>
+  </main>
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='auth.js') }}"></script>
+  <script>
+    document.getElementById("btn-google-login")?.addEventListener("click", () => {
+      const chkRecordar = document.getElementById("chk-recordar");
+      iniciarLoginGoogle({{ siguiente | tojson }}, chkRecordar ? chkRecordar.checked : false);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Entrando...</title>
+  {% include "_tema_inline.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <p class="subtitulo">Ya casi... conectando tu cuenta.</p>
+  </main>
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script>
+    // Pagina puente despues de volver de Google: el servidor es la fuente
+    // de verdad del perfil ahora (tabla usuarios), asi que se sincroniza
+    // localStorage con esos datos antes de seguir -- importante sobre
+    // todo si esta persona entro desde un dispositivo/navegador nuevo
+    // donde localStorage estaba vacio, para que el resto de la app (que
+    // sigue leyendo getPerfil()) vea el perfil real. Ver comun.js.
+    guardarPerfil({
+      nombre: {{ (usuario.nombre or "") | tojson }},
+      apellido: {{ (usuario.apellido or "") | tojson }},
+      gmail: {{ usuario.email | tojson }},
+      genero: {{ (usuario.genero or "") | tojson }},
+      edad: {{ (usuario.edad or "") | tojson }},
+      altura: {{ (usuario.altura or "") | tojson }},
+      peso: {{ (usuario.peso or "") | tojson }},
+      direccion: {{ (usuario.direccion or "") | tojson }},
+      telefono: {{ (usuario.telefono or "") | tojson }},
+      hobbie: {{ (usuario.hobbie or []) | tojson }},
+      hobbie_musica_genero: {{ (usuario.hobbie_musica_genero or []) | tojson }},
+      hobbie_deportes_subtipo: {{ (usuario.hobbie_deportes_subtipo or []) | tojson }},
+    });
+    window.location.replace({{ siguiente | tojson }});
+  </script>
+</body>
+</html>

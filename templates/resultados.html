@@ -2,19 +2,21 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>KLLE-0 · Tus recomendaciones</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Tus recomendaciones</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <main>
     <h1>Tus recomendaciones</h1>
     <p class="subtitulo">Esto encontramos para ti en tiendas chicas.</p>
+    <button type="button" id="btn-cambiar-filtros" class="btn-cambiar-filtros">Cambiar requisitos de búsqueda</button>
 
     <div id="estado"></div>
-    <div id="cargando" class="oculto">
-      <div class="spinner"></div>
-      <p id="cargando-texto"></p>
-    </div>
+    {% include "_cargando.html" %}
     <div id="resultados"></div>
 
     <div id="feedback-busqueda" class="oculto">
@@ -30,7 +32,14 @@
     <p><a href="/" class="volver">← Hacer una nueva búsqueda</a></p>
   </main>
 
+  {% include "_panel_koko.html" %}
+  {% include "_guia_bienvenida.html" %}
+  {% include "_vista_previa.html" %}
+  {% include "_redireccion.html" %}
+  {% include "_barra_nav.html" %}
+
   <script src="{{ url_for('static', filename='comun.js') }}"></script>
   <script src="{{ url_for('static', filename='resultados.js') }}"></script>
+  <script src="{{ url_for('static', filename='koko.js') }}"></script>
 </body>
 </html>

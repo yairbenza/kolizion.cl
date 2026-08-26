@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200"><g transform="scale(-1,1) translate(-240,0)"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="240" height="200">
+  <path d="M40 110 Q40 20 120 20 Q200 20 200 110 Z" fill="#c8102e" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+  <path d="M40 110 Q120 150 200 110 Q120 128 40 110 Z" fill="#c8102e" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+  <polygon points="95,110 145,110 120,42" fill="#c8102e" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+  <line x1="103" y1="98" x2="120" y2="52" stroke="rgba(0,0,0,0.28)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <line x1="137" y1="98" x2="120" y2="52" stroke="rgba(0,0,0,0.28)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <circle cx="120" cy="21" r="6" fill="#c8102e" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+</svg></g></svg>

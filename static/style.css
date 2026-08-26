@@ -1,20 +1,65 @@
+/* --- Tipografia de marca (2026-08-10) ------------------------------------
+   Antes todo caia en la fuente por defecto del sistema en bold -- generica,
+   sin personalidad para una marca streetwear. Ahora:
+   - Titulos grandes (h1, incluye "KOLIZION" en la bienvenida): Clash
+     Display (Fontshare, gratis) -- "Anton" (Google Fonts) queda como
+     respaldo en la lista de fuentes si Clash Display no llega a cargar
+     (CDN caido, sin internet, etc.), pedido explicito del usuario.
+   - Botones principales: Archivo Black (Google Fonts) -- mas simple que
+     Clash Display pero igual de bold, para no sobrecargar TODA la
+     interfaz con letras anchas (a proposito, el texto de cuerpo --
+     descripciones, parrafos -- sigue con la sans-serif de siempre, sin
+     tocar).
+   Se cargan por CDN (no hay build/Node en este proyecto -- ver CLAUDE.md),
+   asi que hace falta internet para que se vean estas 2 fuentes; si no hay
+   internet, el navegador cae solo a la sans-serif del sistema (ultimo
+   nombre de cada lista de fuentes), la app nunca se rompe por esto. */
+@import url('https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Anton&display=swap');
+
 :root {
-  color-scheme: light dark;
-  --bg: #faf8f5;
+  /* Modo oscuro YA NO sigue la preferencia del sistema operativo (decision
+     explicita 2026-08-10). Default: OSCURO (ajustado 2026-08-07, tras
+     probar los dos) -- estas variables claras solo se usan si la persona
+     eligio "claro" a mano en /perfil (interruptor "Modo oscuro", guardado
+     en localStorage "temaKolizion" como "light"). Ver _tema_inline.html
+     (aplica el data-theme antes del primer pintado, para que no haya
+     parpadeo) y perfil.js (el interruptor en si). */
+  color-scheme: light;
+  /* Paleta de marca (2026-08-10): rojo exacto extraído del logo de
+     KOLIZION (static/img/kolizion-logo.png), pixel-sampleado del archivo
+     original -- no aproximado. Fondo/tarjetas en blanco-negro neutro (no
+     el cream/marron calido de antes) para que el rojo sea el unico color
+     con fuerza, tal como pidio el dueño del proyecto: "el rojo SOLO para
+     acentos, nunca de fondo en grandes superficies". */
+  --bg: #f5f5f5;
   --card: #ffffff;
-  --text: #2a2a2a;
-  --accent: #b5651d;
-  --border: #e0dcd4;
+  --text: #1a1a1a;
+  --accent: #e60106;
+  --border: #e2e2e2;
+  /* Insignia "neutra" (Tendencias en Vitrina) -- deliberadamente NO roja,
+     para no competir con el acento de marca ni con la insignia de Ofertas
+     (que si usa el rojo, como un sale tag clasico). Se re-invierte en modo
+     oscuro (ver :root[data-theme="dark"] abajo), igual que --bg/--card/--text. */
+  --insignia-neutral-bg: #1a1a1a;
+  --insignia-neutral-texto: #ffffff;
 }
 
 * { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
   margin: 0;
-  padding: 2rem 1rem;
+  /* Nunca scroll horizontal (todo lo ancho -- carruseles, etc. -- ya
+     maneja su propio overflow-x en su contenedor). */
+  overflow-x: hidden;
+  /* padding-bottom extra para que la barra de navegacion fija de abajo
+     nunca tape el final del contenido -- con margen de sobra a proposito. */
+  padding: 2rem 1rem calc(6rem + env(safe-area-inset-bottom, 0px));
 }
 
 main {
@@ -22,14 +67,153 @@ main {
   margin: 0 auto;
 }
 
-h1 { margin-bottom: 0.25rem; }
-.subtitulo { color: #666; margin-top: 0; margin-bottom: 1.5rem; }
+/* --- Animaciones "choque": identidad de marca (colision), sutiles a
+   proposito -- un golpe/rebote breve al aparecer los titulos, un shake
+   chico al pasar el mouse/tocar los botones principales (mas abajo, junto
+   a la regla base de "button"). Nunca en iconos fijos chicos (estrella,
+   cerrar, flechas de carrusel, etc.), para no saturar la interfaz.
+   "Electrica" (2026-08-09, a pedido del usuario): en vez de un solo
+   rebote suave, varios micro-golpes en X/Y/rotacion (como una descarga)
+   con un destello de text-shadow en --accent en los picos -- simula una
+   chispa sin llegar a parpadear (nunca se toca opacity despues del
+   primer frame, para que no se sienta como un glitch roto). */
+@keyframes choque-entrada {
+  0% { opacity: 0; transform: translate(-6px, 2px) scale(0.85) rotate(-3deg); text-shadow: none; }
+  15% { opacity: 1; transform: translate(4px, -3px) scale(1.05) rotate(2deg); text-shadow: 0 0 12px var(--accent); }
+  30% { transform: translate(-3px, 2px) scale(0.98) rotate(-1.5deg); text-shadow: none; }
+  45% { transform: translate(3px, -2px) scale(1.02) rotate(1deg); text-shadow: 0 0 9px var(--accent); }
+  60% { transform: translate(-2px, 1px) scale(1) rotate(-0.5deg); text-shadow: none; }
+  75% { transform: translate(1px, -1px) rotate(0.3deg); text-shadow: 0 0 5px var(--accent); }
+  100% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); text-shadow: none; }
+}
 
-/* Mensaje de bienvenida -- por ahora solo negro y rojo, se puede afinar despues. */
-h1.bienvenida { color: #000; margin-bottom: 0.5rem; }
-h1.bienvenida .marca { color: #d40000; }
-.tagline { color: #000; margin: 0 0 0.5rem; }
-.pregunta-bienvenida { color: #d40000; font-weight: 600; margin: 0 0 1.5rem; }
+h1 {
+  margin-bottom: 0.25rem;
+  animation: choque-entrada 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  font-family: "Clash Display", "Anton", -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.subtitulo { color: var(--accent); margin-top: 0; margin-bottom: 1.5rem; }
+
+.logo-kolizion {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 1rem;
+}
+
+/* --- Splash de apertura (2026-08-11): 2 rayos que entran de lados
+   opuestos, se cruzan en el centro y ahi mismo aparece el logo real --
+   estilo apps grandes (ej. Uber Eats). Solo vive en index.html (la
+   "puerta de entrada" de la app) y solo una vez por sesion de pestaña
+   (ver el script inline en el <head> de index.html, agrega la clase
+   "sin-splash" al <html> si ya se vio en esta sesion).
+
+   Todo con transform/opacity nomas (nunca left/top/width) -- corre en la
+   capa de composicion de la GPU, no dispara layout/reflow, para que sea
+   liviano de verdad y no se sienta como que "atrasa" la app. */
+.sin-splash .splash-overlay { display: none; }
+
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Se desvanece sola a los ~1.75s y queda invisible + fuera del hit-test
+     (visibility:hidden) -- no hace falta JS para sacarla de encima. */
+  animation: splash-desvanecer 0.3s ease 1.75s forwards;
+}
+
+@keyframes splash-desvanecer {
+  to { opacity: 0; visibility: hidden; }
+}
+
+.splash-rayo {
+  position: absolute;
+  width: 60vmin;
+  height: 3vmin;
+  min-height: 14px;
+  max-height: 22px;
+  background: linear-gradient(90deg, transparent, #e60106 18%, #e60106 82%, transparent);
+  border-radius: 999px;
+  opacity: 0;
+  /* 2 animaciones en paralelo: la de entrada (mueve + aparece, distinta
+     por rayo -- cada uno viaja en su propia diagonal) y la de salida
+     (compartida, solo baja la opacidad) justo cuando el logo ya esta
+     apareciendo encima. */
+  animation: splash-rayo-salida 0.25s ease 0.75s forwards;
+}
+
+.splash-rayo-1 {
+  animation-name: splash-rayo-1-entrada, splash-rayo-salida;
+  animation-duration: 0.65s, 0.25s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease;
+  animation-delay: 0.1s, 0.75s;
+  animation-fill-mode: forwards, forwards;
+}
+.splash-rayo-2 {
+  animation-name: splash-rayo-2-entrada, splash-rayo-salida;
+  animation-duration: 0.65s, 0.25s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease;
+  animation-delay: 0.1s, 0.75s;
+  animation-fill-mode: forwards, forwards;
+}
+
+@keyframes splash-rayo-1-entrada {
+  0% { opacity: 0; transform: rotate(-45deg) translateX(-120vmax); }
+  15% { opacity: 1; }
+  100% { opacity: 1; transform: rotate(-45deg) translateX(0); }
+}
+@keyframes splash-rayo-2-entrada {
+  0% { opacity: 0; transform: rotate(45deg) translateX(120vmax); }
+  15% { opacity: 1; }
+  100% { opacity: 1; transform: rotate(45deg) translateX(0); }
+}
+@keyframes splash-rayo-salida {
+  to { opacity: 0; }
+}
+
+.splash-logo {
+  position: relative;
+  width: 42vmin;
+  max-width: 220px;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: splash-logo-entrada 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s forwards;
+}
+
+@keyframes splash-logo-entrada {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Mensaje de bienvenida -- colores de marca (ver :root). Antes tenia negro
+   fijo (#000): se veia bien en modo claro pero era ilegible en modo
+   oscuro -- ahora usa var(--text), que ya se invierte solo. */
+h1.bienvenida { color: var(--text); margin-bottom: 0.5rem; }
+h1.bienvenida .marca { color: var(--accent); }
+.tagline { color: var(--text); margin: 0 0 0.5rem; }
+.pregunta-bienvenida {
+  color: var(--accent);
+  font-weight: 600;
+  margin: 0 0 1.5rem;
+  animation: choque-entrada 0.75s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: 0.25s;
+}
+
+/* El golpe electrico de entrada ahora es solo para la primera vez que se
+   entra a la app y la primera vez que se entra a cada pagina/pestaña --
+   ver _titulos_vistos.html (agrega esta clase al <html> ANTES de pintar,
+   mismo patron que el tema oscuro, para que nunca se alcance a ver un
+   frame de la animacion en una revisita). */
+.titulo-visto h1,
+.titulo-visto .pregunta-bienvenida {
+  animation: none;
+}
 
 form {
   background: var(--card);
@@ -39,6 +223,75 @@ form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Admin de tiendas: el formulario de reporte va anidado dentro de una
+   tarjeta que ya tiene fondo/borde propios -- sin esto se ve una tarjeta
+   duplicada dentro de otra. */
+.form-reporte {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 0.75rem;
+}
+
+.lista-reportes {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* --- Panel de admin (/admin/tiendas, /admin/clics, /admin/login) -------- */
+.admin-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.admin-nav a {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.admin-nav a.admin-nav-activo { color: var(--accent); }
+.admin-nav-logout { margin-left: auto; }
+.admin-nav-logout button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.form-rango-clics { max-width: 260px; margin-bottom: 1.5rem; }
+
+.resumen-copiable {
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+.resumen-copiable p { margin: 0; font-size: 0.85rem; }
+.btn-copiar-resumen {
+  flex-shrink: 0;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 label {
@@ -82,10 +335,43 @@ button {
   padding: 0.8rem;
   font-size: 1rem;
   font-weight: 600;
+  /* Archivo Black solo trae un peso (ya es "black" de fabrica) -- el
+     font-weight de arriba no le hace nada a esa fuente, pero se deja para
+     que el fallback (sans-serif del sistema) igual se vea bien y grueso
+     si Archivo Black no llega a cargar. */
+  font-family: "Archivo Black", -apple-system, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
 }
 
 button:disabled { opacity: 0.6; cursor: wait; }
+
+/* Shake de "impacto" al pasar el mouse o tocar un boton principal --
+   :hover y :active juntos para que se sienta tanto con mouse como con el
+   dedo (touch dispara :active, no :hover). Excluye los iconos/controles
+   fijos chicos (avatar de Koko, ayuda, cerrar, estrella de favorito,
+   vista previa, miniaturas, barra de nav, flechas de carrusel) para que
+   el efecto quede en los botones principales, no en toda la interfaz. */
+button:not(.fab-koko, .fab-ayuda, .btn-cerrar-koko, .btn-cerrar-tour, .btn-favorito, .btn-vista-previa, .vp-miniatura, .barra-nav-item, .fila-flecha):hover,
+button:not(.fab-koko, .fab-ayuda, .btn-cerrar-koko, .btn-cerrar-tour, .btn-favorito, .btn-vista-previa, .vp-miniatura, .barra-nav-item, .fila-flecha):active {
+  animation: choque-shake 0.35s ease;
+}
+
+/* "Electrico" (2026-08-09): mas pasos, jitter en X e Y (no solo X), y un
+   destello blanco (box-shadow) en los picos que simula una chispa/arco
+   electrico -- el rojo de --accent ya es el fondo del boton, por eso el
+   destello va en blanco para que se note. */
+@keyframes choque-shake {
+  0%, 100% { transform: translate(0, 0); box-shadow: none; }
+  10% { transform: translate(-2px, 1px); }
+  20% { transform: translate(3px, -2px); box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); }
+  30% { transform: translate(-3px, 2px); box-shadow: none; }
+  40% { transform: translate(2px, -1px); box-shadow: 0 0 6px rgba(255, 255, 255, 0.4); }
+  50% { transform: translate(-2px, 2px); box-shadow: none; }
+  60% { transform: translate(3px, -1px); box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); }
+  70% { transform: translate(-1px, 1px); box-shadow: none; }
+  80% { transform: translate(2px, -1px); }
+  90% { transform: translate(-1px, 0); }
+}
 
 .oculto { display: none !important; }
 
@@ -101,9 +387,69 @@ button:disabled { opacity: 0.6; cursor: wait; }
   flex: 1;
 }
 
-a.volver, #link-editar-perfil {
+a.volver, #link-editar-perfil, a.limpiar-filtros {
   color: var(--accent);
   font-size: 0.9rem;
+}
+
+.btn-cambiar-filtros {
+  display: block;
+  margin: 0.75rem 0 1rem;
+}
+
+/* Boton "Continuar con Google" (/login, /registro) -- fondo blanco fijo a
+   proposito (no usa las variables de tema oscuro/claro) porque asi es como
+   Google recomienda mostrar su boton, para que se reconozca igual en
+   cualquier sitio. */
+.btn-google {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: white;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.btn-visitar-tienda, .btn-editar-perfil {
+  display: block;
+  text-align: center;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  font-family: "Archivo Black", -apple-system, "Segoe UI", Roboto, sans-serif;
+  border-radius: 8px;
+  padding: 0.8rem;
+  text-decoration: none;
+  margin-top: 0.75rem;
+}
+
+/* --- "Llegan rápido a ti" (2026-08-17): boton para autocompletar la
+   direccion del perfil con la ubicacion actual, reusa el mismo patron de
+   "preguntar antes de preguntar" que tenia el mapa. --- */
+.btn-ubicacion-actual {
+  display: block;
+  width: 100%;
+  margin: 0.5rem 0 1rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* --- "Marca de autor" / diseño independiente (2026-08-19) --- */
+.insignia-marca-autor {
+  display: inline-block;
+  margin: 0.2rem 0 0.4rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  background: transparent;
 }
 
 #estado { margin-top: 1rem; color: #666; }
@@ -116,22 +462,61 @@ a.volver, #link-editar-perfil {
   gap: 1rem;
 }
 
-#cargando .spinner {
-  width: 42px;
-  height: 42px;
-  border: 4px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: girar 0.8s linear infinite;
-}
-
 #cargando-texto {
   color: var(--accent);
   font-weight: 600;
 }
 
-@keyframes girar {
-  to { transform: rotate(360deg); }
+/* Esqueleto de carga (2026-08-10): reemplaza el spinner circular de antes
+   -- tarjetas grises con forma de resultado de verdad (imagen + 2 lineas de
+   texto + precio) y un brillo que las recorre, estilo apps grandes de
+   e-commerce. #cargando/#cargando-texto siguen siendo los mismos ids de
+   siempre (buscarConAnimacion en comun.js no cambio), esto es solo lo que
+   hay ADENTRO mientras esta visible. */
+.skeleton-lista {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.skeleton-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.skeleton-rect {
+  position: relative;
+  overflow: hidden;
+  background: rgba(128, 128, 128, 0.18);
+  border-radius: 6px;
+}
+
+.skeleton-rect::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: skeleton-brillo 1.3s ease-in-out infinite;
+}
+
+.skeleton-imagen {
+  width: 100%;
+  max-width: 140px;
+  height: 110px;
+  margin: 0 auto 0.75rem;
+}
+
+.skeleton-linea { height: 12px; margin: 0.5rem 0; }
+.skeleton-linea-tienda { width: 45%; height: 10px; }
+.skeleton-linea-precio { width: 30%; }
+
+@keyframes skeleton-brillo {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 #feedback-busqueda {
@@ -176,6 +561,80 @@ a.volver, #link-editar-perfil {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 1rem 1.25rem;
+  position: relative;
+}
+
+.lista-resultados {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Estrella de favorito -- flotante sobre la tarjeta (esquina superior
+   derecha para no chocar con la insignia de Vitrina, que va a la
+   izquierda). Un solo boton reutilizado en resultados/vitrina/perfil, ver
+   marcadorFavoritoHtml/conectarBotonFavorito en comun.js. */
+.btn-favorito {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-favorito svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.btn-favorito.activo svg {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.btn-favorito:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Rebote + brillo momentaneo al tocar la estrella (clase agregada por JS en
+   cada click, se saca sola al terminar -- ver conectarBotonFavorito en
+   comun.js). Se dispara SIEMPRE al tocar, tanto al marcar como al
+   desmarcar -- no depende de si quedo activa o no. */
+.btn-favorito svg.pulso {
+  animation: favorito-pulso 0.4s ease;
+}
+
+@keyframes favorito-pulso {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+  35% { transform: scale(1.45); filter: drop-shadow(0 0 6px var(--accent)); }
+  65% { transform: scale(0.9); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+}
+
+.tarjeta-vitrina .btn-favorito {
+  width: 26px;
+  height: 26px;
+  top: 0.4rem;
+  right: 0.4rem;
+}
+.tarjeta-vitrina .btn-favorito svg {
+  width: 14px;
+  height: 14px;
 }
 
 .resultado-card .imagen-producto {
@@ -204,37 +663,265 @@ a.volver, #link-editar-perfil {
 .resultado-card .razon { margin: 0.5rem 0; }
 .resultado-card a { color: var(--accent); font-weight: 600; }
 
-/* --- Koko: boton de acceso, panel de chat, burbujas, animacion --- */
-
-.barra-koko {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.5rem;
-}
-
-.btn-koko {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--card);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.4rem 1rem 0.4rem 0.4rem;
-  font-size: 0.85rem;
+/* Borrar todos los favoritos de una vez (2026-08-25): boton secundario
+   (borde rojo, sin relleno) para no confundirlo con una accion principal --
+   siempre pide confirmacion antes de borrar (ver favoritos.js). */
+.btn-borrar-favoritos {
+  display: block;
+  margin: 0 0 1rem;
+  padding: 0.55rem 1rem;
+  background: none;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
   font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 
-.avatar-koko {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
+/* --- Onboarding: pregunta + tour, solo la primera vez que se crea el
+   perfil (ver ONBOARDING_KEY en script.js) --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 110;
+}
+
+.tarjeta-modal {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.tarjeta-modal h2 { margin: 0.5rem 0; }
+.tarjeta-modal p { color: var(--text); margin: 0 0 1rem; }
+
+/* Cierre del tour -- solo el tour lo tiene (la pregunta inicial no, ahi
+   se elige Si/No). Se puede cerrar en cualquier slide, no solo al llegar
+   al final -- importante para cuando se reabre a mano despues, sin querer
+   repasar las 3 pantallas de nuevo. */
+.btn-cerrar-tour {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.5rem;
+}
+.tarjeta-modal .botones-quien { margin-bottom: 0; }
+
+.tour-slide svg {
+  width: 56px;
+  height: 56px;
+  stroke: var(--accent);
+  fill: none;
+  stroke-width: 1.6;
+  margin: 0 auto;
   display: block;
 }
 
-/* Overlay del chat: seccion aparte del formulario, encima de todo. */
+.tour-icono-koko {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 50%;
+  margin: 0 auto;
+  display: block;
+  border: 2px solid var(--accent);
+}
+
+.tour-puntos {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 1rem 0;
+}
+.tour-punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.tour-punto.activo { background: var(--accent); }
+
+/* --- Vista previa rapida de un producto: 3 fotos + descripcion + "Ir a
+   la tienda" (ver _vista_previa.html / abrirVistaPrevia en comun.js) --- */
+.tarjeta-vista-previa { text-align: left; max-width: 340px; }
+.tarjeta-vista-previa h3 { margin: 0.5rem 0 0.25rem; }
+.tarjeta-vista-previa .tienda { color: var(--accent); font-weight: 600; font-size: 0.85rem; }
+.tarjeta-vista-previa .precio { font-weight: 700; margin: 0.15rem 0; }
+.tarjeta-vista-previa .descripcion { color: #999; font-size: 0.85rem; margin: 0 0 1rem; }
+.tarjeta-vista-previa a {
+  display: block;
+  text-align: center;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.7rem;
+  text-decoration: none;
+}
+
+.vp-imagen-principal {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.vp-miniaturas {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0.9rem;
+  justify-content: center;
+}
+
+.vp-miniatura {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  overflow: hidden;
+  cursor: pointer;
+}
+.vp-miniatura img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.vp-miniatura.activa { border-color: var(--accent); }
+
+/* Boton "Vista previa rapida" dentro de cada tarjeta -- secundario, no
+   compite con el link de "Ver producto" (que sigue siendo el acento rojo). */
+.btn-vista-previa {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.55rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.tarjeta-vitrina .btn-vista-previa { font-size: 0.72rem; padding: 0.4rem; }
+
+/* --- Animacion antes de ir a una tienda externa (ver abrirEnlaceConAnimacion
+   en comun.js) -- "Te llevamos a {tienda}..." + cuenta regresiva corta con
+   Koko rebotando, estilo apps grandes de e-commerce. Rapida a proposito
+   (~1.1s totales), nunca alarga la espera real. */
+.tarjeta-redireccion { text-align: center; max-width: 300px; }
+.tarjeta-redireccion #redireccion-texto { margin: 0.75rem 0 0.5rem; font-weight: 600; }
+
+.redireccion-koko {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 50%;
+  margin: 0 auto;
+  display: block;
+  border: 3px solid var(--accent);
+  animation: redireccion-rebote 0.6s ease-in-out infinite;
+}
+
+@keyframes redireccion-rebote {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.05); }
+}
+
+.redireccion-cuenta {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin: 0.25rem 0 0;
+  animation: choque-entrada 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* --- Koko: acceso, panel de chat, burbujas, animacion --- */
+
+/* Icono flotante chico (aparte del item "Koko" de la barra de navegacion)
+   -- abre el panel en modo ventana chica, arriba de la barra de nav para
+   no taparla. */
+.fab-koko {
+  position: fixed;
+  right: 1rem;
+  /* Corrido mas arriba (antes 5.25rem) para dejarle espacio abajo a
+     .fab-ayuda, que ocupa el lugar que este boton tenia antes -- ver mas
+     abajo. */
+  bottom: calc(8.25rem + env(safe-area-inset-bottom, 0px));
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  padding: 0;
+  overflow: hidden;
+  background: var(--accent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 95;
+}
+
+.fab-koko img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+/* Icono fijo debajo del avatar de Koko -- reabre la guia de bienvenida
+   (tour de 3 pantallas) en cualquier momento, no solo la primera vez. Mismo
+   punto de anclaje (esquina inferior derecha) que .fab-koko, pero mas chico
+   -- es una accion secundaria. */
+.fab-ayuda {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card);
+  color: var(--accent);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 95;
+}
+
+.fab-ayuda svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Overlay del chat: por defecto es una ventana chica flotante (abierta
+   desde .fab-koko); con la clase "pantalla-completa" (agregada por
+   koko.js cuando se abre desde el item "Koko" de la barra de navegacion)
+   pasa a cubrir toda la pantalla, como una app de mensajeria. */
 .panel-koko-overlay {
   position: fixed;
   inset: 0;
@@ -243,7 +930,15 @@ a.volver, #link-editar-perfil {
   align-items: flex-end;
   justify-content: flex-end;
   padding: 1rem;
+  padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
   z-index: 100;
+}
+
+.panel-koko-overlay.pantalla-completa {
+  background: none;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
 }
 
 .panel-koko {
@@ -252,11 +947,74 @@ a.volver, #link-editar-perfil {
   border-radius: 16px;
   width: 100%;
   max-width: 360px;
-  max-height: 80vh;
+  max-height: 75vh;
   display: flex;
+  /* Apilado (personaje arriba, chat abajo) por defecto -- ventana chica
+     SIEMPRE se ve asi (no hay ancho para 2 columnas en un popup de
+     360px), y pantalla completa tambien parte apilada en celular angosto.
+     Se vuelve fila (2 columnas) solo en pantalla completa + pantalla
+     ancha, ver el @media mas abajo. */
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.panel-koko-overlay.pantalla-completa .panel-koko {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Columna derecha completa (header + mensajes + input) -- envuelta en su
+   propio contenedor para poder ponerla al lado del personaje en pantalla
+   ancha sin cambiar nada de adentro. min-width:0 es necesario para que un
+   hijo flex se pueda achicar bien (si no, el texto largo lo empuja). */
+.panel-koko-chat {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Diseño de app de chat de verdad (tipo Discord/WhatsApp Web: panel
+   lateral fijo + conversacion) -- solo cuando hay espacio real para 2
+   columnas. Debajo de este ancho, pantalla completa se sigue viendo
+   apilada (celular angosto), igual que la ventana chica siempre. */
+@media (min-width: 768px) {
+  .panel-koko-overlay.pantalla-completa .panel-koko {
+    flex-direction: row;
+  }
+
+  .panel-koko-overlay.pantalla-completa .panel-koko-personaje {
+    width: 340px;
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    flex-shrink: 0;
+    border-bottom: none;
+    border-right: 1px solid var(--border);
+    /* Margen chico a proposito -- con object-fit:cover de aca abajo la
+       imagen ya llena casi toda la columna sola, este padding es solo un
+       respiro, no el hueco grande que habia antes. */
+    padding: 1.25rem;
+  }
+
+  /* La imagen de Koko es angosta y alta (proporcion 2:3) dentro de una
+     columna todavia mas angosta y mucho mas alta -- con "contain" (el
+     valor de siempre, bueno para la franja horizontal apilada) quedaba
+     chica en el medio de un hueco enorme arriba/abajo. "cover" la escala
+     para llenar el alto completo de la columna sin estirarla ni deformarla
+     -- solo recorta un poco los costados (fondo alrededor del personaje,
+     no al personaje en si). Object-position:center reparte ese recorte
+     parejo a los 2 lados. */
+  .panel-koko-overlay.pantalla-completa .personaje-koko {
+    object-fit: cover;
+    object-position: center;
+  }
 }
 
 .panel-koko-header {
@@ -269,23 +1027,77 @@ a.volver, #link-editar-perfil {
 
 .panel-koko-header h2 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   flex: 1;
-}
-
-.avatar-koko-chat {
-  width: 40px;
-  height: 40px;
 }
 
 .btn-cerrar-koko {
   background: none;
   border: none;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   line-height: 1;
   color: var(--text);
   cursor: pointer;
-  padding: 0.2rem 0.4rem;
+  /* Padding generoso a proposito: 44px de alto/ancho es el minimo
+     recomendado para tocar con el dedo comodo. */
+  padding: 0.65rem;
+}
+
+/* Misma clase que el boton de cerrar (×, texto) -- el de reiniciar
+   (#btn-reiniciar-koko) usa un icono SVG en vez de texto, necesita su
+   propio tamano. */
+.btn-cerrar-koko svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Personaje de cuerpo completo -- presencia visual real, no un icono
+   circular chico. Altura fija (no la imagen completa a tamano natural,
+   que es muy alta) con object-fit:contain para nunca recortarlo. Mas
+   grande en pantalla completa; en ventana chica se reduce para dejarle
+   espacio de sobra al chat en si. */
+.panel-koko-personaje {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 130px;
+  min-height: 100px;
+  max-height: 150px;
+  background: linear-gradient(180deg, var(--bg), var(--card));
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* BUG encontrado y corregido (2026-08-10): esta regla no tenia @media, asi
+   que tambien se aplicaba en pantalla ancha -- y como viene DESPUES en el
+   archivo que la regla de la columna lateral (arriba, dentro de
+   @media min-width:768px), con la MISMA especificidad le ganaba en la
+   cascada y volvia a topear la columna a 340px de alto (una cajita chica
+   arriba), sin importar que la imagen ya tuviera object-fit:cover. Ahora
+   queda scopeada SOLO a pantalla angosta (celular, franja apilada) para
+   que nunca pueda pisar a la regla de la columna ancha. */
+@media (max-width: 767px) {
+  .panel-koko-overlay.pantalla-completa .panel-koko-personaje {
+    height: 34vh;
+    min-height: 220px;
+    max-height: 340px;
+  }
+}
+
+.personaje-koko {
+  /* width/height 100% (en vez de solo height) para que object-fit:contain
+     calce bien tanto en una franja ancha y baja (apilado) como en una
+     columna angosta y alta (barra lateral, pantalla ancha) -- la misma
+     regla sirve para los 2 layouts, no hace falta duplicarla. */
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom;
+  /* opacity: usada por iniciarAnimacionKoko() (koko.js) para un fundido
+     cortito entre emotes, en vez de un corte seco de una foto a otra. */
+  transition: transform 0.2s ease, opacity 0.12s ease;
 }
 
 .mensajes-koko {
@@ -303,6 +1115,10 @@ a.volver, #link-editar-perfil {
   border-radius: 14px;
   font-size: 0.9rem;
   line-height: 1.35;
+  /* Respeta los saltos de linea reales del texto (ej: linea en blanco
+     entre "Opcion 1" y "Opcion 2") sin necesidad de convertirlos a <br> a
+     mano en JS -- ver formatearTextoKoko() en koko.js. */
+  white-space: pre-wrap;
 }
 
 .burbuja-koko-koko {
@@ -350,20 +1166,339 @@ a.volver, #link-editar-perfil {
 
 /* Rebote/balanceo mientras Koko "esta pensando" una respuesta -- se agrega
    y saca la clase desde koko.js, nunca queda pegada. */
-@keyframes koko-rebote {
-  0%, 100% { transform: translateY(0) rotate(-3deg); }
-  50% { transform: translateY(-6px) rotate(3deg); }
+/* Antes se aplicaba a un icono chico de 40px (giro sutil bastaba); ahora es
+   el personaje de cuerpo completo, asi que el rebote se nota mas fuerte y
+   se le suma un pulso de escala para que se lea como un salto/baile real,
+   no solo un tambaleo. */
+/* Pulso de RESPALDO -- solo se usa cuando no hay poses/frames disponibles
+   todavia (ver KOKO_FRAMES en koko.js). A proposito NO mueve al personaje
+   de lugar (nada de translate/rotate): la correccion fue justamente esa,
+   que la imagen entera se desplazaba en vez de sentirse un personaje vivo.
+   Con las poses ya generadas, esto casi no se llega a ver -- la animacion
+   real es el cambio de pose. */
+@keyframes koko-pulso {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
 }
 
 .koko-pensando {
-  animation: koko-rebote 0.6s ease-in-out infinite;
+  animation: koko-pulso 0.9s ease-in-out infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1c1a18;
-    --card: #262421;
-    --text: #f0ede8;
-    --border: #3a3733;
-  }
+/* Activado a mano (atributo data-theme en <html>), no por preferencia del
+   sistema -- ver nota en :root de arriba. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d0d0d;
+  --card: #1c1c1c;
+  --text: #f5f5f5;
+  --border: #333333;
+  /* --accent se mantiene igual -- el rojo funciona bien sobre ambos
+     fondos, tal como se pidio ("el logo funciona en ambos"). */
+  --insignia-neutral-bg: #f5f5f5;
+  --insignia-neutral-texto: #0d0d0d;
+}
+
+/* --- Barra de navegacion fija abajo (Buscar / Koko / Vitrina / Mi perfil) --- */
+
+.barra-nav-inferior {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 90;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.barra-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.55rem 0.25rem 0.45rem;
+  background: none;
+  border: none;
+  color: #888;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.barra-nav-item svg {
+  width: 22px;
+  height: 22px;
+}
+
+.barra-nav-item.activo {
+  color: var(--accent);
+}
+
+.barra-nav-icono-koko {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* --- Vitrina: navegacion libre, tarjetas en cuadricula por seccion --- */
+
+/* La pagina de Vitrina es mas compacta que el resto (filas chicas, no
+   tarjetas grandes apiladas) para que Tendencias y Ofertas quepan
+   visibles al mismo tiempo, sin scroll vertical. */
+.pagina-vitrina { padding-top: 1.25rem; }
+.vitrina-main h1 { margin-bottom: 0.15rem; }
+.vitrina-main .subtitulo { margin-bottom: 1rem; }
+
+/* Escritorio (2026-08-25): "main" por defecto tiene max-width:640px (pensado
+   para formularios angostos) -- en pantallas de escritorio eso dejaba mucho
+   espacio vacio a los costados de las filas de Descubre. Solo se ensancha
+   ACA (clase propia de /vitrina), nunca toca el resto de las paginas ni la
+   version movil (el media query ni se activa bajo 1024px). */
+@media (min-width: 1024px) {
+  .vitrina-main { max-width: 1280px; }
+}
+
+.fila-seccion {
+  margin-top: 1rem;
+}
+
+.fila-seccion h2 {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+}
+
+.fila-carrusel {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fila-vitrina {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.35rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Flechas para navegar el carrusel sin depender solo del gesto de swipe.
+   Se ocultan solas en pantallas angostas (touch), donde el swipe alcanza y
+   sobrarian ocupando espacio. */
+.fila-flecha {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .fila-flecha { display: none; }
+}
+
+.tarjeta-vitrina {
+  flex: 0 0 148px;
+  scroll-snap-align: start;
+  padding: 0.75rem 0.85rem;
+  position: relative;
+}
+
+.tarjeta-vitrina .imagen-producto { max-width: 100px; }
+.tarjeta-vitrina h3 { font-size: 0.85rem; line-height: 1.25; }
+.tarjeta-vitrina .tienda { font-size: 0.75rem; }
+.tarjeta-vitrina .marca { font-size: 0.72rem; }
+.tarjeta-vitrina .razon { font-size: 0.72rem; margin: 0.35rem 0 0; }
+.tarjeta-vitrina a { font-size: 0.8rem; }
+
+/* "Llegan rápido a ti" (2026-08-25): ya no es una fila del feed ni un
+   boton inline -- ahora es un icono fijo arriba a la derecha, mismo
+   tamaño/estilo flotante que .fab-koko (abajo a la derecha), para que sea
+   un acceso constante en vez de una fila mas entre Ofertas/Destacados. El
+   click abre el mismo modal de siempre (reusa .modal-overlay/.tarjeta-modal)
+   con solo INFO de tiendas, nunca un catalogo de productos. */
+.fab-llegan-rapido {
+  position: fixed;
+  top: calc(1rem + env(safe-area-inset-top, 0px));
+  right: 1rem;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--card);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  font-size: 1.4rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  z-index: 95;
+}
+
+.tarjeta-llegan-rapido { max-width: 420px; text-align: left; }
+
+.lista-llegan-rapido {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.item-llegan-rapido {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.item-llegan-rapido:last-child { border-bottom: none; }
+
+.item-llegan-rapido-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.item-llegan-rapido-envio { color: var(--accent); font-weight: 600; font-size: 0.85rem; }
+.item-llegan-rapido-ubicacion { color: #666; font-size: 0.8rem; }
+.item-llegan-rapido a { color: var(--accent); font-weight: 600; white-space: nowrap; }
+
+.insignia-vitrina {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 1;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  max-width: calc(100% - 1rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Oferta usa el rojo de marca (sale tag clasico); Tendencia usa el par
+   neutro (negro en modo claro, blanco en modo oscuro) para no competir
+   con el rojo -- ver variables en :root. */
+.insignia-tendencia { background: var(--insignia-neutral-bg); color: var(--insignia-neutral-texto); }
+.insignia-oferta { background: var(--accent); color: white; }
+
+.precio-vitrina {
+  margin: 0.3rem 0 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.precio-vitrina .precio { margin: 0; font-weight: 700; font-size: 0.85rem; }
+.precio-vitrina .precio-tachado {
+  color: #999;
+  font-size: 0.75rem;
+  text-decoration: line-through;
+}
+
+/* --- Mi perfil: resumen de datos guardados --- */
+
+.perfil-resumen {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.25rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.perfil-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.perfil-fila:last-child {
+  border-bottom: none;
+}
+
+.perfil-etiqueta {
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.perfil-valor {
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Interruptor de modo oscuro -- mismo lugar donde se edita el perfil. */
+.fila-ajuste {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.interruptor {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.interruptor input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.interruptor-riel {
+  position: absolute;
+  inset: 0;
+  background: var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.interruptor-riel::before {
+  content: "";
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.interruptor input:checked + .interruptor-riel {
+  background: var(--accent);
+}
+
+.interruptor input:checked + .interruptor-riel::before {
+  transform: translateX(18px);
 }

@@ -1,2 +1,4 @@
 flask
 anthropic
+flask-limiter
+openpyxl

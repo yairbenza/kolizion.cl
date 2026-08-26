@@ -1,0 +1,218 @@
+# Motor de recomendacion (buscador por formulario)
+
+
+## Reglas de recomendación validadas
+
+Detalle estructurado en `data/reglas_streetwear.json`.
+
+**Alta confianza** (3-4 respuestas coincidiendo, salvo donde se indique):
+
+| Género | Ocasión | Prenda | Recomendación |
+| --- | --- | --- | --- |
+| Hombre | Concierto/festival | Polera | Oversize, colores oscuros, marca streetwear reconocida o nicho valorado, tela transpirable |
+| Hombre | Junta de amigos/skate park | Pantalón cargo | Baggy/suelto, cómodo para moverse, buen precio, buena caída hasta el tobillo |
+| Mujer | Junta de amigos/skate park | Pantalón cargo | Baggy, cómodo, versátil, tiro bajo o cintura alta que estiliza |
+| Mujer | Concierto/festival | Polera/top | Ajustado que favorezca la figura (5-6 respuestas). Si no hay stock ajustado, oversize/boxy como alternativa secundaria, no principal |
+
+**Confianza media:** ninguna todavía. **Sin consenso:** ninguna todavía. Cuando lleguen más respuestas de validación, actualizar solo la regla puntual indicada — no tocar las ya confirmadas.
+
+## Filtros del formulario — mapa rápido
+
+| Prenda | Subtipo | Largo | Manga | Capucha / cierre | Corte |
+| --- | --- | --- | --- | --- | --- |
+| Polera, Camiseta | — | ✅ (no en Hombre) | Polera: ✅ larga/corta | — | tabla "superior" |
+| Polerón | — | — | — | ✅ con/sin capucha · ✅ con/sin cierre | tabla "superior" |
+| Camisa, Chaqueta, Chaleco | — | — | — | — | tabla "superior" |
+| Top (no ofrecido a Hombre) | ✅ croptop/babytee/halter/corset/tanktop/blusa | ✅ (no en Hombre) | — | — | tabla "superior" |
+| Pantalón | ✅ buzo/jeans/cargo | — | — | — | tabla "inferior" |
+| Shorts | ✅ jeans/tela/cargo/baño | — | — | — | tabla "inferior" |
+| Falda cargo, Bike shorts | — | — | — | — | tabla "inferior" |
+| Gorro | — (flujo propio, ver sección Gorro) | — | — | — | no aplica, talla única |
+
+Todos estos campos son independientes entre sí (una prenda puede ser oversize Y crop Y manga larga a la vez) y son filtros **estrictos que nunca se relajan** — la única excepción es el corte dentro de "Mostrar más opciones" (ver esa sección).
+
+Nota de código: en `TIPOS_PRENDA_CONOCIDOS` (`app.py`) el orden de detección importa por colisión de palabras — "polera" antes que "top" (regla validada dice "polera/top") y "top" antes que "poleron" (el subtipo "crop hoodie" contiene la palabra "hoodie").
+
+## Corte — criterios de tagueo manual
+
+Usar cuando la ficha de una tienda no diga el corte explícitamente.
+
+**Prenda superior** (polera, polerón, camisa, chaqueta, top): comparar polerón contra otros polerones, no contra poleras, por el grosor de la tela.
+
+| Opción | Cómo identificarlo | Holgura aprox.* |
+| --- | --- | --- |
+| Slim fit | Se ciñe al cuerpo, marca la silueta, mangas ajustadas al brazo | 0-5cm |
+| Regular fit | Calce normal, leve entalle en la cintura | 5-14cm |
+| Straight | Cae recto de arriba a abajo, sin ningún entalle en la cintura | 5-14cm |
+| Boxy fit | Ancho/cuadrado, hombros rectos, largo normal (no pasa mucho la cadera) | 14-20cm |
+| Oversized | Hombros caídos, largo que pasa la cadera, mangas anchas | 20cm o más |
+
+\* No exacto, varía por marca — apoyo solo cuando la ficha da medidas de holgura concretas.
+
+**Prenda inferior** (pantalón, jeans, cargo, buzo, shorts, falda cargo, bike shorts): el cargo se evalúa igual que cualquier pantalón, los bolsillos grandes no cambian el criterio. Acá NO hay estándar en centímetros verificado — usar el mismo criterio proporcional (menos espacio = ajustado, más espacio = baggy).
+
+| Opción | Cómo identificarlo |
+| --- | --- |
+| Skinny | Se ciñe a la pierna de principio a fin, mínimo espacio extra |
+| Slim fit | Ajustado, con un poco más de espacio, sobre todo en el muslo |
+| Straight fit | Caída recta, mismo ancho de muslo a tobillo |
+| Baggy | Amplio en muslo y pierna, caída suelta hasta el tobillo |
+
+**Definiciones cortas del formulario** (solo texto visible entre paréntesis, no afectan el filtro):
+- Superior: Slim fit (se pega al cuerpo) · Regular fit (calce normal) · Straight (cae recto, sin marcar cintura) · Boxy fit (ancho y cuadrado) · Oversized (grande y holgado, hombros caídos)
+- Inferior: Skinny (bien pegado a la pierna) · Slim fit (ajustado, con algo de espacio) · Straight fit (calce parejo) · Baggy (holgado en toda la pierna)
+- Prendas nuevas de mujer: Crop top (abdomen a la vista) · Baby tee (corto y ajustado) · Top halter (sin mangas, amarrado al cuello) · Corset top (costuras marcadas) · Falda cargo (bolsillos grandes) · Bike shorts (tipo ciclista)
+
+## Manga, capucha, cierre — criterios de tagueo
+
+Normalmente SÍ vienen explícitos o se ven en fotos (a diferencia de corte/talla, que a veces hay que inferir). "Sin cierre" es sinónimo de "crewneck" en la mayoría de las tiendas; "sin capucha" casi siempre se llama "crewneck" o "cuello redondo". Si la ficha no lo menciona ni se ve en fotos, preguntarle al usuario (dueño del proyecto) antes de taguear a ciegas — acá no hay tabla de medidas de la cual inferir, a diferencia de corte/talla.
+
+## Gorro
+
+Tipo de prenda independiente, flujo propio: no usa corte/subtipo/largo/manga/capucha/cierre, y no se filtra por talla S/M/L/XL (talla única/ajustable).
+
+1. **¿Colores específicos o combinar con un outfit?**
+   - *Colores específicos*: checkboxes (blanco, negro, rojo, azul, amarillo, beige, morado, verde) → filtra `color_dominante`.
+   - *Combinar con outfit* → pregunta "¿Cómo es tu outfit?":
+
+     | Outfit | Colores de gorro permitidos |
+     | --- | --- |
+     | Oscuro | Color vivo (rojo/azul/amarillo/morado/verde) como acento, o blanco para contraste limpio |
+     | Claro | Negro para contraste, o color vivo como protagonista |
+     | Colorido | Solo negro o blanco (neutro, para no sobrecargar) |
+     | Otro | No filtra por color — muestra variedad |
+
+2. **¿Qué tipo de gorro?** (siempre se pregunta, sin importar el camino elegido) → filtra `forma`: curvo / plano / lana (beanie, sin visera).
+
+Tagueo: en gorros de dos tonos (tipo trucker), `color_dominante` = color del **panel frontal**, no toda la superficie.
+
+Nota: hubo otra tabla más simple dando vueltas ("outfit neutro"/"colorido"/"buscas armonía") que no llegó a tener opciones de formulario definidas — si esa es la lógica que en verdad se quiere, avisar para reemplazar la de arriba.
+
+## Talla — inferencia automática
+
+Se cruza altura + peso (datos que el formulario ya pide, sin campo nuevo). Se calcula una talla según el peso y otra según la altura (tablas separadas); la **más chica** de las dos es la principal (para no ofrecer algo más ajustado de lo que corresponde), la otra queda como segunda opción. Si empatan, la segunda opción es la vecina más grande (o más chica si ya es XL). Cada resultado muestra TODAS las tallas coincidentes que tenga en stock (`tallas_coincidentes`). Si no calza en ninguna, se avisa en vez de dejar la página vacía sin explicación. Los gorros están exentos (talla única).
+
+| Talla | Altura mujer | Peso mujer | Altura hombre | Peso hombre |
+| --- | --- | --- | --- | --- |
+| S | hasta 1.65m | hasta 60kg | hasta 1.70m | hasta 68kg |
+| M | hasta 1.70m | hasta 70kg | hasta 1.78m | hasta 80kg |
+| L | hasta 1.75m | hasta 80kg | hasta 1.85m | hasta 92kg |
+| XL | más de 1.75m | más de 80kg | más de 1.85m | más de 92kg |
+
+Rangos orientativos (la encuesta original se solapa entre tallas; para el cálculo se usan como topes fijos, no exactos).
+
+## "Mostrar más opciones" — alternativas de corte
+
+Cuando ya no queda ningún producto que cumpla TODOS los filtros pedidos (incluido el corte específico, ej: "jeans baggy"), el Plan B ya no deja la búsqueda vacía:
+1. Completa primero con más productos del corte exacto pedido (todos los demás filtros intactos).
+2. Si no alcanza a `CANTIDAD_RESULTADOS`, rellena el resto relajando **solo el corte** (mismo tipo de prenda, otro ajuste) — nunca el tipo de prenda ni los demás filtros estrictos.
+3. No se relaja nada más por ahora (el catálogo mock suele alcanzar a llenar con el paso 2).
+
+Estas alternativas nunca se mezclan en silencio con las que sí cumplen todo: van en un campo aparte (`alternativas` + `aviso_alternativas`), y el frontend (`static/resultados.js`) las pinta con un aviso destacado antes de las tarjetas (ej: `No encontramos más opciones en "boxy fit", pero esto también podría interesarte...`).
+
+Ojo técnico (`buscar_plan_b` en `app.py`): hay que sacar los productos ya mostrados del catálogo **antes** de llamar `elegir_candidatos(permitir_otros_cortes=True)`, no filtrarlos después — si no, la función ve que "todavía existen" productos del corte pedido (los ya mostrados) y nunca relaja nada.
+
+## Material del producto y "Priorizar materiales de calidad" (2026-08-19)
+
+Filtro opcional, transversal a cualquier usuario -- explícitamente NO ligado a hobbies ni estilo (a diferencia de `REGLAS_HOBBY`, ver arriba). Checkbox al final de los formularios de búsqueda "yo" y "regalo" (`#prioridad-material-yo`/`#prioridad-material-regalo`, `.checkbox-inline` reusado standalone).
+
+- **`MATERIALES_CONOCIDOS`** (`app.py`): 7 materiales -- 3 "naturales" (Algodón 100%, Lana, Cuero) y 4 no ("Mezcla algodón/poliéster", Poliéster, Nylon, Acrílico). El catálogo **real** todavía no trae este dato (se le pedirá a cada tienda más adelante, nunca se inventa para un producto real) -- `formatear_producto()` simplemente no muestra la fila de material si el producto no la tiene.
+- **Solo prioriza, nunca oculta:** `elegir_candidatos()` suma un parámetro opcional `priorizar_material_natural` (default `False`, sin efecto en ningún llamador existente) que cambia el `puntaje()` final de un entero a una tupla de 3 niveles `(es_natural, es_algodon_buena_calidad, puntaje_palabras)` (el 2do nivel se agregó 2026-08-19, ver sección de gramaje abajo) -- los productos de fibra natural quedan primero en el orden, y dentro de esos, el algodón de buen gramaje queda antes que el resto; los sintéticos siguen ahí, nunca se filtran fuera. Threaded a través de `armar_resultados()`/`buscar_plan_b()`/`_completar_con_alternativas_de_corte()` hasta `/api/recommend` (nuevo campo `priorizar_material_natural`, booleano simple).
+- **Se muestra en la ficha (vista previa rápida):** `formatear_producto()` agrega `"material"` (la etiqueta legible, ej. "Algodón 100%") a cada resultado; `_vista_previa.html`/`comun.js` pintan una fila `Material: ...` en el modal, oculta si el producto no trae material.
+- **Datos del catálogo mock** (`agregar_materiales.py`, aditivo -- **a propósito no se re-corrió `generar_catalogo_prueba.py` completo**, mismo motivo que `agregar_subtipos_chaqueta.py`: reordenaría el generador de números aleatorios compartido y cambiaría precios/tallas/colores de TODO el catálogo sin necesidad real): los 790 productos existentes quedaron exactamente iguales salvo por el campo nuevo (verificado). 2 asignaciones **lógicas** reusando datos que ya existían (nunca al azar cuando hay una pista real): gorro con `forma == "lana"` → material `"lana"`; chaqueta con `subtipo == "cuero"` → material `"cuero"`. El resto (la inmensa mayoría) recibe un material al azar (semilla fija, reproducible) con pesos que imitan una distribución real -- algodón/mezclas más comunes que lana/cuero.
+- **No se agregó al chat de Koko todavía** (ni al tool schema `KOKO_TOOL_SUGERIR_BUSQUEDA` ni al prompt) -- el pedido del usuario fue específicamente "un filtro opcional en el buscador", sin mencionar a Koko. Si se quiere que Koko también lo active (ej. si el usuario dice "algo de buena calidad"), es una extensión futura, no la de hoy.
+
+### Gramaje (GSM) del algodón -- refina la priorización (2026-08-19)
+
+Pedido del usuario: "para prendas de algodón, agrega el dato de gramaje (GSM)... considera 180 GSM o más como 'buena calidad' para poleras/camisetas de algodón". A propósito **acotado solo a polera/camiseta** -- un umbral de "buena calidad" en GSM para otras prendas (chaqueta, pantalón, etc.) no está definido, y no se inventó uno.
+
+- **`GRAMAJE_MINIMO_CALIDAD_GSM = 180`**, **`_algodon_buena_calidad(producto)`** (`app.py`): `True` solo si `categoria` es polera/camiseta, `material == "algodon_100"`, y `gramaje_gsm >= 180`. Sin el dato cargado (la mayoría del catálogo real, hasta que cada tienda lo mande), o fuera de esas 2 categorías, siempre `False` -- nunca asume.
+- **`_texto_gramaje(producto)`**: arma el texto de la ficha, ej. `"220 GSM — algodón grueso de calidad"` (o "algodón liviano" si es menor a 180) -- vacío si no hay gramaje cargado. Se muestra en `_vista_previa.html`/`comun.js` (`#vp-gramaje`), oculto si no aplica.
+- **Datos del catálogo mock** (`agregar_gramaje.py`, aditivo, corre después de `agregar_materiales.py`): de las 20 poleras/camisetas de algodón 100% que hay, la mitad quedó arriba de 180 GSM y la mitad abajo (semilla fija), para poder ver los 2 casos.
+
+## "Marca de autor" / diseño independiente (2026-08-19)
+
+Insignia + filtro para destacar tiendas/productos con identidad de diseño propia (no genérico ni fast fashion) -- parte central de la propuesta de KOLIZION ("dar visibilidad a marcas independientes"). A diferencia de "Priorizar materiales de calidad" (nunca oculta, solo reordena), **este filtro SÍ es estricto**: el usuario pide explícitamente "mostrar SOLO".
+
+- **`producto["marca_autor"]`** (booleano, campo del catálogo -- decisión: a nivel de **producto**, no de tienda, porque es lo que de verdad se busca/muestra en `catalog.json`; el sistema de tiendas reales (`data/tiendas.json`) es un sistema aparte sin catálogo propio, ver "Tiendas reales y tracking"). **Para catálogo real, este dato NO depende de que la tienda lo declare** -- lo define KOLIZION mismo al cargar cada tienda piloto, según si tiene identidad de diseño propia o no (pedido explícito del usuario, para evitar auto-declaraciones infladas).
+- **`filtrar_por_marca_autor(catalog, solo_marca_autor)`** (`app.py`): filtro estricto de catálogo, mismo lugar/patrón que `filtrar_por_precio()` (se aplica temprano en `/api/recommend`, antes de `elegir_candidatos`) -- si `solo_marca_autor` es `True`, oculta todo lo que no esté marcado. Nuevo campo `solo_marca_autor` (booleano) en `/api/recommend`.
+- **Insignia visible en 3 lugares** (`formatear_producto()` agrega `"marca_autor"` a cada resultado, así que aparece en cualquier listado sin trabajo extra): tarjetas de `/resultados` (`comun.js`), tarjetas de `/vitrina` (`vitrina.js`), y la ficha/vista previa (`_vista_previa.html`, `#vp-marca-autor`) -- mismo texto "✦ Marca de autor" en los 3, clase `.insignia-marca-autor` (borde/texto color de marca, sin relleno, para no competir visualmente con la insignia roja de oferta).
+- **Datos del catálogo mock** (`agregar_marca_autor.py`, aditivo): ~30% de los 790 productos marcados al azar (semilla fija) -- variado a propósito para poder ver la insignia funcionando sin que sea rarísima ni la mayoría.
+- **No se agregó a Koko** (mismo criterio que el filtro de material arriba) -- pedido específico del buscador, no del chat.
+
+## Volver atrás sin perder los filtros
+
+Si el navegador restaura `/` desde su caché (bfcache), el estado del formulario queda intacto solo. Si el navegador SÍ recarga la página de cero al volver atrás (`performance.getEntriesByType("navigation")[0].type === "back_forward"`) y hay una búsqueda guardada (`sessionStorage.ultimoPayload`), `static/script.js` salta directo a la sección de filtros ya llena (función `restaurarFiltros()`) en vez de reiniciar el formulario.
+
+Casos particulares: un valor que no calza con ninguna opción del select (era texto libre en "Otro") selecciona "Otro" y rellena ese input; un valor vacío (era "Me da igual") deja esa opción si existe. El link "← Hacer una nueva búsqueda" es navegación normal — no dispara esto, a propósito deja el formulario limpio.
+
+**Atajo directo "Cambiar requisitos de búsqueda" (2026-08-22):** además del botón atrás, `/resultados` tiene un botón visible arriba (`#btn-cambiar-filtros`, `templates/resultados.html` + `static/resultados.js`) que manda a `/?volver_filtros=1` -- `script.js` detecta ese parámetro (mismo lugar donde se detecta `editar_perfil`, con la misma prioridad) y llama a `restaurarFiltros()` con el `sessionStorage.ultimoPayload` de siempre, sin depender de que el navegador reporte `back_forward` (que no siempre pasa, ej. si el usuario abre `/resultados` en una pestaña nueva o el bfcache no aplica). Limpia el parámetro de la URL después (`history.replaceState`), mismo patrón que `editar_perfil`.
+
+**Botón "Limpiar filtros" (2026-08-22):** en las 2 pantallas de filtros (`seccion-busqueda-yo`/`seccion-busqueda-regalo`), junto al link "Volver" -- para el caso en que el usuario llegó con valores guardados (por cualquiera de los 2 caminos de arriba) y quiere partir de cero. `limpiarFiltros(prefix)` (`script.js`) llama a `form.reset()` y despues dispara "change" a mano en categoría/corte/ocasión -- `reset()` solo limpia valores, no dispara eventos, así que sin esto los campos dependientes (tipo de prenda, subtipo, largo, manga, capucha, cierre, y los campos "otro") se quedarían con las opciones/visibilidad de antes de limpiar.
+
+## BUG GRAVE encontrado y corregido (2026-08-22) -- casi todos los selects filtraban sin que el usuario lo pidiera
+
+Encontrado probando "Cambiar requisitos de búsqueda" con clicks reales (no un caso aislado): un `<select>` que el usuario nunca toca queda en su PRIMERA opción, no en ninguna "sin preferencia". Casi todas las listas de opciones (`TIPO_PRENDA_OPCIONES`, `CORTE_OPCIONES`, `SUBTIPO_OPCIONES`, `LARGO_OPCIONES_LISTA`, `MANGA_OPCIONES`, `CAPUCHA_OPCIONES`, `CIERRE_OPCIONES` en `script.js`, más los `<select>` estáticos de ocasión y precio en `index.html`) tenían la opción neutra ("Me da igual"/"Cualquiera"/"Cualquier precio") al FINAL de la lista -- así que un usuario que, por ejemplo, elegía "Prenda superior" y no tocaba "¿Qué prenda buscas?" terminaba buscando literalmente "Polera" (la primera opción real), no "cualquier prenda superior". Mismo problema encadenado en corte, subtipo, largo, manga, capucha, cierre, ocasión y precio -- probablemente la causa de varios "no encontramos nada" que parecían huecos del catálogo y en realidad eran filtros que nadie pidió.
+
+**Arreglo:** se reordenaron las listas para que la opción neutra vaya PRIMERO (`"Otro"` sigue al final -- no es neutro, es un camino aparte de texto libre). Esto no cambia ningún `value` ni la lógica de detección (`valorFinal()`, `detectar_*_pedido()` siguen comparando por el mismo string, no por posición) -- solo el orden en que se listan, así que no había código que dependiera de la posición (verificado con grep, el único acceso por índice es `opcion[0]` para sacar el texto de una tupla `[texto, definición]`, no una posición del array).
+
+**Efecto secundario encontrado y corregido de paso:** `precio-yo`/`precio-regalo` tenían el atributo `required` -- inofensivo mientras el default fuera un precio real, pero al mover "Cualquier precio" (value `""`) al frente, el navegador bloqueaba el envío del formulario entero (`required` rechaza un value vacío) sin ningún error visible en consola. Se sacó `required` de esos 2 selects -- un value vacío ahí es una respuesta válida ("no filtrar por precio"), no un campo sin completar. Verificado con `form.checkValidity()` antes y después del fix.
+
+Probado de punta a punta con el servidor real corriendo (no solo `probar_reglas.py`): "Prenda superior" + "Poleron" sin tocar nada más ahora trae resultados reales (antes: 0, por quedar atrapado en "Polera" en vez de "cualquier prenda superior" cuando corresponde, o en combinaciones estrictas como corte+cierre que nadie pidió).
+
+## Hobbies del perfil y tendencia de estilo (2026-08-18)
+
+Pedido del usuario: ampliar "Hobbie" en el perfil (`index.html`) -- antes era un campo de **texto libre** (nunca fue una lista fija de 3 opciones, aunque así se recordaba) que apenas se usaba para recomendar (solo se sumaba como texto suelto a la búsqueda). Ahora es un grupo de **checkboxes** (se puede elegir más de uno, mismo patrón visual que los colores de gorro -- `.campo-checkboxes`/`.grid-checkboxes`/`.checkbox-inline`, ya existían): Música, Deportes, Relajo/lifestyle tranquilo, Arte y cultura, Gaming, Películas y series. Si se marca "Música", se despliega un segundo grupo de géneros (Rock, Reguetón/urbano, Pop, Hip-hop/rap, Electrónica, Indie/alternativo) -- `#hobbie-musica` dispara el toggle de `#campo-hobbie-musica-genero` (`script.js`).
+
+- **Dato guardado:** `perfil.hobbie` pasa a ser un **array** (antes string) y se suma `perfil.hobbie_musica_genero` (array, solo relevante si `"musica"` está en `hobbie`). `precargarPerfil()` ya no puede usar el loop genérico de `campo.value = ...` para estos 2 campos (son checkboxes, no inputs de texto) -- los salta explícitamente y los marca aparte, mismo patrón que ya existía para `gorro_colores`. El envío del formulario tampoco puede confiar en `Object.fromEntries(new FormData(...))` (se queda solo con el ÚLTIMO checkbox marcado de cada "name" repetido) -- se recolectan aparte con `querySelectorAll(...):checked`.
+- **`/perfil` muestra etiquetas legibles**, no los códigos internos (`musica` → "Música", con los géneros/deportes entre paréntesis si aplica) -- `ETIQUETAS_HOBBIE`/`ETIQUETAS_GENERO_MUSICAL`/`ETIQUETAS_DEPORTE` en `perfil.js`, mismo texto que las listas de `app.py` (duplicado a propósito: uno es para el prompt de Koko en el servidor, el otro para pintar HTML en el navegador, no vale la pena compartir código por esto).
+- **Compatibilidad con perfiles guardados antes de este cambio:** si `perfil.hobbie` todavía es un string (formato viejo), `_lista_texto_segura()` lo trata como lista vacía (no revienta, simplemente no aporta ninguna señal) -- probado explícitamente.
+
+### Rediseño 2026-08-19: las asociaciones hobby→estilo se validan una por una, no se inventan
+
+La primera versión (2026-08-18, arriba) tenía `"vibra"`/`"corte_sugerido"` **inventados por Claude** para cada hobby (deportes → athleisure, gaming → oversize, etc.), sin que el usuario los validara. El usuario frenó esto explícitamente: *"no quiero que inventes asociaciones sin que yo las valide primero... recuerda el patrón que seguimos con las reglas de ocasión: primero definir el criterio con casos reales, después programarlo"*. Se sacaron `"vibra"`/`"corte_sugerido"` de `HOBBIES_CONOCIDOS`/`GENEROS_MUSICALES_CONOCIDOS` -- esas 2 listas (+ `DEPORTES_CONOCIDOS`, nueva) ahora son **solo taxonomía** (qué opciones existen en el selector), sin ninguna asociación de estilo.
+
+- **`REGLAS_HOBBY`** (`app.py`): diccionario aparte, con las asociaciones **ya validadas**, una por una -- hoy solo `("musica", "rock")`. Formato pensado para sumar hobbies después sin cambiar la forma:
+  - `"prenda_preferida"`: set de `tipo_prenda` a los que aplica (nunca se aplica a otra prenda).
+  - `"corte"`: el único campo que de verdad mueve una búsqueda (valor real de `CORTES_CONOCIDOS`). Default SOLO si el usuario no eligió un corte propio -- nunca lo reemplaza (mismo mecanismo de corte de siempre, no un filtro nuevo).
+  - `"color_base"`/`"nota"`: el catálogo no tiene color/estampado por prenda (fuera de gorro/chaqueta) -- solo para que Koko converse con criterio, nunca para filtrar.
+  - `"confianza": "validacion_inicial"` -- tal como lo aclaró el usuario (referencias visuales, no encuesta a muchas personas). Koko debe tratarlo como default razonable, y **siempre prioriza lo que el usuario diga explícitamente en el chat por sobre la regla**.
+  - Regla actual: **Música: Rock** → prenda preferida polera/poleron, corte oversize, color predominantemente oscuro (negro, gris) dejando el gráfico como protagonista, nota: gráfico grande tipo banda/concierto (no minimalista), combinar con pantalón suelto/baggy abajo.
+- **`_reglas_hobby_usuario(hobbies, generos_musicales, deportes_subtipo)`**: las reglas validadas que aplican a este perfil. **(2026-08-20: ya NO se usan para fijar un corte por defecto en `/api/recommend` -- ver el rediseño más abajo, esto quedó solo como sugerencia conversacional para Koko.)**
+- **Lección de prompt-engineering (2026-08-19, sigue vigente):** decirle a Koko "esta regla aplica si el hobby es rock" **no bastaba** -- el modelo la trataba como una tabla de referencia genérica y hasta preguntaba "¿qué estilo de música te gusta?" a un usuario que YA tenía "rock" en su perfil. Probado en aislado (prompt mínimo, sin las demás instrucciones compitiendo) para confirmar que el problema era la redacción, no el largo del prompt. **Arreglo:** `_bloque_hobbies_para_prompt()` abre con un hecho ya conocido en primera persona ("este usuario eligió en su perfil que le gusta...") en vez de una regla condicional abstracta -- este patrón de redacción se mantuvo en el rediseño de abajo, solo cambió de "esto ya es un hecho, no lo preguntes" a "esto es una idea opcional, mencionala pero preguntá igual".
+- **Deportes ahora tiene sub-opciones** (`DEPORTES_CONOCIDOS`: Gym, Fútbol, Baseball, Ski -- Baseball/Ski agregados a pedido del usuario 2026-08-19), mismo patrón que música: `#hobbie-deportes` despliega `#campo-hobbie-deportes-subtipo`, guardado en `perfil.hobbie_deportes_subtipo` (array). `SUBGRUPOS_HOBBIE` (`script.js`) generaliza el toggle/precarga/recolección para música Y deportes en un solo loop, para no duplicar la lógica cuando se sume un tercer sub-grupo.
+- **Nota sobre la lista de hobbies:** el usuario pidió eliminar "ciclismo, lectura, cocina, fotografía" -- esos 4 **nunca estuvieron** en la lista real (`HOBBIES_CONOCIDOS`), así que no había nada que sacar; se le avisó explícitamente para no dejar pasar la confusión en silencio.
+- **Propuesta de reglas para otros hobbies:** pendiente de validación del usuario (no implementada) -- gym, fútbol, baseball, ski, gaming, arte y cultura, relajo, películas/series, y los géneros musicales reggaetón/pop/hip-hop/electrónica/indie. Se le presentó una tabla propuesta en el chat; recién se agregan a `REGLAS_HOBBY` una por una cuando el usuario las confirme o ajuste.
+
+### Rediseño 2026-08-20: de "regla positiva forzada" a "exclusión suave de sentido común"
+
+Cambio de enfoque explícito del usuario, un día después del rediseño de arriba: en vez de que cada hobby tenga una regla positiva de qué mostrar (que termina imponiendo un único estilo "correcto"), el hobby ahora solo ayuda a **descartar categorías que claramente no calzan** -- nunca fuerza una recomendación. La base de la búsqueda sigue siendo corte/ocasión/color de siempre; el hobby es "un filtro adicional suave" (palabras del usuario), no una autoridad.
+
+- **`EXCLUSIONES_HOBBY`** (`app.py`): hobby (o `(hobby, sub-opción)` para música/deportes) → set de `tipo_prenda` a deprioritizar. Hoy:
+  - `("arte_cultura", None)` → `{"bikeshorts"}`.
+  - `("deportes", "gym")` → `{"camisa"}`.
+  - `"gaming"` **no tiene entrada** -- pedido explícito del usuario ("sin exclusiones fuertes evidentes, se mantiene el catálogo general").
+- **Limitación honesta, documentada en el código:** el catálogo (mock, y probablemente el real también) no tiene categorías de "ropa técnica-deportiva" (mallas de compresión, running de alto rendimiento) ni "ropa formal/de vestir" como tales -- se usó la categoría real **más parecida** como proxy: `bikeshorts` ("ajustados, tipo ciclista") para lo primero, `camisa` (la prenda más formal-codificada del catálogo, la que ya se usaba para contextos semiformales en conversaciones reales de Koko) para lo segundo. Si el catálogo real algún día trae más variedad de categorías, esto se puede afinar.
+- **`_categorias_deprioritizadas_por_hobby(hobbies, generos_musicales, deportes_subtipo)`**: junta las exclusiones de todos los hobbies del perfil en un solo set.
+- **Mecanismo -- reusa el patrón de `priorizar_material_natural`, NUNCA oculta:** `elegir_candidatos()` suma `categorias_deprioritizadas` (set, default `None`) como el **primer** nivel del `puntaje()` (más fuerte que material: "no calza con tu hobby" es sentido común, no una preferencia de gusto) -- los productos de esas categorías quedan al final del orden, pero si el usuario pide esa categoría directamente (ej. "bikeshorts" explícito), el filtro estricto de tipo de prenda ya los dejó como único candidato posible, así que igual aparecen. Threaded por los mismos 3 lugares que material (`armar_resultados()`/`buscar_plan_b()`/`_completar_con_alternativas_de_corte()`).
+- **Automático en `/api/recommend` (modo "yo"), sin checkbox nuevo:** a diferencia de "priorizar materiales" (el usuario lo prende a mano), la exclusión por hobby se calcula sola a partir del perfil en cada búsqueda -- es una corrección de sentido común, no una preferencia que haya que activar.
+- **`REGLAS_HOBBY` (la regla de Música: Rock) queda como sugerencia OPCIONAL, ya NO fuerza nada:** se sacó por completo la línea que sustituía el `corte` en `/api/recommend` (`if not detectar_corte_pedido(corte) and regla_hobby: corte = regla_hobby["corte"]`) -- una búsqueda por formulario o por Koko con hobby "rock" ahora se comporta exactamente igual que sin ese hobby. En el prompt de Koko, `_bloque_hobbies_para_prompt()` se reescribió de "esto ya es un hecho, no lo preguntes" a "esto es una idea opcional, podés mencionarla pero preguntá igual el corte real, y siempre priorizá lo que el usuario diga". Verificado con `diagnostico_hobbies_estilo.py` (API real): con perfil música+rock, Koko pide un poleron y **sigue preguntando** ajuste/capucha/presupuesto con normalidad, mencionando la idea del rock como un plus ("Como sé que te gusta el rock, una idea es ir por algo oversize... Pero decime qué onda buscas vos"), nunca como una sugerencia ya decidida.
+
+### Refuerzo positivo: Deportes → Gym (2026-08-23)
+
+Pedido explícito del usuario: sumar una sugerencia POSITIVA para Koko sobre "Gym" además de la exclusión que ya existía (`("deportes","gym") → {"camisa"}`, sin cambios) — "una sugerencia dentro de lo que ya se muestra", nunca un filtro nuevo ni un reemplazo de la exclusión.
+
+- **`REGLAS_HOBBY` cambió de forma (2026-08-23):** cada entrada ahora es una **lista** de sugerencias en vez de un único dict — un mismo hobby puede sugerir cortes distintos según la prenda (Gym sugiere algo distinto para pantalón que para polerón). `("musica","rock")` se envolvió en una lista de 1 elemento por consistencia, sin cambiar su contenido ni su comportamiento. `_reglas_hobby_usuario()` ahora usa `.extend()` en vez de `.append()` para aplanar esas listas.
+- **4 sugerencias nuevas para `("deportes","gym")`:**
+  - Pantalón → corte baggy, con detalle de línea lateral (estilo jogger deportivo).
+  - Polerón → corte boxy fit, con diseño/estampado propio (no liso básico).
+  - Shorts → corte baggy, anchos y sueltos — nota explícita de que "ajustado/compresión" sigue excluido, esta sugerencia no lo contradice.
+  - Gorro → tipo `"accesorio"` (campo nuevo `tipo_sugerencia`), sin corte de por medio: sugiere mencionarlo como complemento frecuente, nunca como la prenda principal.
+- **`tipo_sugerencia: "accesorio"` (campo nuevo):** para sugerencias sin corte real (como la de gorro). `_bloque_hobbies_para_prompt()` las renderiza distinto (sin inventar un corte que no aplica) — todo lo demás (`corte`/`color_base`/etc.) sigue igual para las sugerencias normales.
+- **Marcas de referencia (Nike/Adidas):** el pedido fue "si el catálogo las tiene" — hoy el catálogo (622 productos, 14 tiendas) es 100% marcas chicas independientes, **cero productos Nike/Adidas** (verificado). El texto del prompt se lo dice explícitamente a Koko: puede nombrarlas como referencia de estética, pero nunca prometer que el catálogo real las tiene si no están.
+- Sigue siendo solo conversacional (Koko), igual que el resto de `REGLAS_HOBBY` desde el rediseño de arriba — no cambia el resultado de una búsqueda por formulario ni por `/api/recommend`.
+- Verificado sin API (carga del módulo + `_reglas_hobby_usuario`/`_bloque_hobbies_para_prompt` con perfil deportes+gym) y con `probar_reglas.py`/`probar_buscador_real.py`. No se corrió `diagnostico_hobbies_estilo.py` completo (API real, con costo) para esto -- solo se validó que sigue cargando y que la regla de rock no se rompió.
+
+## Datos de referencia sin usar
+
+`data/referencia_no_oficial.json` guarda dos respuestas de Mica (carrete/fiesta, universidad/polerón) que calzan con el enfoque streetwear pero NO son reglas oficiales validadas. Solo contexto extra.

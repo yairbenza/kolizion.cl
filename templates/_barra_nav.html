@@ -1,0 +1,57 @@
+<!-- Barra de navegacion fija abajo, compartida por todas las paginas. El
+     item "Koko" es un boton (abre el overlay de chat en la pagina actual,
+     ver koko.js), los otros 3 son links normales a su pagina. -->
+<nav class="barra-nav-inferior" aria-label="Navegación principal">
+  <a href="/" class="barra-nav-item" data-ruta="/">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <span>Buscar</span>
+  </a>
+
+  <button type="button" id="btn-abrir-koko" class="barra-nav-item">
+    <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="" class="barra-nav-icono-koko">
+    <span>Koko</span>
+  </button>
+
+  <a href="/vitrina" class="barra-nav-item" data-ruta="/vitrina">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+    </svg>
+    <span>Descubre</span>
+  </a>
+
+  <a href="/favoritos" class="barra-nav-item" data-ruta="/favoritos">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"></path>
+    </svg>
+    <span>Favoritos</span>
+  </a>
+
+  <a href="/perfil" class="barra-nav-item" data-ruta="/perfil">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+    <span>Mi perfil</span>
+  </a>
+</nav>
+<script>
+  // Estado de sesion (cuenta real, ver docs/cuentas.md) -- lo usa
+  // abrirEnlaceConAnimacion() en comun.js para saber si tiene que mandar a
+  // /login antes de dejar comprar. Flask le pasa "session" a todos los
+  // templates automaticamente, no hace falta que cada ruta lo mande a mano.
+  window.KOLIZION_LOGUEADO = {{ 'true' if session.get('usuario_id') else 'false' }};
+</script>
+<script>
+  // Resalta el item de la pagina actual. Vive aca (no en un .js aparte)
+  // para no depender del orden de carga de otros scripts -- es independiente.
+  (function () {
+    var ruta = window.location.pathname;
+    document.querySelectorAll(".barra-nav-item[data-ruta]").forEach(function (el) {
+      if (el.dataset.ruta === ruta) el.classList.add("activo");
+    });
+  })();
+</script>

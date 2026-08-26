@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="24 24 192 84" width="240" height="200">
+  <path d="M55 158 Q45 40 120 24 Q195 40 185 158 Z" fill="#d8c3a5" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+  <line x1="60" y1="45" x2="60" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/><line x1="78" y1="45" x2="78" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/><line x1="96" y1="45" x2="96" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/><line x1="114" y1="45" x2="114" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/><line x1="132" y1="45" x2="132" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/><line x1="150" y1="45" x2="150" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/><line x1="168" y1="45" x2="168" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/><line x1="186" y1="45" x2="186" y2="128" stroke="rgba(0,0,0,0.28)" stroke-width="1" opacity="0.5"/>
+  <rect x="50" y="128" width="140" height="32" rx="6" fill="#a2927b" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+  <circle cx="120" cy="20" r="11" fill="#d8c3a5" stroke="rgba(0,0,0,0.28)" stroke-width="2"/>
+</svg>

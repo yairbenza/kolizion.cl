@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · {{ tienda.nombre }}</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <p><a href="/vitrina" class="volver">← Volver a Descubre</a></p>
+    <h1>{{ tienda.nombre }}</h1>
+    <p class="subtitulo">Tienda piloto de KOLIZION.</p>
+
+    <div class="resultado-card">
+      {% if tienda.tipo == "con_sitio_web" %}
+        <p class="descripcion">
+          Muy pronto vas a poder ver acá los productos de esta tienda. Por ahora, puedes visitar su tienda online
+          directo (con tu descuento ya aplicado).
+        </p>
+        <a href="/ir/{{ tienda_id }}" target="_blank" rel="noopener" class="btn-visitar-tienda">Visitar tienda</a>
+      {% else %}
+        <p class="descripcion">
+          Esta tienda todavía no tiene tienda online -- visítala en persona o síguela en sus redes para ver sus
+          productos.
+        </p>
+      {% endif %}
+    </div>
+  </main>
+
+  {% include "_panel_koko.html" %}
+  {% include "_guia_bienvenida.html" %}
+  {% include "_barra_nav.html" %}
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='koko.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Descubre</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="pagina-vitrina">
+  <main class="vitrina-main">
+    <h1>Descubre</h1>
+    <p class="subtitulo">Explora el drip sin filtros ni búsquedas.</p>
+
+    <div id="estado"></div>
+    {% include "_cargando.html" %}
+
+    <!-- Cada seccion es una fila horizontal (carrusel), no una grilla que
+         obliga a hacer scroll hacia abajo -- Tendencias y Ofertas quedan
+         visibles al mismo tiempo en la pantalla. -->
+    <section class="fila-seccion">
+      <h2>Tendencias</h2>
+      <div class="fila-carrusel">
+        <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-tendencias" aria-label="Ver anteriores">‹</button>
+        <div id="vitrina-tendencias" class="fila-vitrina"></div>
+        <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-tendencias" aria-label="Ver siguientes">›</button>
+      </div>
+    </section>
+
+    <section class="fila-seccion">
+      <h2>Nuevos lanzamientos</h2>
+      <div class="fila-carrusel">
+        <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-lanzamientos" aria-label="Ver anteriores">‹</button>
+        <div id="vitrina-lanzamientos" class="fila-vitrina"></div>
+        <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-lanzamientos" aria-label="Ver siguientes">›</button>
+      </div>
+    </section>
+
+    <section class="fila-seccion">
+      <h2>Ofertas</h2>
+      <div class="fila-carrusel">
+        <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-ofertas" aria-label="Ver anteriores">‹</button>
+        <div id="vitrina-ofertas" class="fila-vitrina"></div>
+        <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-ofertas" aria-label="Ver siguientes">›</button>
+      </div>
+    </section>
+
+    <section class="fila-seccion">
+      <h2>Destacados</h2>
+      <div class="fila-carrusel">
+        <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-destacados" aria-label="Ver anteriores">‹</button>
+        <div id="vitrina-destacados" class="fila-vitrina"></div>
+        <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-destacados" aria-label="Ver siguientes">›</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Fijo, arriba a la derecha -- mismo estilo/tamaño que el acceso
+       flotante a Koko (.fab-koko, abajo a la derecha), para que sea un
+       acceso constante y no una fila mas del feed. -->
+  <button type="button" id="btn-llegan-rapido" class="fab-llegan-rapido oculto" aria-label="Ver tiendas que te llegan más rápido">
+    <span aria-hidden="true">🚚</span>
+  </button>
+
+  <div id="modal-llegan-rapido" class="modal-overlay oculto">
+    <div class="tarjeta-modal tarjeta-llegan-rapido">
+      <button type="button" id="btn-cerrar-llegan-rapido" class="btn-cerrar-tour" aria-label="Cerrar">×</button>
+      <h2>Tiendas que te llegan más rápido</h2>
+      <p class="ayuda">Según tu dirección guardada, así de rápido despachan estas tiendas piloto.</p>
+      <ul id="lista-llegan-rapido" class="lista-llegan-rapido"></ul>
+    </div>
+  </div>
+
+  {% include "_panel_koko.html" %}
+  {% include "_guia_bienvenida.html" %}
+  {% include "_vista_previa.html" %}
+  {% include "_redireccion.html" %}
+  {% include "_barra_nav.html" %}
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='vitrina.js') }}"></script>
+  <script src="{{ url_for('static', filename='koko.js') }}"></script>
+</body>
+</html>

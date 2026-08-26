@@ -16,7 +16,7 @@ para dejar listos los archivos en static/img/prendas/.
 """
 from pathlib import Path
 
-from generar_imagenes_gorro import COLOR_HEX, LINEA
+from generar_imagenes_gorro import COLOR_HEX, LINEA, variantes_svg
 
 BASE_DIR = Path(__file__).parent
 OUT_DIR = BASE_DIR / "static" / "img" / "prendas"
@@ -256,8 +256,15 @@ def generar():
     generados = []
 
     def _guardar(nombre, svg):
-        (OUT_DIR / nombre).write_text(svg, encoding="utf-8")
-        generados.append(nombre)
+        # nombre trae ".svg" -- se lo sacamos para poder agregarle el
+        # sufijo de cada variante ("", "-trasera", "-detalle") antes de
+        # volver a ponerlo. Mismo mecanismo que generar_imagenes_gorro.py.
+        stem = nombre[:-4]
+        frontal, trasera, detalle = variantes_svg(svg)
+        for sufijo, contenido in (("", frontal), ("-trasera", trasera), ("-detalle", detalle)):
+            archivo = f"{stem}{sufijo}.svg"
+            (OUT_DIR / archivo).write_text(contenido, encoding="utf-8")
+            generados.append(archivo)
 
     for color in COLOR_HEX:
         for manga in ("corta", "larga"):

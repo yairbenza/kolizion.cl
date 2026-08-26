@@ -1,0 +1,25 @@
+<!-- Vista previa rapida de un producto: 3 fotos (de momento, ilustrativas/
+     inventadas -- ver generar_imagenes_prendas.py/generar_imagenes_gorro.py,
+     se reemplazan por fotos reales cuando haya catalogo real) + descripcion
+     corta + boton "Ir a la tienda". Parcial compartido por las paginas que
+     muestran tarjetas de producto (resultados, vitrina, favoritos) -- NO en
+     index.html ni perfil.html, que no tienen tarjetas. Logica en comun.js
+     (abrirVistaPrevia/cerrarVistaPrevia), para no duplicarla en cada pagina.
+-->
+<div id="modal-vista-previa" class="oculto modal-overlay">
+  <div class="tarjeta-modal tarjeta-vista-previa">
+    <button id="btn-cerrar-vista-previa" class="btn-cerrar-tour" type="button" aria-label="Cerrar vista previa">×</button>
+
+    <img id="vp-imagen-principal" class="vp-imagen-principal" src="" alt="">
+    <div id="vp-miniaturas" class="vp-miniaturas"></div>
+
+    <div class="tienda" id="vp-tienda"></div>
+    <span class="insignia-marca-autor oculto" id="vp-marca-autor">✦ Marca de autor</span>
+    <h3 id="vp-nombre"></h3>
+    <p class="precio" id="vp-precio"></p>
+    <p class="descripcion" id="vp-descripcion"></p>
+    <p class="descripcion oculto" id="vp-material"></p>
+    <p class="descripcion oculto" id="vp-gramaje"></p>
+    <a id="vp-link" href="#" target="_blank" rel="noopener">Ir a la tienda</a>
+  </div>
+</div>

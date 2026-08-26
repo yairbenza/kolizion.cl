@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Crear cuenta</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Crear cuenta</h1>
+    <p class="subtitulo">Rápido y gratis -- la necesitas para comprar en KOLIZION.</p>
+
+    {% if error %}
+    <p class="descripcion" style="color: var(--accent); font-weight: 600;">{{ error }}</p>
+    {% endif %}
+
+    {% if google_disponible %}
+    <button type="button" id="btn-google-login" class="btn-google">Continuar con Google</button>
+    <p class="ayuda" style="text-align: center;">o con tu correo</p>
+    {% endif %}
+
+    <form method="post" action="/registro" id="form-registro">
+      <input type="hidden" name="siguiente" value="{{ siguiente }}">
+
+      <!-- Estos 6 quedan ocultos y los llena JS con lo que ya tenías
+           guardado en este navegador (si lo tenías) -- para no
+           preguntarte de nuevo lo que ya nos habías contado. -->
+      <input type="hidden" name="apellido" id="campo-apellido-oculto">
+      <input type="hidden" name="genero" id="campo-genero-oculto">
+      <input type="hidden" name="edad" id="campo-edad-oculto">
+      <input type="hidden" name="altura" id="campo-altura-oculto">
+      <input type="hidden" name="peso" id="campo-peso-oculto">
+      <input type="hidden" name="direccion" id="campo-direccion-oculto">
+      <input type="hidden" name="hobbie" id="campo-hobbie-oculto">
+      <input type="hidden" name="hobbie_musica_genero" id="campo-hobbie-musica-oculto">
+      <input type="hidden" name="hobbie_deportes_subtipo" id="campo-hobbie-deportes-oculto">
+
+      <label>
+        Nombre
+        <input type="text" name="nombre" id="campo-nombre" required>
+      </label>
+      <label>
+        Teléfono <span class="ayuda">(opcional)</span>
+        <input type="tel" name="telefono" id="campo-telefono" placeholder="ej: +56 9 1234 5678">
+      </label>
+      <label>
+        Correo
+        <input type="email" name="email" id="campo-email" required>
+      </label>
+      <label>
+        Contraseña
+        <input type="password" name="password" required minlength="8">
+      </label>
+      {% if es_safari %}
+      <p class="ayuda">En Safari siempre te vamos a pedir iniciar sesión de nuevo cada vez que vuelvas.</p>
+      {% else %}
+      <label class="checkbox-inline">
+        <input type="checkbox" name="recordar" value="1" id="chk-recordar" checked>
+        Mantener la sesión iniciada en este dispositivo
+      </label>
+      {% endif %}
+      <button type="submit">Crear cuenta</button>
+    </form>
+
+    <p class="ayuda">¿Ya tienes cuenta? <a href="/login?siguiente={{ siguiente }}">Inicia sesión</a>.</p>
+  </main>
+
+  <script src="{{ url_for('static', filename='comun.js') }}"></script>
+  <script src="{{ url_for('static', filename='auth.js') }}"></script>
+  <script>
+    (function () {
+      const perfil = getPerfil();
+      if (!perfil) return;
+      if (perfil.nombre) document.getElementById("campo-nombre").value = perfil.nombre;
+      if (perfil.telefono) document.getElementById("campo-telefono").value = perfil.telefono;
+      if (perfil.gmail) document.getElementById("campo-email").value = perfil.gmail;
+      document.getElementById("campo-apellido-oculto").value = perfil.apellido || "";
+      document.getElementById("campo-genero-oculto").value = perfil.genero || "";
+      document.getElementById("campo-edad-oculto").value = perfil.edad || "";
+      document.getElementById("campo-altura-oculto").value = perfil.altura || "";
+      document.getElementById("campo-peso-oculto").value = perfil.peso || "";
+      document.getElementById("campo-direccion-oculto").value = perfil.direccion || "";
+      document.getElementById("campo-hobbie-oculto").value = JSON.stringify(perfil.hobbie || []);
+      document.getElementById("campo-hobbie-musica-oculto").value = JSON.stringify(perfil.hobbie_musica_genero || []);
+      document.getElementById("campo-hobbie-deportes-oculto").value = JSON.stringify(perfil.hobbie_deportes_subtipo || []);
+    })();
+
+    document.getElementById("btn-google-login")?.addEventListener("click", () => {
+      const chkRecordar = document.getElementById("chk-recordar");
+      iniciarLoginGoogle({{ siguiente | tojson }}, chkRecordar ? chkRecordar.checked : false);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!-- Animacion corta antes de abrir el link de una tienda externa (estilo
+     apps grandes de e-commerce: "Te llevamos a la tienda..." + cuenta
+     regresiva). Parcial compartido -- solo en las paginas con tarjetas de
+     producto o vista previa (resultados/vitrina/favoritos), igual que
+     _vista_previa.html. Logica en comun.js: abrirEnlaceConAnimacion(). -->
+<div id="modal-redireccion" class="oculto modal-overlay">
+  <div class="tarjeta-modal tarjeta-redireccion">
+    <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="" class="redireccion-koko">
+    <p id="redireccion-texto">Te llevamos a la tienda...</p>
+    <p id="redireccion-cuenta" class="redireccion-cuenta">3</p>
+  </div>
+</div>

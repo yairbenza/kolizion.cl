@@ -1,0 +1,55 @@
+<!-- Guia de bienvenida (tour de 3 pantallas: Buscador/Koko/Descubre) --
+     parcial compartido por las 4 paginas, igual que _panel_koko.html.
+     Dos formas de abrirla (ver comun.js):
+     - Automatica, la primera vez que se crea el perfil (index.html/script.js
+       muestra antes #modal-onboarding-pregunta, y si el usuario dice que si,
+       llama a abrirTourOnboarding()).
+     - Manual, en cualquier momento, con el icono fijo "?" de aca abajo
+       (#btn-abrir-guia, .fab-ayuda en style.css -- debajo del avatar de
+       Koko, mismo acceso fijo en las 4 paginas).
+-->
+<button id="btn-abrir-guia" class="fab-ayuda" type="button" aria-label="Ver guía de la app">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"></path>
+    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+  </svg>
+</button>
+
+<div id="modal-onboarding-tour" class="oculto modal-overlay">
+  <div class="tarjeta-modal">
+    <button id="btn-cerrar-tour" class="btn-cerrar-tour" type="button" aria-label="Cerrar guía">×</button>
+
+    <div class="tour-slide" data-slide="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <h2>El buscador</h2>
+      <p>Elige qué prenda buscas, el corte, la ocasión y el precio. Te mostramos ropa real de tiendas chicas que calza contigo.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="1">
+      <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="" class="tour-icono-koko">
+      <h2>Koko</h2>
+      <p>Es tu asistente de estilo. Conversa con él y pídele consejos de outfit, o que te ayude a encontrar algo puntual.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+      </svg>
+      <h2>Descubre</h2>
+      <p>Para cuando no buscas algo puntual: explora tendencias y ofertas de las tiendas.</p>
+    </div>
+
+    <div class="tour-puntos">
+      <span class="tour-punto activo" data-punto="0"></span>
+      <span class="tour-punto" data-punto="1"></span>
+      <span class="tour-punto" data-punto="2"></span>
+    </div>
+    <div class="botones-quien">
+      <button type="button" id="btn-tour-anterior" class="oculto">Anterior</button>
+      <button type="button" id="btn-tour-siguiente">Siguiente</button>
+    </div>
+  </div>
+</div>

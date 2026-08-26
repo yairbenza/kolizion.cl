@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Admin usuarios</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <nav class="admin-nav">
+      <a href="/admin/tiendas">Tiendas</a>
+      <a href="/admin/clics">Clics</a>
+      <a href="/admin/usuarios" class="admin-nav-activo">Usuarios</a>
+      <form method="post" action="/admin/logout" class="admin-nav-logout">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </nav>
+
+    <h1>Cuentas de usuario</h1>
+    <p class="subtitulo">{{ usuarios|length }} cuenta{{ "s" if usuarios|length != 1 else "" }} registrada{{ "s" if usuarios|length != 1 else "" }}.</p>
+
+    {% for u in usuarios %}
+    <div class="resultado-card">
+      <div class="fila-ajuste">
+        {% if u.foto_perfil %}
+        <img src="{{ url_for('static', filename=u.foto_perfil) }}" alt="" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+        {% endif %}
+        <div>
+          <h3 style="margin: 0;">{{ (u.nombre or "") ~ " " ~ (u.apellido or "") }}</h3>
+          <p class="descripcion" style="margin: 0;">{{ u.email }}</p>
+        </div>
+      </div>
+      <p class="descripcion">
+        {{ "Google" if u.google_sub else "" }}{{ " + " if u.google_sub and u.tiene_password else "" }}{{ "Contraseña" if u.tiene_password else "" }}
+        -- creada {{ u.creado_en[:10] }}
+      </p>
+      {% if u.telefono or u.direccion or u.altura or u.peso %}
+      <p class="descripcion">
+        {% if u.telefono %}Tel: {{ u.telefono }} · {% endif %}
+        {% if u.altura %}{{ u.altura }}m · {% endif %}
+        {% if u.peso %}{{ u.peso }}kg · {% endif %}
+        {% if u.direccion %}{{ u.direccion }}{% endif %}
+      </p>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="descripcion">Todavía no hay ninguna cuenta creada.</p>
+    {% endfor %}
+  </main>
+</body>
+</html>

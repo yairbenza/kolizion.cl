@@ -1,0 +1,13 @@
+<script>
+  // Aplica el tema ANTES de que la pagina pinte nada -- si esto corriera al
+  // final como el resto de los scripts, se veria un parpadeo de un tema al
+  // otro. Por eso vive en un <script> aparte, chico, en el <head>.
+  //
+  // Default: OSCURO (2026-08-07, la persona lo prefirio despues de probar
+  // los dos). Solo se muestra claro si en /perfil se eligio explicitamente
+  // ("temaKolizion" guardado como "light") -- un visitante nuevo, sin nada
+  // guardado todavia, entra en oscuro.
+  if (localStorage.getItem("temaKolizion") !== "light") {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+</script>

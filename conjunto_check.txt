@@ -1,0 +1,7 @@
+total catalogo: 658
+productos conjunto: 5
+- NOVVM LUXURY - BLACK TRACKSUIT | fotos=3 | tallas_disponibles=[] | precio=$64.990
+- NOVVM LUXURY - PURPLE TRACKSUIT | fotos=3 | tallas_disponibles=[] | precio=$64.990
+- NOVVM LUXURY - WHITE TRACKSUIT | fotos=3 | tallas_disponibles=[] | precio=$82.990
+- NOVVM ESSENCE - PURPLE TRACKSUIT | fotos=4 | tallas_disponibles=[] | precio=$82.990
+- NOVVM ESSENCE - BLVCK TRACKSUIT | fotos=8 | tallas_disponibles=['S', 'M', 'L', 'XL'] | precio=$65.000

@@ -1,0 +1,30 @@
+<script>
+  // Guarda en localStorage que rutas ya mostraron el golpe electrico de
+  // entrada del titulo (h1/.pregunta-bienvenida, style.css) -- de ahora en
+  // mas, solo se anima la PRIMERA vez que se entra a la app en general y a
+  // cada pestaña/pagina en particular. Corre antes de pintar nada (mismo
+  // patron que _tema_inline.html, en el <head>) para que la clase
+  // "titulo-visto" ya este puesta cuando el h1 aparece -- si corriera
+  // despues, se alcanzaria a ver un frame de la animacion igual.
+  (function () {
+    var CLAVE = "kolizionTitulosVistos";
+    var vistos = [];
+    try {
+      vistos = JSON.parse(localStorage.getItem(CLAVE)) || [];
+    } catch (e) {
+      vistos = [];
+    }
+    var ruta = window.location.pathname;
+    if (vistos.indexOf(ruta) !== -1) {
+      document.documentElement.classList.add("titulo-visto");
+    } else {
+      vistos.push(ruta);
+      try {
+        localStorage.setItem(CLAVE, JSON.stringify(vistos));
+      } catch (e) {
+        // localStorage lleno o bloqueado -- sin guardar, simplemente se
+        // seguira animando cada vez, no rompe nada.
+      }
+    }
+  })();
+</script>

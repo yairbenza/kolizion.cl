@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Admin clics</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <nav class="admin-nav">
+      <a href="/admin/tiendas">Tiendas</a>
+      <a href="/admin/clics" class="admin-nav-activo">Clics</a>
+      <a href="/admin/usuarios">Usuarios</a>
+      <form method="post" action="/admin/logout" class="admin-nav-logout">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </nav>
+
+    <h1>Clics por tienda</h1>
+    <p class="subtitulo">Registro de clics reales en links de tiendas con sitio web (ver "Tiendas").</p>
+
+    <form method="get" action="/admin/clics" class="form-rango-clics">
+      <label>
+        Rango de fechas
+        <select name="rango" onchange="this.form.submit()">
+          {% for valor, config in rangos.items() %}
+          <option value="{{ valor }}" {% if valor == rango %}selected{% endif %}>{{ config.etiqueta }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </form>
+
+    {% for t in filas %}
+    <div class="resultado-card">
+      <h3>{{ t.nombre }}</h3>
+      <p class="precio">{{ t.total }} clic{{ "s" if t.total != 1 else "" }} -- {{ etiqueta_rango.lower() }}</p>
+
+      {% if t.productos %}
+      <p class="descripcion" style="margin-top:0.75rem;"><strong>Productos con más clics:</strong></p>
+      <ul class="lista-reportes">
+        {% for producto, cantidad in t.productos %}
+        <li>{{ producto }} — {{ cantidad }} clic{{ "s" if cantidad != 1 else "" }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="descripcion">Sin clics en este rango todavía.</p>
+      {% endif %}
+
+      <div class="resumen-copiable">
+        <p id="resumen-{{ t.id }}">{{ t.resumen }}</p>
+        <button type="button" class="btn-copiar-resumen" data-objetivo="resumen-{{ t.id }}">Copiar</button>
+      </div>
+    </div>
+    {% else %}
+    <p class="descripcion">Todavía no hay tiendas con sitio web agregadas. <a href="/admin/tiendas" class="volver">Agregar una tienda</a></p>
+    {% endfor %}
+  </main>
+
+  <script>
+    document.querySelectorAll(".btn-copiar-resumen").forEach((boton) => {
+      boton.addEventListener("click", async () => {
+        const texto = document.getElementById(boton.dataset.objetivo).textContent;
+        try {
+          await navigator.clipboard.writeText(texto);
+          const original = boton.textContent;
+          boton.textContent = "¡Copiado!";
+          setTimeout(() => { boton.textContent = original; }, 1500);
+        } catch (e) {
+          // Sin permiso de portapapeles o navegador viejo -- el texto ya
+          // esta visible en pantalla, se puede seleccionar a mano.
+        }
+      });
+    });
+  </script>
+</body>
+</html>

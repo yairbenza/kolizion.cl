@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Admin</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Panel de administrador</h1>
+    <p class="subtitulo">Acceso privado -- solo para el dueño del proyecto.</p>
+
+    {% if error %}
+    <p class="descripcion" style="color: var(--accent); font-weight: 600;">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="/admin/login">
+      <input type="hidden" name="siguiente" value="{{ siguiente }}">
+      <label>
+        Contraseña
+        <input type="password" name="password" autofocus required>
+      </label>
+      <button type="submit">Entrar</button>
+    </form>
+  </main>
+</body>
+</html>

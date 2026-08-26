@@ -17,6 +17,15 @@ No reincorporar sin pedido explícito del usuario:
 5. PowerShell en este equipo tiene un límite de ~965 bytes por comando — para probar varios casos a la vez, guardarlos en un script (`.py`/`.ps1`) y correrlo, no escribir pruebas largas directo en la terminal.
 6. **Documentación detallada vive en `docs/`** (ver índice abajo) — este archivo solo tiene lo esencial. Leer el doc relevante antes de tocar esa área en vez de asumir de memoria.
 7. **Cada vez que se agregue una tienda nueva al catálogo**, entrar a su sitio real y buscar su política de envío (despacho a RM, despacho a regiones, retiro en tienda física) y guardarla en `data/envios_tiendas.json`, con la misma estructura que las tiendas ya cargadas ahí. Si el sitio no especifica algo claramente, anotarlo como "no especificado" en vez de asumir o inventar un plazo.
+8. **Estructura modular del backend (optimización de tokens):**
+   - `app.py`: Servidor Flask principal, blueprints y orquestación de endpoints.
+   - `motor_recomendacion.py`: Lógica de filtros de ropa, ocasiones, cortes, tallas, gramajes y Plan B.
+   - `servicio_koko.py`: Prompts, límites diarios, llamadas a Anthropic y validaciones de Koko.
+   - `servicio_tiendas.py`: Gestión de tiendas, tracking de clics, favoritos, reportes y estimación de envíos.
+   - `rutas_auth.py`: Blueprint de autenticación (registro, login, Google OAuth, fotos de perfil).
+   - `rutas_admin.py`: Blueprint del panel de administración (`/admin/*`, tiendas, clics, usuarios).
+   - `constantes.py`: Constantes, paths, diccionarios de prendas y utilidades de normalización/saneo.
+   - `db_usuarios.py`: Base de datos SQLite (`kolizion.db`) y funciones CRUD de usuarios.
 
 ## Índice de documentación (`docs/`)
 

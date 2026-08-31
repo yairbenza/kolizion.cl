@@ -8,16 +8,22 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / "data" / "catalog.json"
 REGLAS_PATH = BASE_DIR / "data" / "reglas_streetwear.json"
+FAMOSOS_ESTILO_PATH = BASE_DIR / "data" / "famosos_estilo.json"
 HISTORIAL_PATH = BASE_DIR / "data" / "historial_usuarios.json"
 CHATS_KOKO_PATH = BASE_DIR / "data" / "chats_koko.json"
 TIENDAS_PATH = BASE_DIR / "data" / "tiendas.json"
+TAGS_GRAFICO_PATH = BASE_DIR / "data" / "tags_grafico.json"
+TAGS_FORMA_GORRO_PATH = BASE_DIR / "data" / "tags_forma_gorro.json"
 ENVIOS_TIENDAS_PATH = BASE_DIR / "data" / "envios_tiendas.json"
 CLICS_TIENDAS_PATH = BASE_DIR / "data" / "clics_tiendas.json"
 REPORTES_MANUALES_PATH = BASE_DIR / "data" / "reportes_manuales.json"
 FAVORITOS_PATH = BASE_DIR / "data" / "favoritos.json"
+RESENAS_PATH = BASE_DIR / "data" / "resenas.json"
 LIMITE_KOKO_PATH = BASE_DIR / "data" / "limite_koko.json"
 
-LIMITE_MENSAJES_KOKO_DIA = 15
+# Subido temporalmente para pruebas (2026-08-26, pedido del usuario) -- volver
+# a 15 antes de sacar la app real (asi se controla el gasto de API por persona).
+LIMITE_MENSAJES_KOKO_DIA = 1000
 CANTIDAD_RESULTADOS = 5
 
 LARGO_MAXIMO_TEXTO_LIBRE = 200
@@ -43,10 +49,68 @@ CATEGORIA_GRUPOS = {
     "prenda inferior": ["pantalon", "falda", "shorts", "faldacargo", "bikeshorts"],
 }
 
+# Regla validada (ver docs/buscador.md, tabla "Filtros del formulario"):
+# "top" (croptop/babytee/halter/corset/tanktop/blusa) no se ofrece a
+# genero "hombre" -- estaba documentada pero nunca aplicada en el
+# buscador, asi que una busqueda amplia (ej. "prenda superior" sin tipo
+# especifico) para hombre podia devolver tops (bug real reportado por el
+# usuario, 2026-08-26). Filtro general por categoria, no por producto --
+# si se valida otra categoria exclusiva de un genero, se agrega aca.
+CATEGORIAS_EXCLUIDAS_POR_GENERO = {
+    "hombre": {"top"},
+}
+
 TIPO_PRENDA_A_CATEGORIA_GRUPO = {
     tipo: grupo for grupo, tipos in CATEGORIA_GRUPOS.items() for tipo in tipos
 }
 TIPO_PRENDA_A_CATEGORIA_GRUPO["gorro"] = "gorro"
+
+# Apodos con los que la gente nombra estas tiendas en el chat aunque no
+# coincidan con el nombre real del catalogo -- confirmados por el propio
+# usuario (Doslobos = "Don Lobo", UNK Chile = "IO Chile"). Solo sirven para
+# que una exclusion en Koko ("nada de Don Lobo") encuentre la tienda real;
+# no se agregan mas alias sin que el usuario los confirme.
+ALIAS_TIENDAS = {
+    "don lobo": "Doslobos",
+    "dos lobos": "Doslobos",
+    "io chile": "UNK Chile",
+}
+
+# Colores que Koko/el buscador pueden pedir de forma explicita (clave
+# canonica -> variantes de texto para encontrarlos en nombre/tags/
+# descripcion del producto, mismo mecanismo que ya usa CORTES_CONOCIDOS).
+# El catalogo NO tiene un campo "color" estructurado para la mayoria de las
+# prendas (solo gorro tiene "color_dominante") -- por eso el match real se
+# hace contra el texto existente de la ficha, nunca inventando un color que
+# no este escrito ahi (2026-08-27).
+COLORES_CONOCIDOS = {
+    "rojo": ["rojo", "roja", "red"],
+    "azul": ["azul", "blue"],
+    "verde": ["verde", "green"],
+    "beige": ["beige"],
+    "negro": ["negro", "negra", "black"],
+    "blanco": ["blanco", "blanca", "white"],
+    "gris": ["gris", "grey", "gray"],
+    "cafe": ["cafe", "marron", "brown"],
+    "amarillo": ["amarillo", "amarilla", "yellow"],
+    "naranja": ["naranja", "naranjo", "orange"],
+    "morado": ["morado", "morada", "purpura", "purple"],
+    "rosado": ["rosado", "rosada", "rosa", "fucsia", "pink"],
+    "celeste": ["celeste"],
+}
+
+# Expansion secundaria SOLO para "Buscar mas" cuando ya no quedan prendas
+# del color exacto -- colores visualmente cercanos, nunca uno completamente
+# distinto (pedido explicito del usuario, 2026-08-27). Un color sin entrada
+# aca simplemente no tiene expansion (no rompe nada, solo no amplia).
+COLORES_SIMILARES = {
+    "rojo": ["burdeo", "granate", "terracota", "naranja oscuro"],
+    "azul": ["celeste", "azul marino", "petroleo"],
+    "verde": ["oliva", "musgo", "verde oscuro"],
+    "beige": ["crema", "arena", "cafe claro"],
+    "negro": ["gris oscuro"],
+    "blanco": ["crema", "off-white", "offwhite"],
+}
 
 CORTES_CONOCIDOS = {
     "baggy": ["baggy"],
@@ -68,8 +132,8 @@ TIPOS_PRENDA_CONOCIDOS = {
     "camiseta": ["camiseta"],
     "chaqueta": ["chaqueta"],
     "chaleco": ["chaleco"],
-    "pantalon": ["pantalon"],
-    "shorts": ["shorts", "short"],
+    "pantalon": ["pantalon", "buzo"],
+    "shorts": ["shorts", "short", "jorts"],
     "falda": ["falda"],
     "gorro": ["gorro", "gorra", "jockey", "cap"],
     "accesorio": ["accesorio", "mochila", "cinturon"],
@@ -77,10 +141,11 @@ TIPOS_PRENDA_CONOCIDOS = {
 
 SUBTIPOS_CONOCIDOS = {
     "buzo": ["buzo", "jogger"],
-    "jeans": ["jeans", "denim"],
+    "jeans": ["jeans", "jean", "denim", "mezclilla"],
     "cargo": ["cargo"],
     "tela": ["tela"],
     "bano": ["bano", "baño"],
+    "jorts": ["jort", "jorts"],
     "croptop": ["crop top", "crop hoodie", "croptop"],
     "babytee": ["baby tee", "babytee"],
     "halter": ["halter", "top con breteles", "breteles"],
@@ -90,13 +155,19 @@ SUBTIPOS_CONOCIDOS = {
     "bomber": ["bomber"],
     "mezclilla": ["mezclilla", "denim", "jeans", "jean"],
     "cuero": ["cuero", "de cuero", "leather"],
+    # 2026-08-30: "chaleco" ya existia como tipo de prenda en el formulario
+    # pero sin subtipo -- cardigan (categoria exclusiva de mujer, regla del
+    # 2026-08-28) no se podia buscar especificamente, se mezclaba con los
+    # 26 chalecos genericos unisex del catalogo.
+    "cardigan": ["cardigan", "cardigans"],
 }
 
 SUBTIPOS_POR_TIPO_PRENDA = {
     "pantalon": {"buzo", "jeans", "cargo"},
-    "shorts": {"jeans", "tela", "cargo", "bano"},
+    "shorts": {"jeans", "tela", "cargo", "bano", "jorts"},
     "top": {"croptop", "babytee", "halter", "corset", "tanktop", "blusa"},
     "chaqueta": {"bomber", "mezclilla", "cuero"},
+    "chaleco": {"cardigan"},
 }
 
 TIPOS_CON_LARGO = {"polera", "camiseta", "top"}
@@ -122,8 +193,6 @@ CIERRES_CONOCIDOS = {
     "sin cierre": ["sin cierre", "crewneck"],
 }
 
-COLORES_GORRO_CONOCIDOS = ["blanco", "negro", "rojo", "azul", "amarillo", "beige", "morado", "verde"]
-COLORES_VIVOS_GORRO = {"rojo", "azul", "amarillo", "morado", "verde"}
 FORMAS_GORRO_CONOCIDAS = ["curvo", "plano", "lana"]
 
 FORMA_GORRO_CONOCIDA = {
@@ -151,6 +220,7 @@ HOBBIES_CONOCIDOS = {
     "arte_cultura": {"etiqueta": "Arte y cultura"},
     "gaming": {"etiqueta": "Gaming"},
     "peliculas_series": {"etiqueta": "Películas y series"},
+    "anime": {"etiqueta": "Anime"},
 }
 
 GENEROS_MUSICALES_CONOCIDOS = {
@@ -172,6 +242,49 @@ DEPORTES_CONOCIDOS = {
 EXCLUSIONES_HOBBY = {
     ("arte_cultura", None): {"bikeshorts"},
     ("deportes", "gym"): {"camisa"},
+}
+
+# Exclusiones duras por ocasion, SOLO mujer (pedido explicito del usuario,
+# 2026-08-30). A diferencia de EXCLUSIONES_HOBBY (que solo reordena, ver
+# nivel_hobby en motor_recomendacion.py), estas SI sacan la prenda del pool
+# de candidatos -- el usuario pidio expresamente no tocar el ranking para
+# esto. Cada regla usa solo atributos que YA existen en el catalogo
+# (categoria/subtipo/capucha); "calzas" (carrete), "deportiva"/"casero"/
+# "chill" (junta social, junta familiar, asado, concierto) y "brillo"/
+# "tachas" (boost de concierto) se omitieron a proposito porque el catalogo
+# no tiene esos atributos tageados (ver docs/buscador.md) -- no se inventaron.
+EXCLUSIONES_OCASION_MUJER = {
+    "carrete": [
+        {"categoria": "poleron", "capucha": "con capucha"},
+        {"categoria": "chaleco"},
+        {"categoria": "pantalon", "subtipo": "buzo"},
+    ],
+    "universidad": [
+        {"categoria": "chaqueta", "subtipo": "cuero"},
+    ],
+    "social_casera": [
+        {"categoria": "pantalon", "subtipo": "buzo"},
+    ],
+    "concierto_festival": [
+        {"categoria": "pantalon", "subtipo": "buzo"},
+    ],
+}
+
+# Sinonimos de texto libre ("otro" en el formulario, o texto de Koko) que
+# mapean a las claves de arriba -- "junta social"/"junta familiar" son los
+# valores reales del <select> del formulario; el resto son la forma en que
+# el usuario nombro la misma ocasion al pedir esta regla.
+GRUPOS_OCASION_MUJER = {
+    "carrete": "carrete",
+    "universidad": "universidad",
+    "junta social": "social_casera",
+    "junta de amigas": "social_casera",
+    "junta familiar": "social_casera",
+    "comida familiar": "social_casera",
+    "asado": "social_casera",
+    "concierto/festival": "concierto_festival",
+    "concierto": "concierto_festival",
+    "festival": "concierto_festival",
 }
 
 REGLAS_HOBBY = {
@@ -327,11 +440,34 @@ def _mencionado_en_conversacion(canonico, conocidos, mensajes):
     )
 
 
-def _valor_o_deteccion(valor_propuesto, conocidos, mensajes, detector_conversacion, mensajes_confirmacion=None):
+def _mencionado_en_mensaje_mas_reciente(canonico, conocidos, mensajes):
+    """Como _mencionado_en_conversacion, pero solo cuenta si el canonico
+    aparece en el mensaje MAS RECIENTE que menciona algun tipo conocido --
+    evita que un tema ya superado (mencionado varios turnos atras, ej. un
+    "pantalon" nombrado de pasada antes de enfocarse en el "poleron") siga
+    "confirmando" una propuesta de Koko que ya no es la vigente."""
+    for mensaje in reversed(mensajes):
+        texto = _quitar_tildes((mensaje or "").lower())
+        if any(_contiene_palabra(texto, variante) for variantes in conocidos.values() for variante in variantes):
+            variantes_canonico = conocidos.get(canonico) or []
+            return any(_contiene_palabra(texto, v) for v in variantes_canonico)
+    return False
+
+
+def _valor_o_deteccion(
+    valor_propuesto, conocidos, mensajes, detector_conversacion,
+    mensajes_confirmacion=None, solo_mensaje_mas_reciente=False,
+):
     propuesto = (valor_propuesto or "").lower()
     ventana = mensajes if mensajes_confirmacion is None else mensajes_confirmacion
-    if propuesto in conocidos and _mencionado_en_conversacion(propuesto, conocidos, ventana):
-        return propuesto
+    if propuesto in conocidos:
+        confirmado = (
+            _mencionado_en_mensaje_mas_reciente(propuesto, conocidos, ventana)
+            if solo_mensaje_mas_reciente
+            else _mencionado_en_conversacion(propuesto, conocidos, ventana)
+        )
+        if confirmado:
+            return propuesto
     return detector_conversacion(mensajes)
 
 

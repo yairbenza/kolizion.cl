@@ -12,6 +12,33 @@ function esImagenIlustrativa(imagen) {
   return typeof imagen === "string" && imagen.startsWith("/static/img/");
 }
 
+// Producto "oficial" (2026-08-27): tienda con consentimiento explicito para
+// vender de verdad (ver TIENDAS_OFICIALES en construir_catalogo_real.py),
+// no solo foto real -- eso ya lo tienen varias tiendas mas sin ser
+// "oficial". Para estos productos la compra pasa a ser real DENTRO de
+// KOLIZION (carrito local, ver mas abajo) en vez de linkear afuera -- las
+// demas tiendas (la gran mayoria del catalogo hoy) siguen linkeando a su
+// sitio externo exactamente igual que siempre, no se les toco nada.
+function productoTieneStock(rec) {
+  if (rec.tallas_variantes && rec.tallas_variantes.length) {
+    return rec.tallas_variantes.some((v) => v.disponible);
+  }
+  return Boolean(rec.tallas_disponibles && rec.tallas_disponibles.length);
+}
+
+function botonAccionProductoHtml(rec) {
+  if (!rec.oficial) {
+    return `<a href="${rec.link}" target="_blank" rel="noopener">${esImagenIlustrativa(rec.imagen) ? "Ver producto (ejemplo)" : "Ver producto"}</a>`;
+  }
+  if (!productoTieneStock(rec)) {
+    return `<span class="boton-proximamente" aria-disabled="true">Próximamente</span>`;
+  }
+  // Elegir talla/color pasa siempre por la ficha completa (modal) -- este
+  // boton de la tarjeta solo la abre, el "Agregar al carrito" real esta
+  // ahi dentro (ver abrirVistaPrevia).
+  return `<button type="button" class="btn-abrir-ficha-carrito">Agregar al carrito</button>`;
+}
+
 // PWA: registra el service worker (static/sw.js, servido en /sw.js para
 // que su alcance cubra toda la app -- ver app.py) en todas las paginas.
 // Junto con manifest.json y los iconos (ver _pwa_meta.html), esto es lo
@@ -39,6 +66,35 @@ function getPerfil() {
 function guardarPerfil(perfil) {
   localStorage.setItem(PERFIL_KEY, JSON.stringify(perfil));
 }
+
+// Preferencias negativas (2026-08-28): que excluir por completo de "yo"
+// buscando -- aparte del perfil (no es un dato de la persona, es un filtro),
+// se manda tal cual al servidor en cada busqueda "yo" (ver form-busqueda-yo
+// en script.js y btn-koko-si en koko.js). Los checkboxes viven en /perfil
+// (ver configurarPreferenciasNegativas en perfil.js).
+const PREFERENCIAS_NEGATIVAS_KEY = "preferenciasNegativas";
+
+function getPreferenciasNegativas() {
+  try {
+    return JSON.parse(localStorage.getItem(PREFERENCIAS_NEGATIVAS_KEY)) || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function guardarPreferenciasNegativas(prefs) {
+  localStorage.setItem(PREFERENCIAS_NEGATIVAS_KEY, JSON.stringify(prefs));
+}
+
+// Texto humano de cada clave de preferencia negativa (usado por
+// resultados.js para armar la pregunta "tienes marcado que no te gustan
+// X -- ¿buscamos igual incluyendo esas opciones, solo por esta vez?").
+const ETIQUETAS_PREFERENCIAS_NEGATIVAS = {
+  excluir_rotos: "pantalones rotos/desgastados",
+  excluir_grafico_grande: "gráficos/dibujos muy grandes",
+  excluir_texto_grande: "frases/texto muy grande",
+  excluir_cara_logo_grande: "caras/logos gigantes",
+};
 
 // Escapa HTML (< > & " ' etc.) para poder insertar texto por innerHTML sin
 // riesgo de XSS -- crea un elemento, le pone el texto como textContent
@@ -182,55 +238,288 @@ function imagenesPreview(rec) {
   return [rec.imagen, `${base}-trasera.svg`, `${base}-detalle.svg`];
 }
 
-function abrirVistaPrevia(rec) {
-  const imagenes = imagenesPreview(rec);
-  const principal = document.getElementById("vp-imagen-principal");
-  const miniaturas = document.getElementById("vp-miniaturas");
+// --- Carrito local (2026-08-27) -------------------------------------------
+// Arquitectura minima para que "Agregar al carrito" sea una accion real, no
+// cosmetica -- guarda en localStorage (por dispositivo, igual que el resto
+// de las conveniencias de este tipo en la app). El checkout real (pago,
+// confirmacion de pedido) es un trabajo aparte; esto solo deja la prenda
+// elegida (con su talla/color) guardada y lista para cuando ese flujo
+// exista, sin inventar un pago que todavia no se puede procesar.
+const CARRITO_KEY = "kolizionCarrito";
 
-  principal.src = imagenes[0] || "";
-  miniaturas.innerHTML = imagenes
-    .map((src, i) => `<button type="button" class="vp-miniatura${i === 0 ? " activa" : ""}" data-src="${src}"><img src="${src}" alt=""></button>`)
+function leerCarrito() {
+  try {
+    return JSON.parse(localStorage.getItem(CARRITO_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function agregarAlCarrito(item) {
+  try {
+    const carrito = leerCarrito();
+    carrito.push(item);
+    localStorage.setItem(CARRITO_KEY, JSON.stringify(carrito));
+  } catch (e) {
+    // Silencioso a proposito -- best-effort, igual que favoritos.
+  }
+}
+
+// --- Resenas de producto (2026-08-27) --------------------------------------
+// Nunca inventadas -- si /api/resenas devuelve total=0 (ningun comprador
+// dejo una todavia), se muestra el empty state en vez de datos de relleno.
+function _estrellasHtml(promedio) {
+  const llenas = Math.round(promedio || 0);
+  let html = "";
+  for (let i = 1; i <= 5; i++) html += i <= llenas ? "★" : "☆";
+  return html;
+}
+
+function _renderResenas(resumen) {
+  const resumenEl = document.getElementById("vp-resenas-resumen");
+  const listaEl = document.getElementById("vp-resenas-lista");
+  const estrellasResumen = document.getElementById("vp-estrellas-resumen");
+  if (!resumenEl || !listaEl) return;
+
+  if (!resumen || !resumen.total) {
+    resumenEl.innerHTML = "";
+    listaEl.innerHTML = `<p class="vp-resenas-vacio">Este producto todavía no tiene reseñas.</p>`;
+    if (estrellasResumen) estrellasResumen.classList.add("oculto");
+    return;
+  }
+
+  if (estrellasResumen) {
+    estrellasResumen.classList.remove("oculto");
+    const plural = resumen.total === 1 ? "reseña" : "reseñas";
+    estrellasResumen.innerHTML = `<span class="vp-estrellas">${_estrellasHtml(resumen.promedio)}</span> ${resumen.promedio} (${resumen.total} ${plural})`;
+  }
+
+  const barras = [5, 4, 3, 2, 1]
+    .map((n) => {
+      const cantidad = (resumen.distribucion || {})[String(n)] || 0;
+      const pct = resumen.total ? Math.round((cantidad / resumen.total) * 100) : 0;
+      return `<div class="vp-barra-estrella"><span>${n}★</span><div class="vp-barra-fondo"><div class="vp-barra-relleno" style="width:${pct}%"></div></div><span>${cantidad}</span></div>`;
+    })
     .join("");
-  miniaturas.querySelectorAll(".vp-miniatura").forEach((btn) => {
+  resumenEl.innerHTML = `
+    <div class="vp-estrellas-grande">${_estrellasHtml(resumen.promedio)}</div>
+    <div class="vp-resumen-numero">${resumen.promedio} de 5 · ${resumen.total} ${resumen.total === 1 ? "reseña" : "reseñas"}</div>
+    <div class="vp-barras">${barras}</div>
+  `;
+
+  listaEl.innerHTML = (resumen.items || [])
+    .map(
+      (r) => `
+    <div class="vp-resena">
+      <div class="vp-resena-cabecera">
+        <span class="vp-resena-usuario">${r.usuario || "Usuario KOLIZION"}</span>
+        <span class="vp-estrellas">${_estrellasHtml(r.estrellas)}</span>
+        ${r.compra_verificada ? `<span class="vp-compra-verificada">Compra verificada</span>` : ""}
+      </div>
+      <p class="vp-resena-comentario">${r.comentario || ""}</p>
+      <span class="vp-resena-fecha">${r.fecha || ""}</span>
+    </div>
+  `
+    )
+    .join("");
+}
+
+function _cargarResenas(nombre) {
+  fetch(`/api/resenas?nombre=${encodeURIComponent(nombre || "")}`)
+    .then((r) => r.json())
+    .then(_renderResenas)
+    .catch(() => _renderResenas(null));
+}
+
+function _cargarEnvioTienda(tienda) {
+  const det = document.getElementById("vp-det-envio");
+  const texto = document.getElementById("vp-envio-texto");
+  if (!det || !texto) return;
+  fetch(`/api/envio_tienda?tienda=${encodeURIComponent(tienda || "")}`)
+    .then((r) => r.json())
+    .then((data) => {
+      if (data.texto) {
+        texto.textContent = data.texto;
+        det.classList.remove("oculto");
+      } else {
+        det.classList.add("oculto");
+      }
+    })
+    .catch(() => det.classList.add("oculto"));
+}
+
+function _textoDetallesProducto(rec) {
+  const partes = [];
+  if (rec.corte) partes.push(`Corte: ${rec.corte}`);
+  if (rec.subtipo) partes.push(`Subtipo: ${rec.subtipo}`);
+  if (rec.manga) partes.push(`Manga: ${rec.manga}`);
+  if (rec.largo) partes.push(`Largo: ${rec.largo}`);
+  if (rec.capucha) partes.push(`Capucha: ${rec.capucha}`);
+  if (rec.cierre) partes.push(`Cierre: ${rec.cierre}`);
+  return partes.join(" · ");
+}
+
+// --- Selector de talla/color ------------------------------------------------
+// Usa tallas_variantes (disponible Y agotada, real de Shopify -- ver
+// _variantes_talla_shopify en construir_catalogo_real.py) cuando existe;
+// si el producto no la tiene, cae a tallas_disponibles como antes (rango
+// de la tienda, sin distinguir agotado -- es lo unico que hay para esas).
+function _opcionesTalla(rec) {
+  if (rec.tallas_variantes && rec.tallas_variantes.length) return rec.tallas_variantes;
+  if (rec.tallas_disponibles && rec.tallas_disponibles.length) {
+    return rec.tallas_disponibles.map((t) => ({ talla: t, disponible: true }));
+  }
+  return [];
+}
+
+function _renderChipsTalla(rec) {
+  const bloque = document.getElementById("vp-selector-talla");
+  const cont = document.getElementById("vp-chips-talla");
+  const opciones = _opcionesTalla(rec);
+
+  if (!rec.oficial || !opciones.length) {
+    bloque.classList.add("oculto");
+    return;
+  }
+
+  bloque.classList.remove("oculto");
+  cont.innerHTML = opciones
+    .map((o) => `<button type="button" class="vp-chip${o.disponible ? "" : " agotada"}" data-talla="${o.talla}" ${o.disponible ? "" : "disabled"}>${o.talla}</button>`)
+    .join("");
+  cont.querySelectorAll(".vp-chip:not(.agotada)").forEach((btn) => {
     btn.addEventListener("click", () => {
-      principal.src = btn.dataset.src;
-      miniaturas.querySelectorAll(".vp-miniatura").forEach((b) => b.classList.remove("activa"));
+      cont.querySelectorAll(".vp-chip").forEach((b) => b.classList.remove("activa"));
       btn.classList.add("activa");
+      vpTallaElegida = btn.dataset.talla;
+      _actualizarCta();
     });
   });
+}
+
+// Colores: casi ningun producto del catalogo tiene hoy este dato separado
+// del nombre (ver docs/catalogo_real.md) -- el bloque queda oculto para
+// esos, "si corresponde" tal como se pidio, sin inventar un color.
+function _renderChipsColor(rec) {
+  const bloque = document.getElementById("vp-selector-color");
+  const cont = document.getElementById("vp-chips-color");
+
+  if (!rec.colores_disponibles || !rec.colores_disponibles.length) {
+    bloque.classList.add("oculto");
+    return;
+  }
+
+  bloque.classList.remove("oculto");
+  cont.innerHTML = rec.colores_disponibles.map((c) => `<button type="button" class="vp-chip" data-color="${c}">${c}</button>`).join("");
+  cont.querySelectorAll(".vp-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      cont.querySelectorAll(".vp-chip").forEach((b) => b.classList.remove("activa"));
+      btn.classList.add("activa");
+      vpColorElegido = btn.dataset.color;
+    });
+  });
+}
+
+function _actualizarCta() {
+  const rec = vpRecActual;
+  const link = document.getElementById("vp-link");
+  const nota = document.getElementById("vp-cta-nota");
+  if (!rec || !link) return;
+
+  if (!rec.oficial) {
+    link.textContent = "Ir a la tienda";
+    link.classList.remove("boton-proximamente");
+    link.removeAttribute("aria-disabled");
+    nota.classList.add("oculto");
+    return;
+  }
+
+  if (!productoTieneStock(rec)) {
+    link.textContent = "Próximamente";
+    link.classList.add("boton-proximamente");
+    link.setAttribute("aria-disabled", "true");
+    nota.textContent = "Sin stock por ahora.";
+    nota.classList.remove("oculto");
+    return;
+  }
+
+  link.classList.remove("boton-proximamente");
+  link.removeAttribute("aria-disabled");
+  const necesitaTalla = !document.getElementById("vp-selector-talla").classList.contains("oculto");
+  link.textContent = necesitaTalla && !vpTallaElegida ? "Elige una talla" : "Agregar al carrito";
+  nota.classList.add("oculto");
+}
+
+let vpRecActual = null;
+let vpTallaElegida = null;
+let vpColorElegido = null;
+let vpImagenes = [];
+let vpIndice = 0;
+
+// Pinta la foto en el indice dado en TODOS lados que la muestran (principal,
+// miniatura activa, y el zoom si esta abierto) -- un solo punto de verdad
+// para que las flechitas de la galeria y las del zoom naveguen lo mismo.
+function _pintarImagenVp(indice) {
+  if (!vpImagenes.length) return;
+  vpIndice = (indice + vpImagenes.length) % vpImagenes.length;
+  const src = vpImagenes[vpIndice];
+  document.getElementById("vp-imagen-principal").src = src;
+  document.querySelectorAll("#vp-miniaturas .vp-miniatura").forEach((b, i) => {
+    b.classList.toggle("activa", i === vpIndice);
+  });
+  const zoomImg = document.getElementById("zoom-imagen");
+  if (zoomImg) zoomImg.src = src;
+}
+
+function abrirVistaPrevia(rec) {
+  vpRecActual = rec;
+  vpTallaElegida = null;
+  vpColorElegido = null;
+  vpImagenes = imagenesPreview(rec);
+  vpIndice = 0;
+
+  const miniaturas = document.getElementById("vp-miniaturas");
+  const hayVarias = vpImagenes.length > 1;
+  document.getElementById("vp-flecha-izq").classList.toggle("oculto", !hayVarias);
+  document.getElementById("vp-flecha-der").classList.toggle("oculto", !hayVarias);
+
+  miniaturas.innerHTML = vpImagenes
+    .map((src, i) => `<button type="button" class="vp-miniatura${i === 0 ? " activa" : ""}" data-src="${src}"><img src="${src}" alt=""></button>`)
+    .join("");
+  miniaturas.querySelectorAll(".vp-miniatura").forEach((btn, i) => {
+    btn.addEventListener("click", () => _pintarImagenVp(i));
+  });
+  _pintarImagenVp(0);
 
   document.getElementById("vp-tienda").textContent = rec.tienda || "";
   document.getElementById("vp-nombre").textContent = rec.nombre || "";
   document.getElementById("vp-precio").textContent = rec.precio || "";
   document.getElementById("vp-descripcion").textContent = rec.descripcion || rec.razon || "";
-  // Material y gramaje (2026-08-19): el catalogo real todavia no siempre
-  // los tiene -- estas filas directamente no se muestran si el producto no
-  // las trae.
-  const filaMaterial = document.getElementById("vp-material");
-  if (rec.material) {
-    filaMaterial.textContent = `Material: ${rec.material}`;
-    filaMaterial.classList.remove("oculto");
-  } else {
-    filaMaterial.classList.add("oculto");
-  }
-  const filaGramaje = document.getElementById("vp-gramaje");
-  if (rec.gramaje_texto) {
-    filaGramaje.textContent = rec.gramaje_texto;
-    filaGramaje.classList.remove("oculto");
-  } else {
-    filaGramaje.classList.add("oculto");
-  }
   // Insignia "Marca de autor" (2026-08-19): identidad de diseño propia,
   // no depende de que la tienda lo declare -- lo define KOLIZION al
   // cargar cada tienda piloto (ver CLAUDE.md).
   document.getElementById("vp-marca-autor").classList.toggle("oculto", !rec.marca_autor);
-  document.getElementById("vp-link").href = rec.link || "#";
-  // El click de "Ir a la tienda" no navega directo -- lo intercepta el
-  // listener de mas abajo (una sola vez, en DOMContentLoaded) y usa estas
-  // 2 variables para saber a donde ir. Se guardan aca porque el boton es
-  // un solo elemento fijo del modal, reusado para cualquier producto.
-  vpLinkActual = rec.link || "#";
-  vpTiendaActual = rec.tienda || "";
+  document.getElementById("vp-unisex").classList.toggle("oculto", rec.genero !== "unisex");
+  // Sello "por que es tendencia" (2026-08-29): solo para productos que
+  // vienen de la fila Tendencias (rec.esTendencia, ver vitrina.js) -- no se
+  // confunde con la "razon" de match de una busqueda normal, que sigue
+  // yendo solo a la Descripcion (linea de abajo).
+  const badgeTendencia = document.getElementById("vp-tendencia");
+  badgeTendencia.textContent = rec.esTendencia && rec.razon ? `🔥 ${rec.razon}` : "";
+  badgeTendencia.classList.toggle("oculto", !(rec.esTendencia && rec.razon));
+
+  const detalles = _textoDetallesProducto(rec);
+  document.getElementById("vp-det-detalles").classList.toggle("oculto", !detalles);
+  document.getElementById("vp-detalles").textContent = detalles;
+
+  const materialTexto = [rec.material ? `Material: ${rec.material}` : "", rec.gramaje_texto || ""].filter(Boolean).join(" · ");
+  document.getElementById("vp-det-materiales").classList.toggle("oculto", !materialTexto);
+  document.getElementById("vp-materiales").textContent = materialTexto;
+
+  _renderChipsTalla(rec);
+  _renderChipsColor(rec);
+  _actualizarCta();
+  _cargarResenas(rec.nombre);
+  _cargarEnvioTienda(rec.tienda);
 
   document.getElementById("modal-vista-previa").classList.remove("oculto");
 }
@@ -239,17 +528,41 @@ function cerrarVistaPrevia() {
   document.getElementById("modal-vista-previa").classList.add("oculto");
 }
 
-// Conecta el boton "Vista previa rapida" de una tarjeta ya armada. El modal
+// Zoom de foto (2026-08-28): las fotos suelen ser de un modelo con la
+// prenda puesta, asi que hace falta acercarse a la prenda misma. Tocar la
+// foto principal abre esto a pantalla completa; adentro, tocar la foto de
+// nuevo agranda/achica (transform: scale, ver style.css) -- si esta
+// agrandada, el contenedor tiene scroll propio para desplazarse (funciona
+// con el dedo en celular y con el mouse/trackpad en compu).
+function zoomImagenAbrir() {
+  if (!vpImagenes.length) return;
+  const zoomImg = document.getElementById("zoom-imagen");
+  zoomImg.src = vpImagenes[vpIndice];
+  zoomImg.classList.remove("zoom-agrandada");
+  const hayVarias = vpImagenes.length > 1;
+  document.getElementById("vp-zoom-flecha-izq").classList.toggle("oculto", !hayVarias);
+  document.getElementById("vp-zoom-flecha-der").classList.toggle("oculto", !hayVarias);
+  document.getElementById("modal-zoom-imagen").classList.remove("oculto");
+}
+
+function zoomImagenCerrar() {
+  document.getElementById("modal-zoom-imagen").classList.add("oculto");
+  document.getElementById("zoom-imagen").classList.remove("zoom-agrandada");
+}
+
+// Conecta el boton "Vista previa rapida" Y el "Agregar al carrito" de la
+// tarjeta (cuando el producto es oficial con stock -- ver
+// botonAccionProductoHtml) de una tarjeta ya armada: ambos abren la misma
+// ficha completa, elegir talla/color siempre pasa por ahi. El modal
 // (_vista_previa.html) no vive en todas las paginas (index.html/perfil.html
 // no tienen tarjetas de producto) -- por eso el listener de cerrar se
 // engancha con guard mas abajo, no aca arriba.
 function conectarVistaPrevia(card, rec) {
   const btn = card.querySelector(".btn-vista-previa");
   if (btn) btn.addEventListener("click", () => abrirVistaPrevia(rec));
+  const btnCarrito = card.querySelector(".btn-abrir-ficha-carrito");
+  if (btnCarrito) btnCarrito.addEventListener("click", () => abrirVistaPrevia(rec));
 }
-
-let vpLinkActual = "#";
-let vpTiendaActual = "";
 
 // --- Animacion antes de ir a una tienda externa (estilo apps grandes de
 // e-commerce): "Te llevamos a {tienda}..." + cuenta regresiva corta, y
@@ -316,63 +629,119 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCerrarVP = document.getElementById("btn-cerrar-vista-previa");
   if (btnCerrarVP) btnCerrarVP.addEventListener("click", cerrarVistaPrevia);
 
+  const flechaIzq = document.getElementById("vp-flecha-izq");
+  const flechaDer = document.getElementById("vp-flecha-der");
+  if (flechaIzq) flechaIzq.addEventListener("click", () => _pintarImagenVp(vpIndice - 1));
+  if (flechaDer) flechaDer.addEventListener("click", () => _pintarImagenVp(vpIndice + 1));
+
+  const imagenPrincipal = document.getElementById("vp-imagen-principal");
+  if (imagenPrincipal) imagenPrincipal.addEventListener("click", zoomImagenAbrir);
+
+  const zoomImg = document.getElementById("zoom-imagen");
+  const btnCerrarZoom = document.getElementById("btn-cerrar-zoom");
+  const modalZoom = document.getElementById("modal-zoom-imagen");
+  if (zoomImg) zoomImg.addEventListener("click", () => zoomImg.classList.toggle("zoom-agrandada"));
+  if (btnCerrarZoom) btnCerrarZoom.addEventListener("click", zoomImagenCerrar);
+  if (modalZoom) modalZoom.addEventListener("click", (e) => { if (e.target === modalZoom) zoomImagenCerrar(); });
+  const zoomFlechaIzq = document.getElementById("vp-zoom-flecha-izq");
+  const zoomFlechaDer = document.getElementById("vp-zoom-flecha-der");
+  if (zoomFlechaIzq) zoomFlechaIzq.addEventListener("click", () => { _pintarImagenVp(vpIndice - 1); zoomImagenAbrir(); });
+  if (zoomFlechaDer) zoomFlechaDer.addEventListener("click", () => { _pintarImagenVp(vpIndice + 1); zoomImagenAbrir(); });
+
   const linkVP = document.getElementById("vp-link");
   if (linkVP) {
     linkVP.addEventListener("click", (e) => {
       e.preventDefault();
-      abrirEnlaceConAnimacion(vpLinkActual, vpTiendaActual);
+      const rec = vpRecActual;
+      if (!rec) return;
+
+      if (!rec.oficial) {
+        registrarInteresProducto(rec);
+        abrirEnlaceConAnimacion(rec.link, rec.tienda);
+        return;
+      }
+      if (linkVP.classList.contains("boton-proximamente")) return; // sin stock
+      const necesitaTalla = !document.getElementById("vp-selector-talla").classList.contains("oculto");
+      if (necesitaTalla && !vpTallaElegida) return; // boton dice "Elige una talla"
+
+      // Cuenta obligatoria para "comprar" (mismo criterio que
+      // abrirEnlaceConAnimacion, ver docs/cuentas.md) -- agregar al
+      // carrito es intencion real de compra, no una accion anonima.
+      if (!window.KOLIZION_LOGUEADO) {
+        const destino = window.location.pathname + window.location.search;
+        window.location.href = `/login?siguiente=${encodeURIComponent(destino)}`;
+        return;
+      }
+
+      agregarAlCarrito({
+        nombre: rec.nombre,
+        tienda: rec.tienda,
+        precio: rec.precio,
+        talla: vpTallaElegida,
+        color: vpColorElegido,
+        link: rec.link,
+        imagen: rec.imagen,
+        fecha: new Date().toISOString(),
+      });
+      const textoOriginal = linkVP.textContent;
+      linkVP.textContent = "✓ Agregado al carrito";
+      setTimeout(() => {
+        if (vpRecActual === rec) linkVP.textContent = textoOriginal;
+      }, 1500);
     });
   }
 });
 
+// Grilla estilo Pinterest/Mercado Libre (2026-08-28, reemplaza las tarjetas
+// grandes apiladas): cada cuadradito solo muestra foto + nombre + precio --
+// tocarlo abre la ficha completa (abrirVistaPrevia, mismo modal de siempre
+// con todas las fotos, descripcion y el boton real de compra/"ir a la
+// tienda"). Ya no hay boton de accion a nivel tarjeta.
 function renderResultados(contenedorId, recomendaciones, opciones = {}) {
   const contenedor = document.getElementById(contenedorId);
   const email = emailFavoritos();
   const favoritosSet = opciones.favoritosSet || new Set();
   for (const rec of recomendaciones) {
     const card = document.createElement("div");
-    card.className = "resultado-card";
+    card.className = "resultado-card resultado-card-mini";
     card.innerHTML = `
       ${email ? marcadorFavoritoHtml(rec.nombre, favoritosSet) : ""}
       ${rec.imagen ? `<img src="${rec.imagen}" alt="${esImagenIlustrativa(rec.imagen) ? "Ilustración de referencia (no es una foto real del producto)" : rec.nombre}" class="imagen-producto">` : ""}
-      ${rec.imagen && esImagenIlustrativa(rec.imagen) ? `<p class="aviso-imagen">Imagen ilustrativa de referencia, no es el producto real.</p>` : ""}
-      <div class="tienda">${rec.tienda}</div>
-      ${rec.marca_autor ? `<span class="insignia-marca-autor">✦ Marca de autor</span>` : ""}
-      <h3>${rec.nombre}</h3>
-      ${rec.marca ? `<p class="marca">${rec.marca}</p>` : ""}
-      ${rec.precio ? `<p class="precio">${rec.precio}</p>` : ""}
-      ${rec.descripcion ? `<p class="descripcion">${rec.descripcion}</p>` : ""}
-      ${rec.tallas_coincidentes && rec.tallas_coincidentes.length ? `<p class="talla">Disponible en: ${rec.tallas_coincidentes.join(", ")}</p>` : ""}
-      ${rec.razon ? `<p class="razon">${rec.razon}</p>` : ""}
-      ${rec.imagen ? `<button type="button" class="btn-vista-previa">Vista previa rápida</button>` : ""}
-      <a href="${rec.link}" target="_blank" rel="noopener">${esImagenIlustrativa(rec.imagen) ? "Ver producto (ejemplo)" : "Ver producto"}</a>
+      ${rec.imagen && esImagenIlustrativa(rec.imagen) ? `<span class="badge-ilustrativa">Ilustrativa</span>` : ""}
+      ${rec.genero === "unisex" ? `<span class="badge-unisex">Unisex</span>` : ""}
+      <div class="resultado-card-mini-info">
+        <h3>${rec.nombre}</h3>
+        ${rec.precio ? `<p class="precio">${rec.precio}</p>` : ""}
+      </div>
     `;
-    const link = card.querySelector("a");
-    if (link) {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        registrarInteresProducto(rec);
-        abrirEnlaceConAnimacion(rec.link, rec.tienda);
-      });
-    }
+    card.addEventListener("click", () => abrirVistaPrevia(rec));
     if (email) {
       conectarBotonFavorito(card, rec, opciones);
+      const btnFavorito = card.querySelector(".btn-favorito");
+      if (btnFavorito) btnFavorito.addEventListener("click", (e) => e.stopPropagation());
     }
-    conectarVistaPrevia(card, rec);
     contenedor.appendChild(card);
   }
 }
 
-// Llama a /api/recommend mostrando el esqueleto + frases rotativas de
+// Cuanto dura el flash de "encontramos algo" antes de revelar resultados.
+// Sale del mismo minMs de siempre (no se suma aparte) -- si la busqueda real
+// tarda menos que minMs, el tiempo total que ve el usuario no cambia.
+const CARGANDO_FLASH_MS = 500;
+
+// Llama a /api/recommend mostrando el logo pulsando + frases rotativas de
 // #cargando, esperando un minimo de minMs (3 segundos por defecto) aunque
 // la respuesta real llegue antes -- asi la animacion siempre se alcanza a
-// ver. Devuelve el JSON ya parseado, o lanza un error si algo fallo.
+// ver. Si la respuesta trae resultados, el logo se ilumina con "Encontramos
+// algo" un instante (CARGANDO_FLASH_MS) antes de ocultar todo. Devuelve el
+// JSON ya parseado, o lanza un error si algo fallo.
 async function buscarConAnimacion(payload, minMs = 3000) {
   const cargando = document.getElementById("cargando");
   const cargandoTexto = document.getElementById("cargando-texto");
 
   let indiceFrase = 0;
   cargandoTexto.textContent = FRASES_CARGA[0];
+  cargando.classList.remove("cargando-exito");
   cargando.classList.remove("oculto");
   const intervalo = setInterval(() => {
     indiceFrase = (indiceFrase + 1) % FRASES_CARGA.length;
@@ -389,13 +758,24 @@ async function buscarConAnimacion(payload, minMs = 3000) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       }),
-      esperar(minMs),
+      esperar(Math.max(minMs - CARGANDO_FLASH_MS, 0)),
     ]);
     if (!resp.ok) throw new Error("Error del servidor: " + resp.status);
-    return await resp.json();
+    const data = await resp.json();
+
+    clearInterval(intervalo);
+    const hayResultados =
+      (data.recomendaciones && data.recomendaciones.length > 0) ||
+      (data.alternativas && data.alternativas.length > 0);
+    if (hayResultados) {
+      cargando.classList.add("cargando-exito");
+      await esperar(CARGANDO_FLASH_MS);
+    }
+    return data;
   } finally {
     clearInterval(intervalo);
     cargando.classList.add("oculto");
+    cargando.classList.remove("cargando-exito");
   }
 }
 
@@ -479,9 +859,36 @@ async function buscar(payload) {
     sessionStorage.setItem("ultimoPayload", JSON.stringify(payload));
     sessionStorage.setItem("resultados", JSON.stringify(data.recomendaciones || []));
     sessionStorage.setItem("sinTalla", String(Boolean(data.sin_talla)));
+    sessionStorage.setItem("prefsBloqueantes", JSON.stringify(data.preferencias_bloqueantes || []));
+    sessionStorage.setItem("avisoGorroForma", data.aviso_gorro_forma || "");
+    // Marca de tiempo para los avisos "Encontramos productos para ti hace
+    // un momento" (buscador y chat de Koko) -- pedido del usuario
+    // (2026-08-26): que ese aviso no quede molestando indefinidamente,
+    // solo mientras la busqueda sigue siendo reciente. Ver
+    // hayResultadosRecientes() mas abajo.
+    sessionStorage.setItem("resultadosGuardadosEn", String(Date.now()));
     window.location.href = "/resultados";
   } catch (err) {
     estado.textContent = "Algo salió mal: " + err.message;
+  }
+}
+
+const VIGENCIA_AVISO_RESULTADOS_MS = 15 * 60 * 1000;
+
+// Si hay resultados guardados en esta sesion Y siguen siendo recientes
+// (menos de 15 minutos desde que se buscaron) -- usado por los avisos
+// "Encontramos productos para ti hace un momento" en script.js/koko.js.
+// Pasado ese tiempo, el aviso deja de mostrarse solo (no hace falta
+// borrar nada a mano; "resultados"/"ultimoPayload" siguen ahi por si el
+// usuario entra a /resultados directo).
+function hayResultadosRecientes() {
+  const guardadoEn = Number(sessionStorage.getItem("resultadosGuardadosEn") || 0);
+  if (!guardadoEn || Date.now() - guardadoEn > VIGENCIA_AVISO_RESULTADOS_MS) return false;
+  try {
+    const guardados = JSON.parse(sessionStorage.getItem("resultados") || "[]");
+    return Array.isArray(guardados) && guardados.length > 0;
+  } catch (e) {
+    return false;
   }
 }
 

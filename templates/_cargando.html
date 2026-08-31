@@ -1,23 +1,23 @@
 <!-- Estado de carga compartido (antes duplicado igual en las 5 paginas).
-     #cargando/#cargando-texto los controla buscarConAnimacion() (comun.js) --
-     mismos ids de siempre, asi que no hizo falta tocar nada de JS aparte de
-     agregar las tarjetas "esqueleto" de aca abajo (estilo apps grandes de
-     e-commerce: rectangulos grises con brillo animado, en vez de pantalla
-     en blanco o solo un spinner). -->
-<div id="cargando" class="oculto">
-  <p id="cargando-texto"></p>
-  <div class="skeleton-lista" aria-hidden="true">
-    <div class="skeleton-card">
-      <div class="skeleton-rect skeleton-imagen"></div>
-      <div class="skeleton-rect skeleton-linea skeleton-linea-tienda"></div>
-      <div class="skeleton-rect skeleton-linea"></div>
-      <div class="skeleton-rect skeleton-linea skeleton-linea-precio"></div>
-    </div>
-    <div class="skeleton-card">
-      <div class="skeleton-rect skeleton-imagen"></div>
-      <div class="skeleton-rect skeleton-linea skeleton-linea-tienda"></div>
-      <div class="skeleton-rect skeleton-linea"></div>
-      <div class="skeleton-rect skeleton-linea skeleton-linea-precio"></div>
-    </div>
+     #cargando/#cargando-texto los controla buscarConAnimacion() (comun.js).
+     2026-08-28: pantalla completa con el logo de marca. El PNG es una sola
+     imagen plana (rayos + texto "KOLIZION" ya renderizados juntos), asi que
+     para que solo los rayos parpadeen se repite la MISMA imagen 3 veces
+     apiladas (position:absolute) y cada copia se recorta con clip-path a
+     una franja distinta -- las 2 franjas de rayos (arriba/abajo del texto)
+     tienen la animacion de pulso; la franja del texto, en el medio, se
+     recorta pero queda fija. Los limites de las franjas se midieron a mano
+     escaneando los pixeles del PNG (hay una fila 100% vacia entre rayos y
+     texto en ambos lados -- boundaries en style.css). Cuando llegan
+     resultados, buscarConAnimacion agrega "cargando-exito": los rayos dejan
+     de parpadear y las 3 franjas se iluminan juntas (drop-shadow) mientras
+     se muestra "cargando-exito-texto" en vez de las frases rotativas. -->
+<div id="cargando" class="cargando-overlay oculto" aria-live="polite">
+  <div class="cargando-logo-wrap">
+    <img src="{{ url_for('static', filename='img/kolizion-logo.png') }}" alt="" class="cargando-logo-capa cargando-logo-rayos cargando-logo-rayos-arriba">
+    <img src="{{ url_for('static', filename='img/kolizion-logo.png') }}" alt="" class="cargando-logo-capa cargando-logo-texto">
+    <img src="{{ url_for('static', filename='img/kolizion-logo.png') }}" alt="" class="cargando-logo-capa cargando-logo-rayos cargando-logo-rayos-abajo">
   </div>
+  <p class="cargando-exito-texto">¡Encontramos algo!</p>
+  <p id="cargando-texto" class="cargando-texto"></p>
 </div>

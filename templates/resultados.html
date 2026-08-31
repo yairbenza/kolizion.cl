@@ -14,6 +14,7 @@
     <h1>Tus recomendaciones</h1>
     <p class="subtitulo">Esto encontramos para ti en tiendas chicas.</p>
     <button type="button" id="btn-cambiar-filtros" class="btn-cambiar-filtros">Cambiar requisitos de búsqueda</button>
+    <button type="button" id="btn-seguir-koko" class="oculto btn-volver-koko-flotante">💬 Volver a Koko</button>
 
     <div id="estado"></div>
     {% include "_cargando.html" %}
@@ -36,6 +37,7 @@
   {% include "_guia_bienvenida.html" %}
   {% include "_vista_previa.html" %}
   {% include "_redireccion.html" %}
+  {% include "_barra_cuenta.html" %}
   {% include "_barra_nav.html" %}
 
   <script src="{{ url_for('static', filename='comun.js') }}"></script>

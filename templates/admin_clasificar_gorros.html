@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Clasificar gorros</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <nav class="admin-nav">
+      <a href="/admin/tiendas">Tiendas</a>
+      <a href="/admin/clics">Clics</a>
+      <a href="/admin/usuarios">Usuarios</a>
+      <a href="/admin/clasificar-graficos">Clasificar prendas</a>
+      <a href="/admin/clasificar-gorros" class="admin-nav-activo">Clasificar gorros</a>
+      <form method="post" action="/admin/logout" class="admin-nav-logout">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </nav>
+
+    <h1>Clasificar forma de gorro</h1>
+    <p class="subtitulo">
+      {{ total_gorros }} gorros en el catálogo · {{ ya_revisados }} ya revisados por ti.
+      Cada uno ya viene con una forma sugerida (curvo por defecto, plano si dice "snapback",
+      de lana si dice "beanie") — revisa la foto y confirma o cambia.
+    </p>
+
+    {% if not productos %}
+      <p class="descripcion">No hay gorros cargados todavía.</p>
+    {% else %}
+      <div id="clasificar-contador" class="descripcion"></div>
+
+      <div class="resultado-card" style="max-width: 420px;">
+        <img id="clasificar-imagen" class="imagen-producto" src="" alt="" style="width: 100%; max-height: 420px; object-fit: contain; cursor: zoom-in;">
+        <p class="descripcion" style="margin: 0.25rem 0 0;">Toca la foto para hacer zoom.</p>
+        <h3 id="clasificar-nombre"></h3>
+        <p class="tienda" id="clasificar-tienda"></p>
+
+        <div class="vp-chips" id="clasificar-chips">
+          <button type="button" class="vp-chip" data-forma="curvo">Curvo</button>
+          <button type="button" class="vp-chip" data-forma="plano">Plano</button>
+          <button type="button" class="vp-chip" data-forma="lana">De lana</button>
+        </div>
+
+        <button type="button" id="clasificar-confirmar" style="margin-top: 1rem;">Confirmar y siguiente</button>
+        <p id="clasificar-error" class="descripcion" style="color: #c0392b; display: none;">No se pudo guardar, reintenta.</p>
+      </div>
+
+      <div id="clasificar-fin" class="descripcion" style="display: none;">
+        <p>Revisaste los {{ productos|length }} gorros. ¡Listo!</p>
+      </div>
+
+      <div id="clasificar-lightbox" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; overflow: auto; text-align: center; cursor: zoom-out;">
+        <button type="button" id="clasificar-lightbox-cerrar" style="position: fixed; top: 12px; right: 16px; z-index: 1000; font-size: 1.5rem; background: none; border: none; color: #fff; cursor: pointer;">✕</button>
+        <img id="clasificar-lightbox-imagen" src="" alt="" style="max-width: none; margin: 2rem auto; display: block; cursor: zoom-in;">
+      </div>
+    {% endif %}
+  </main>
+
+  <script>
+    const productos = {{ productos|tojson }};
+    let indice = 0;
+    let seleccion = null;
+
+    const elImagen = document.getElementById("clasificar-imagen");
+    const elNombre = document.getElementById("clasificar-nombre");
+    const elTienda = document.getElementById("clasificar-tienda");
+    const elContador = document.getElementById("clasificar-contador");
+    const elChips = document.getElementById("clasificar-chips");
+    const elConfirmar = document.getElementById("clasificar-confirmar");
+    const elError = document.getElementById("clasificar-error");
+    const elTarjeta = document.querySelector(".resultado-card");
+    const elFin = document.getElementById("clasificar-fin");
+
+    function mostrarProducto() {
+      const p = productos[indice];
+      elContador.textContent = `Gorro ${indice + 1} de ${productos.length}`;
+      elImagen.src = p.imagen;
+      elImagen.alt = p.nombre;
+      elNombre.textContent = p.nombre;
+      elTienda.textContent = p.tienda;
+      seleccion = p.forma_actual || "curvo";
+      elChips.querySelectorAll(".vp-chip").forEach((btn) => {
+        btn.classList.toggle("activa", btn.dataset.forma === seleccion);
+      });
+      elError.style.display = "none";
+    }
+
+    if (productos.length) {
+      mostrarProducto();
+    }
+
+    // Zoom (mismo mecanismo que /admin/clasificar-graficos).
+    const elLightbox = document.getElementById("clasificar-lightbox");
+    const elLightboxImagen = document.getElementById("clasificar-lightbox-imagen");
+    let zoomAmpliado = false;
+
+    function abrirZoom() {
+      elLightboxImagen.src = elImagen.src;
+      zoomAmpliado = false;
+      elLightboxImagen.style.width = "95vw";
+      elLightboxImagen.style.maxWidth = "95vw";
+      elLightbox.style.display = "block";
+    }
+
+    function cerrarZoom() {
+      elLightbox.style.display = "none";
+    }
+
+    elImagen.addEventListener("click", abrirZoom);
+    document.getElementById("clasificar-lightbox-cerrar").addEventListener("click", cerrarZoom);
+    elLightbox.addEventListener("click", (ev) => {
+      if (ev.target === elLightboxImagen) return;
+      cerrarZoom();
+    });
+    elLightboxImagen.addEventListener("click", () => {
+      zoomAmpliado = !zoomAmpliado;
+      elLightboxImagen.style.width = zoomAmpliado ? "200%" : "95vw";
+      elLightboxImagen.style.maxWidth = zoomAmpliado ? "none" : "95vw";
+    });
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") cerrarZoom();
+    });
+
+    elChips.addEventListener("click", (ev) => {
+      const btn = ev.target.closest(".vp-chip");
+      if (!btn) return;
+      seleccion = btn.dataset.forma;
+      elChips.querySelectorAll(".vp-chip").forEach((b) => {
+        b.classList.toggle("activa", b.dataset.forma === seleccion);
+      });
+    });
+
+    async function confirmarYSiguiente() {
+      if (elConfirmar.disabled) return;
+      const p = productos[indice];
+      elConfirmar.disabled = true;
+      try {
+        const resp = await fetch(`/admin/api/clasificar-gorro/${encodeURIComponent(p.id)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ forma: seleccion }),
+        });
+        if (!resp.ok) throw new Error("fallo guardado");
+        indice += 1;
+        if (indice >= productos.length) {
+          elTarjeta.style.display = "none";
+          elFin.style.display = "block";
+        } else {
+          mostrarProducto();
+        }
+      } catch (e) {
+        elError.style.display = "block";
+      } finally {
+        elConfirmar.disabled = false;
+      }
+    }
+
+    elConfirmar.addEventListener("click", confirmarYSiguiente);
+
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter") return;
+      if (elLightbox.style.display === "block") return;
+      ev.preventDefault();
+      confirmarYSiguiente();
+    });
+  </script>
+</body>
+</html>

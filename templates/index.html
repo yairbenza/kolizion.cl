@@ -84,6 +84,7 @@
             <label class="checkbox-inline"><input type="checkbox" name="hobbie" value="arte_cultura"> Arte y cultura</label>
             <label class="checkbox-inline"><input type="checkbox" name="hobbie" value="gaming"> Gaming</label>
             <label class="checkbox-inline"><input type="checkbox" name="hobbie" value="peliculas_series"> Películas y series</label>
+            <label class="checkbox-inline"><input type="checkbox" name="hobbie" value="anime"> Anime</label>
           </div>
         </div>
         <div id="campo-hobbie-musica-genero" class="oculto campo-checkboxes">
@@ -119,6 +120,14 @@
     <section id="seccion-quien" class="oculto">
       <h2>¿Para quién es esta búsqueda?</h2>
       <p id="resumen-perfil" class="ayuda"></p>
+
+      <div id="aviso-resultados-pendientes" class="oculto aviso-resultados-pendientes">
+        <p>Encontramos productos para ti hace un momento.</p>
+        <div class="botones-quien">
+          <button id="btn-ver-resultados-pendientes" type="button">Ver resultados</button>
+        </div>
+      </div>
+
       <div class="botones-quien">
         <button id="btn-para-mi">Es para mí</button>
         <button id="btn-para-otro">Es un regalo</button>
@@ -170,35 +179,6 @@
           <select id="manga-yo"></select>
         </label>
 
-        <label id="campo-gorro-camino-yo" class="oculto">
-          ¿Buscas colores específicos o que combine con un outfit?
-          <select id="gorro-camino-yo">
-            <option value="colores">Colores específicos</option>
-            <option value="outfit">Combinar con un outfit</option>
-          </select>
-        </label>
-        <div id="campo-gorro-colores-yo" class="oculto campo-checkboxes">
-          <p class="ayuda">¿Qué colores buscas? (elige uno o más)</p>
-          <div class="grid-checkboxes">
-            <label class="checkbox-inline"><input type="checkbox" value="blanco"> Blanco</label>
-            <label class="checkbox-inline"><input type="checkbox" value="negro"> Negro</label>
-            <label class="checkbox-inline"><input type="checkbox" value="rojo"> Rojo</label>
-            <label class="checkbox-inline"><input type="checkbox" value="azul"> Azul</label>
-            <label class="checkbox-inline"><input type="checkbox" value="amarillo"> Amarillo</label>
-            <label class="checkbox-inline"><input type="checkbox" value="beige"> Beige</label>
-            <label class="checkbox-inline"><input type="checkbox" value="morado"> Morado</label>
-            <label class="checkbox-inline"><input type="checkbox" value="verde"> Verde</label>
-          </div>
-        </div>
-        <label id="campo-gorro-outfit-yo" class="oculto">
-          ¿Cómo es tu outfit?
-          <select id="gorro-outfit-yo">
-            <option value="oscuro">Oscuro</option>
-            <option value="claro">Claro</option>
-            <option value="colorido">Colorido</option>
-            <option value="otro">Otro</option>
-          </select>
-        </label>
         <label id="campo-gorro-forma-yo" class="oculto">
           ¿Qué tipo de gorro?
           <select id="gorro-forma-yo">
@@ -228,7 +208,7 @@
         </label>
 
         <label>
-          Ocasión
+          Ocasión (opcional)
           <select id="ocasion-yo" required>
             <option value="me da igual">Me da igual</option>
             <option value="carrete">Carrete</option>
@@ -244,6 +224,25 @@
           Cuéntanos la ocasión
           <input type="text" placeholder="cuéntanos la ocasión">
         </label>
+
+        <div id="campo-color-yo" class="campo-checkboxes">
+          <p class="ayuda">¿Algún color en particular? (opcional, elige hasta 3)</p>
+          <div class="grid-checkboxes">
+            <label class="checkbox-inline"><input type="checkbox" value="rojo"> Rojo</label>
+            <label class="checkbox-inline"><input type="checkbox" value="azul"> Azul</label>
+            <label class="checkbox-inline"><input type="checkbox" value="celeste"> Celeste</label>
+            <label class="checkbox-inline"><input type="checkbox" value="verde"> Verde</label>
+            <label class="checkbox-inline"><input type="checkbox" value="amarillo"> Amarillo</label>
+            <label class="checkbox-inline"><input type="checkbox" value="naranja"> Naranjo</label>
+            <label class="checkbox-inline"><input type="checkbox" value="morado"> Morado</label>
+            <label class="checkbox-inline"><input type="checkbox" value="rosado"> Rosado</label>
+            <label class="checkbox-inline"><input type="checkbox" value="beige"> Beige</label>
+            <label class="checkbox-inline"><input type="checkbox" value="cafe"> Café</label>
+            <label class="checkbox-inline"><input type="checkbox" value="gris"> Gris</label>
+            <label class="checkbox-inline"><input type="checkbox" value="negro"> Negro</label>
+            <label class="checkbox-inline"><input type="checkbox" value="blanco"> Blanco</label>
+          </div>
+        </div>
 
         <label>
           Precio
@@ -333,35 +332,6 @@
           <select id="manga-regalo"></select>
         </label>
 
-        <label id="campo-gorro-camino-regalo" class="oculto">
-          ¿Buscas colores específicos o que combine con un outfit?
-          <select id="gorro-camino-regalo">
-            <option value="colores">Colores específicos</option>
-            <option value="outfit">Combinar con un outfit</option>
-          </select>
-        </label>
-        <div id="campo-gorro-colores-regalo" class="oculto campo-checkboxes">
-          <p class="ayuda">¿Qué colores buscas? (elige uno o más)</p>
-          <div class="grid-checkboxes">
-            <label class="checkbox-inline"><input type="checkbox" value="blanco"> Blanco</label>
-            <label class="checkbox-inline"><input type="checkbox" value="negro"> Negro</label>
-            <label class="checkbox-inline"><input type="checkbox" value="rojo"> Rojo</label>
-            <label class="checkbox-inline"><input type="checkbox" value="azul"> Azul</label>
-            <label class="checkbox-inline"><input type="checkbox" value="amarillo"> Amarillo</label>
-            <label class="checkbox-inline"><input type="checkbox" value="beige"> Beige</label>
-            <label class="checkbox-inline"><input type="checkbox" value="morado"> Morado</label>
-            <label class="checkbox-inline"><input type="checkbox" value="verde"> Verde</label>
-          </div>
-        </div>
-        <label id="campo-gorro-outfit-regalo" class="oculto">
-          ¿Cómo es tu outfit?
-          <select id="gorro-outfit-regalo">
-            <option value="oscuro">Oscuro</option>
-            <option value="claro">Claro</option>
-            <option value="colorido">Colorido</option>
-            <option value="otro">Otro</option>
-          </select>
-        </label>
         <label id="campo-gorro-forma-regalo" class="oculto">
           ¿Qué tipo de gorro?
           <select id="gorro-forma-regalo">
@@ -391,7 +361,7 @@
         </label>
 
         <label>
-          Ocasión
+          Ocasión (opcional)
           <select id="ocasion-regalo" required>
             <option value="me da igual">Me da igual</option>
             <option value="carrete">Carrete</option>
@@ -407,6 +377,25 @@
           Cuéntanos la ocasión
           <input type="text" placeholder="cuéntanos la ocasión">
         </label>
+
+        <div id="campo-color-regalo" class="campo-checkboxes">
+          <p class="ayuda">¿Algún color en particular? (opcional, elige hasta 3)</p>
+          <div class="grid-checkboxes">
+            <label class="checkbox-inline"><input type="checkbox" value="rojo"> Rojo</label>
+            <label class="checkbox-inline"><input type="checkbox" value="azul"> Azul</label>
+            <label class="checkbox-inline"><input type="checkbox" value="celeste"> Celeste</label>
+            <label class="checkbox-inline"><input type="checkbox" value="verde"> Verde</label>
+            <label class="checkbox-inline"><input type="checkbox" value="amarillo"> Amarillo</label>
+            <label class="checkbox-inline"><input type="checkbox" value="naranja"> Naranjo</label>
+            <label class="checkbox-inline"><input type="checkbox" value="morado"> Morado</label>
+            <label class="checkbox-inline"><input type="checkbox" value="rosado"> Rosado</label>
+            <label class="checkbox-inline"><input type="checkbox" value="beige"> Beige</label>
+            <label class="checkbox-inline"><input type="checkbox" value="cafe"> Café</label>
+            <label class="checkbox-inline"><input type="checkbox" value="gris"> Gris</label>
+            <label class="checkbox-inline"><input type="checkbox" value="negro"> Negro</label>
+            <label class="checkbox-inline"><input type="checkbox" value="blanco"> Blanco</label>
+          </div>
+        </div>
 
         <label>
           Precio
@@ -473,6 +462,7 @@
 
   {% include "_panel_koko.html" %}
   {% include "_guia_bienvenida.html" %}
+  {% include "_barra_cuenta.html" %}
   {% include "_barra_nav.html" %}
 
   <script src="{{ url_for('static', filename='comun.js') }}"></script>

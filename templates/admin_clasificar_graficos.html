@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Clasificar gráfico</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <nav class="admin-nav">
+      <a href="/admin/tiendas">Tiendas</a>
+      <a href="/admin/clics">Clics</a>
+      <a href="/admin/usuarios">Usuarios</a>
+      <a href="/admin/clasificar-graficos" class="admin-nav-activo">Clasificar prendas</a>
+      <a href="/admin/clasificar-gorros">Clasificar gorros</a>
+      <form method="post" action="/admin/logout" class="admin-nav-logout">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </nav>
+
+    <h1>Clasificar gráfico/estampado</h1>
+    <p class="subtitulo">
+      Lote {{ lote }} de {{ total_lotes }} · {{ ya_clasificados }} clasificados en total ·
+      {{ total_pendientes }} pendientes (de todas las prendas superiores sin evaluar)
+    </p>
+
+    <div class="fila-ajuste" style="margin-bottom: 0.5rem;">
+      <a href="/admin/clasificar-graficos?modo=pendientes" class="vp-chip{{ ' activa' if modo == 'pendientes' else '' }}">Pendientes</a>
+      <a href="/admin/clasificar-graficos?modo=clasificados" class="vp-chip{{ ' activa' if modo == 'clasificados' else '' }}">Ya clasificados (revisar)</a>
+    </div>
+
+    <div class="fila-ajuste" style="margin-bottom: 1rem;">
+      {% for n in range(1, total_lotes + 1) %}
+        <a href="/admin/clasificar-graficos?modo={{ modo }}&lote={{ n }}" class="vp-chip{{ ' activa' if n == lote else '' }}">Lote {{ n }}</a>
+      {% endfor %}
+    </div>
+
+    {% if not productos %}
+      <p class="descripcion">
+        {% if modo == 'clasificados' %}Todavía no hay nada clasificado.{% else %}No quedan productos pendientes en este lote. Prueba otro lote, o ya no hay nada sin clasificar.{% endif %}
+      </p>
+    {% else %}
+      <div id="clasificar-contador" class="descripcion"></div>
+
+      <div class="resultado-card" style="max-width: 420px;">
+        <img id="clasificar-imagen" class="imagen-producto" src="" alt="" style="width: 100%; max-height: 420px; object-fit: contain; cursor: zoom-in;">
+        <p class="descripcion" style="margin: 0.25rem 0 0;">Toca la foto para hacer zoom.</p>
+        <h3 id="clasificar-nombre"></h3>
+        <p class="tienda" id="clasificar-tienda"></p>
+
+        <div class="vp-chips" id="clasificar-chips">
+          <button type="button" class="vp-chip" data-tag="texto_grande">Texto grande</button>
+          <button type="button" class="vp-chip" data-tag="cara_logo_gigante">Cara/logo gigante</button>
+          <button type="button" class="vp-chip" data-tag="prenda_simple">Prendas simples/pocos dibujos</button>
+        </div>
+
+        <button type="button" id="clasificar-confirmar" style="margin-top: 1rem;">Confirmar y siguiente</button>
+        <p id="clasificar-error" class="descripcion" style="color: #c0392b; display: none;">No se pudo guardar, reintenta.</p>
+      </div>
+
+      <div id="clasificar-fin" class="descripcion" style="display: none;">
+        <p>Lote {{ lote }} terminado.</p>
+        {% if lote < total_lotes %}
+        <a href="/admin/clasificar-graficos?modo={{ modo }}&lote={{ lote + 1 }}">Ir al lote {{ lote + 1 }} →</a>
+        {% else %}
+        <a href="/admin/clasificar-graficos?modo={{ modo }}&lote=1">Volver al lote 1</a>
+        {% endif %}
+      </div>
+
+      <div id="clasificar-lightbox" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; overflow: auto; text-align: center; cursor: zoom-out;">
+        <button type="button" id="clasificar-lightbox-cerrar" style="position: fixed; top: 12px; right: 16px; z-index: 1000; font-size: 1.5rem; background: none; border: none; color: #fff; cursor: pointer;">✕</button>
+        <img id="clasificar-lightbox-imagen" src="" alt="" style="max-width: none; margin: 2rem auto; display: block; cursor: zoom-in;">
+      </div>
+    {% endif %}
+  </main>
+
+  <script>
+    const productos = {{ productos|tojson }};
+    let indice = 0;
+    let seleccion = new Set();
+
+    const elImagen = document.getElementById("clasificar-imagen");
+    const elNombre = document.getElementById("clasificar-nombre");
+    const elTienda = document.getElementById("clasificar-tienda");
+    const elContador = document.getElementById("clasificar-contador");
+    const elChips = document.getElementById("clasificar-chips");
+    const elConfirmar = document.getElementById("clasificar-confirmar");
+    const elError = document.getElementById("clasificar-error");
+    const elTarjeta = document.querySelector(".resultado-card");
+    const elFin = document.getElementById("clasificar-fin");
+
+    function mostrarProducto() {
+      const p = productos[indice];
+      elContador.textContent = `Producto ${indice + 1} de ${productos.length} en este lote`;
+      elImagen.src = p.imagen;
+      elImagen.alt = p.nombre;
+      elNombre.textContent = p.nombre;
+      elTienda.textContent = p.tienda;
+      seleccion = new Set(p.tags_actuales || []);
+      elChips.querySelectorAll(".vp-chip").forEach((btn) => btn.classList.toggle("activa", seleccion.has(btn.dataset.tag)));
+      elError.style.display = "none";
+    }
+
+    if (productos.length) {
+      mostrarProducto();
+    }
+
+    // Zoom (2026-08-29, pedido del usuario -- le costaba identificar el
+    // grafico/estampado en la foto chica de la tarjeta). Click en la foto
+    // abre una vista grande; click ahi mismo alterna entre "ajustada a la
+    // pantalla" y "tamaño real / 2x" (con scroll para recorrer la foto).
+    const elLightbox = document.getElementById("clasificar-lightbox");
+    const elLightboxImagen = document.getElementById("clasificar-lightbox-imagen");
+    let zoomAmpliado = false;
+
+    function abrirZoom() {
+      elLightboxImagen.src = elImagen.src;
+      zoomAmpliado = false;
+      elLightboxImagen.style.width = "95vw";
+      elLightboxImagen.style.maxWidth = "95vw";
+      elLightbox.style.display = "block";
+    }
+
+    function cerrarZoom() {
+      elLightbox.style.display = "none";
+    }
+
+    elImagen.addEventListener("click", abrirZoom);
+    document.getElementById("clasificar-lightbox-cerrar").addEventListener("click", cerrarZoom);
+    elLightbox.addEventListener("click", (ev) => {
+      if (ev.target === elLightboxImagen) return;
+      cerrarZoom();
+    });
+    elLightboxImagen.addEventListener("click", () => {
+      zoomAmpliado = !zoomAmpliado;
+      elLightboxImagen.style.width = zoomAmpliado ? "200%" : "95vw";
+      elLightboxImagen.style.maxWidth = zoomAmpliado ? "none" : "95vw";
+    });
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key === "Escape") cerrarZoom();
+    });
+
+    elChips.addEventListener("click", (ev) => {
+      const btn = ev.target.closest(".vp-chip");
+      if (!btn) return;
+      const tag = btn.dataset.tag;
+      if (tag === "prenda_simple") {
+        const activar = !seleccion.has("prenda_simple");
+        seleccion = new Set(activar ? ["prenda_simple"] : []);
+      } else {
+        seleccion.delete("prenda_simple");
+        if (seleccion.has(tag)) {
+          seleccion.delete(tag);
+        } else {
+          seleccion.add(tag);
+        }
+      }
+      elChips.querySelectorAll(".vp-chip").forEach((b) => {
+        b.classList.toggle("activa", seleccion.has(b.dataset.tag));
+      });
+    });
+
+    async function confirmarYSiguiente() {
+      if (elConfirmar.disabled) return;
+      const p = productos[indice];
+      elConfirmar.disabled = true;
+      try {
+        const resp = await fetch(`/admin/api/clasificar-grafico/${encodeURIComponent(p.id)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tags: Array.from(seleccion) }),
+        });
+        if (!resp.ok) throw new Error("fallo guardado");
+        indice += 1;
+        if (indice >= productos.length) {
+          elTarjeta.style.display = "none";
+          elFin.style.display = "block";
+        } else {
+          mostrarProducto();
+        }
+      } catch (e) {
+        elError.style.display = "block";
+      } finally {
+        elConfirmar.disabled = false;
+      }
+    }
+
+    elConfirmar.addEventListener("click", confirmarYSiguiente);
+
+    // Enter para confirmar y pasar al siguiente sin tocar el mouse (pedido
+    // del usuario, 2026-08-29, para clasificar mas rapido). No dispara si
+    // el zoom esta abierto, para no avanzar sin querer mientras se mira
+    // la foto en detalle.
+    document.addEventListener("keydown", (ev) => {
+      if (ev.key !== "Enter") return;
+      if (elLightbox.style.display === "block") return;
+      ev.preventDefault();
+      confirmarYSiguiente();
+    });
+  </script>
+</body>
+</html>

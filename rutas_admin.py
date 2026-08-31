@@ -1,16 +1,22 @@
+import json
 import os
 import secrets
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 
-from flask import Blueprint, redirect, render_template, request, session
+from flask import Blueprint, jsonify, redirect, render_template, request, session
 
 import db_usuarios
 from constantes import (
+    CATALOG_PATH,
+    FORMAS_GORRO_CONOCIDAS,
     RANGOS_CLICS,
     REGIONES_CHILE,
+    TAGS_FORMA_GORRO_PATH,
+    TAGS_GRAFICO_PATH,
     _texto_seguro,
+    load_json,
 )
 from extensions import limiter
 from servicio_tiendas import (
@@ -203,3 +209,189 @@ def admin_clics():
 def admin_usuarios():
     usuarios = db_usuarios.listar_usuarios()
     return render_template("admin_usuarios.html", usuarios=usuarios)
+
+
+# --- Clasificacion manual de grafico/estampado (2026-08-29) ---------------
+# Herramienta para que el dueno del proyecto clasifique a mano (viendo la
+# foto real) si una prenda tiene grafico grande / texto grande / cara-logo
+# gigante -- Claude NO analiza las fotos, solo construye la pantalla. El
+# resultado se guarda en data/tags_grafico.json (separado de catalog.json,
+# que sigue siendo generado solo por construir_catalogo_real.py, ver
+# CLAUDE.md regla 3) para no tener que volver a correr ese script cada vez
+# que se clasifica un producto.
+CATEGORIAS_CLASIFICAR_GRAFICO = {"polera", "poleron", "camisa", "top", "conjunto"}
+TAGS_GRAFICO_VALIDOS = {"texto_grande", "cara_logo_gigante", "prenda_simple"}
+TAMANO_LOTE_GRAFICO = 22
+TOTAL_LOTES_GRAFICO = 5
+
+
+def cargar_tags_grafico():
+    if not TAGS_GRAFICO_PATH.exists():
+        return {}
+    return load_json(TAGS_GRAFICO_PATH)
+
+
+def guardar_tags_grafico(tags):
+    TAGS_GRAFICO_PATH.write_text(json.dumps(tags, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _productos_pendientes_grafico():
+    catalog = load_json(CATALOG_PATH)
+    tags = cargar_tags_grafico()
+    pendientes = [
+        p for p in catalog
+        if p.get("categoria") in CATEGORIAS_CLASIFICAR_GRAFICO and p["id"] not in tags
+    ]
+    pendientes.sort(key=lambda p: p["id"])
+    return pendientes
+
+
+@admin_bp.route("/admin/clasificar-graficos")
+@requiere_admin
+def admin_clasificar_graficos():
+    modo = "clasificados" if request.args.get("modo") == "clasificados" else "pendientes"
+    try:
+        lote = int(request.args.get("lote", "1"))
+    except ValueError:
+        lote = 1
+
+    tags = cargar_tags_grafico()
+
+    # Modo "ver ya clasificados" (2026-08-30, pedido del usuario): la
+    # herramienta original solo mostraba pendientes -- una vez clasificado
+    # un producto desaparecia de la vista y no habia forma de revisarlo de
+    # nuevo salvo las fotos mandadas por chat. Reusa la misma tarjeta/chips/
+    # zoom, mas recientes primero, con el tag actual pre-marcado (mismo
+    # patron que /admin/clasificar-gorros) para poder corregir sin perder
+    # lo ya bueno.
+    if modo == "clasificados":
+        catalog = load_json(CATALOG_PATH)
+        por_id = {p["id"]: p for p in catalog}
+        clasificados = [
+            (pid, datos) for pid, datos in tags.items() if pid in por_id
+        ]
+        clasificados.sort(key=lambda par: par[1].get("clasificado_en", ""), reverse=True)
+        total_lotes = max(1, (len(clasificados) + TAMANO_LOTE_GRAFICO - 1) // TAMANO_LOTE_GRAFICO)
+        lote = max(1, min(lote, total_lotes))
+        inicio = (lote - 1) * TAMANO_LOTE_GRAFICO
+        pagina = clasificados[inicio:inicio + TAMANO_LOTE_GRAFICO]
+
+        productos_json = [
+            {
+                "id": pid,
+                "nombre": por_id[pid]["nombre"],
+                "tienda": por_id[pid]["tienda"],
+                "imagen": (por_id[pid].get("fotos") or [por_id[pid].get("imagen", "")])[0],
+                "tags_actuales": datos.get("tags", []),
+            }
+            for pid, datos in pagina
+        ]
+        return render_template(
+            "admin_clasificar_graficos.html",
+            modo=modo,
+            lote=lote,
+            total_lotes=total_lotes,
+            productos=productos_json,
+            total_pendientes=len(_productos_pendientes_grafico()),
+            ya_clasificados=len(tags),
+        )
+
+    lote = max(1, min(lote, TOTAL_LOTES_GRAFICO))
+    pendientes = _productos_pendientes_grafico()
+    inicio = (lote - 1) * TAMANO_LOTE_GRAFICO
+    productos_lote = pendientes[inicio:inicio + TAMANO_LOTE_GRAFICO]
+
+    productos_json = [
+        {
+            "id": p["id"],
+            "nombre": p["nombre"],
+            "tienda": p["tienda"],
+            "imagen": (p.get("fotos") or [p.get("imagen", "")])[0],
+            "tags_actuales": [],
+        }
+        for p in productos_lote
+    ]
+
+    return render_template(
+        "admin_clasificar_graficos.html",
+        modo=modo,
+        lote=lote,
+        total_lotes=TOTAL_LOTES_GRAFICO,
+        productos=productos_json,
+        total_pendientes=len(pendientes),
+        ya_clasificados=len(tags),
+    )
+
+
+@admin_bp.route("/admin/api/clasificar-grafico/<producto_id>", methods=["POST"])
+@requiere_admin
+def admin_api_clasificar_grafico(producto_id):
+    datos = request.get_json(silent=True) or {}
+    tags_limpios = [t for t in datos.get("tags", []) if t in TAGS_GRAFICO_VALIDOS]
+
+    tags = cargar_tags_grafico()
+    tags[producto_id] = {
+        "tags": tags_limpios,
+        "clasificado_en": datetime.now(timezone.utc).isoformat(),
+    }
+    guardar_tags_grafico(tags)
+    return jsonify({"ok": True})
+
+
+# --- Revision visual de forma de gorro (2026-08-30) ------------------------
+# El auto-detector de forma en construir_catalogo_real.py (curvo por
+# default, lana si dice "beanie", plano si dice "snapback") es un supuesto
+# razonable, no un dato literal como color/precio -- el usuario pidio poder
+# revisarlo el mismo, con foto, igual que grafico/texto/logo. A diferencia
+# de esa herramienta, aca se muestran TODOS los gorros pendientes de una
+# vez (hoy son pocos) y se pre-selecciona la forma actual en vez de partir
+# vacio -- confirmar sin tocar nada equivale a aceptar el default.
+def cargar_tags_forma_gorro():
+    if not TAGS_FORMA_GORRO_PATH.exists():
+        return {}
+    return load_json(TAGS_FORMA_GORRO_PATH)
+
+
+def guardar_tags_forma_gorro(tags):
+    TAGS_FORMA_GORRO_PATH.write_text(json.dumps(tags, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+@admin_bp.route("/admin/clasificar-gorros")
+@requiere_admin
+def admin_clasificar_gorros():
+    catalog = load_json(CATALOG_PATH)
+    tags = cargar_tags_forma_gorro()
+    gorros = [p for p in catalog if p.get("categoria") == "gorro"]
+    gorros.sort(key=lambda p: p["id"])
+
+    productos_json = [
+        {
+            "id": p["id"],
+            "nombre": p["nombre"],
+            "tienda": p["tienda"],
+            "imagen": (p.get("fotos") or [p.get("imagen", "")])[0],
+            "forma_actual": tags.get(p["id"], p.get("forma", "curvo")),
+        }
+        for p in gorros
+    ]
+
+    return render_template(
+        "admin_clasificar_gorros.html",
+        productos=productos_json,
+        total_gorros=len(gorros),
+        ya_revisados=len(tags),
+    )
+
+
+@admin_bp.route("/admin/api/clasificar-gorro/<producto_id>", methods=["POST"])
+@requiere_admin
+def admin_api_clasificar_gorro(producto_id):
+    datos = request.get_json(silent=True) or {}
+    forma = datos.get("forma")
+    if forma not in FORMAS_GORRO_CONOCIDAS:
+        return jsonify({"ok": False}), 400
+
+    tags = cargar_tags_forma_gorro()
+    tags[producto_id] = forma
+    guardar_tags_forma_gorro(tags)
+    return jsonify({"ok": True})

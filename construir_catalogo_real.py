@@ -39,7 +39,10 @@ reemplazarlo.
 import html
 import json
 import re
+import unicodedata
 from pathlib import Path
+
+from data.catalogo_manual_viloria import VILORIA_PRODUCTOS
 
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / "data" / "catalog.json"
@@ -66,6 +69,257 @@ OCASIONES_DEFAULT = ["carrete", "universidad", "junta social", "junta de amigos/
 # conocidos), se marca literal "sin corte definido" en vez de adivinar --
 # pedido explicito del usuario, ver lista aparte que se imprime al final.
 VERIFICADO_A_MANO = {
+    # --- Club 33 (2026-08-27) --- corte/material/gramaje NO vienen en el
+    # products.json (body_html vacio para los 5 productos) -- se sacaron de
+    # la pagina real de cada producto (WebFetch), que si tiene esta info en
+    # una seccion de specs aparte: "Calce boxy fit medio" (literal, no
+    # inferido de foto) + "Composicion: Algodon 100%" + gramaje literal.
+    'T-SHIRT "PACIFIC SUN"': {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 280},
+    'T-SHIRT "LEMON PALETA"': {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 280},
+    'HOODIE "C33" SS26.': {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 900},
+
+    # --- Rapt (2026-08-27) --- corte real sacado de la descripcion real de
+    # la ficha (og:description, ver DATOS_SHOPIFY_UPGRADE["Rapt"]).
+    "RAW DENIM JACKET": {"corte": "boxy fit"},
+    "FOUNDATION TROUSER": {"corte": "baggy"},
+    "FOUNDATION TROUSER BLACK": {"corte": "baggy"},
+    # Tanda 2 (2026-08-28): mismo criterio -- nombre no dice "boxy" pero la
+    # ficha real si ("fit boxy" / "polerón boxy" literal).
+    "HOODIE THIRD WAVE CLASSIC / PRE-ORDER": {"corte": "boxy fit"},
+    "HOODIE NEXT FORM PATCH BLACK": {"corte": "boxy fit"},
+
+    # --- Traperas Company (2026-08-28) --- categoria real sacada de la
+    # descripcion real (body_html), no del nombre: la coleccion "Motion"
+    # y varios hoodies (Grape/Work Hrd/True Black/Cherry Bomb) no traen
+    # "hoodie"/"poleron" en el nombre pero la ficha real dice "Poleron..."
+    # / "Hoodie..." literal. "Hoodie Insane" es el caso inverso: el NOMBRE
+    # dice hoodie pero la ficha real dice "Polera arena modelo boxy" (es
+    # una polera, no un poleron) -- corte "boxy" tambien viene de esa
+    # misma ficha real.
+        # --- Viloria (2026-08-29), catalogo manual --- corte/material tal
+    # como los dio el dueno leyendo la ficha real de WhatsApp: "TOADALLY
+    # FRESH" es "fit relajado" sin mas detalle (mismo criterio que OVA:
+    # relajado sin oversize/boxy explicito -> regular fit); "Chaqueta
+    # denim - DANGEROUS" dice "fit oversized" literal; "BANE - Oversized"
+    # ya trae "oversized" en el nombre (detectar_corte lo toma solo), pero
+    # el material "100% algodon" no viene en el nombre asi que se agrega
+    # a mano.
+    "TOADALLY FRESH": {"corte": "regular fit"},
+    "Chaqueta denim - DANGEROUS": {"corte": "oversize"},
+    "BANE - Oversized": {"material": "algodon_100"},
+    # --- Enila (2026-08-30) --- "bomber" solo no dispara la categoria
+    # chaqueta en clasificar_prenda() (necesita "chaqueta"/"jacket" en el
+    # nombre), asi que las 5 bomber quedan a mano. Colores: declarados por
+    # la tienda cuando coinciden con la foto real; "Bomber Breña" la ficha
+    # dice "tono granate" (copy-paste literal de la ficha de "Bomber
+    # Granate") pero la FOTO real es un tweed verde oscuro/negro -- se
+    # tageo por la foto, confirmado con el usuario (2026-08-30). "Denim
+    # Corteza Negro" dice "corte straight" explicito. "Chaqueta Vestigio"
+    # y "Jeans Corteza Vestigio"/"Denim Alba" dicen "100% algodon" en la
+    # ficha aunque el nombre no lo diga. "Chaqueta Vestigio" tambien dice
+    # "denim negro" en la ficha -> subtipo mezclilla. "Bomber Corteza"/
+    # "Bomber Alba" dicen "de calce holgado" explicito -> oversize. "Bomber
+    # Granate" declara "10% Lana y 90% poliester" -> material poliester
+    # (dominante). "Chaqueta Archivo" no declara color en texto, la foto
+    # real muestra un gris oscuro/carbon inequivoco.
+    "Bomber Corteza": {
+        "categoria": "chaqueta", "subtipo": "bomber", "corte": "oversize",
+        "material": "algodon_100", "colores": ["Negro"],
+    },
+    "Bomber Breña": {"categoria": "chaqueta", "subtipo": "bomber", "colores": ["Verde"]},
+    "Bomber Índigo": {"categoria": "chaqueta", "subtipo": "bomber", "colores": ["Azul"]},
+    "Bomber Alba": {
+        "categoria": "chaqueta", "subtipo": "bomber", "corte": "oversize",
+        "material": "algodon_100", "colores": ["Blanco"],
+    },
+    "Bomber Granate": {
+        "categoria": "chaqueta", "subtipo": "bomber", "material": "poliester", "colores": ["Granate"],
+    },
+    "Chaqueta Vestigio": {"subtipo": "mezclilla", "material": "algodon_100", "colores": ["Negro"]},
+    "Chaqueta Archivo": {"colores": ["Gris"]},
+    "Denim Corteza Negro": {"corte": "straight", "colores": ["Negro"]},
+    "Jeans Corteza Vestigio": {"material": "algodon_100", "colores": ["Negro"]},
+    "Denim Alba": {"material": "algodon_100", "colores": ["Blanco"]},
+    # --- BEEWAY (2026-08-30) ---
+    # "Cropped" declara largo real pero no coincide con ninguna regla
+    # automatica de largo (solo aplica a baby tee) -- se confirma a mano.
+    # "PANTS (BUZO)" en ingles no dispara la categoria pantalon, y como
+    # el nombre SI dice "buzo" sin decir "pantalon", caia al fallback de
+    # poleron (pensado para "Buzo Nike Tech", rompe aca). "Bomber Color
+    # Concreto": "bomber" solo no dispara chaqueta (igual que Enila).
+    # Resto: colores no declarados en texto, tageados por foto real.
+    # "Gorra Project Expansión": la foto real es celeste, no rosa como
+    # sugiere el handle -- se sigue la foto.
+    'CROPPED BEEWAY ROSA': {'largo': 'crop'},
+    'CROPPED BEEWAY BLACK': {'largo': 'crop'},
+    'CROPPED BEEWAY (BLUE)': {'largo': 'crop'},
+    'PANTS (BUZO)': {'categoria': 'pantalon', 'subtipo': 'buzo', 'colores': ['Gris']},
+    'GORRA ( CAMO )': {'colores': ['Verde']},
+    # "sweatshirt" (ingles) tampoco dispara la categoria poleron.
+    'RIPPED SWEATSHIRT (NEW)': {'categoria': 'poleron'},
+    'BOMBER COLOR CONCRETO': {'categoria': 'chaqueta', 'subtipo': 'bomber'},
+    'BUZO BAGGY BEEWAY': {'colores': ['Negro']},
+    'HOODIE (CAPAS) NEW': {'colores': ['Negro']},
+    '(Colab )Polera polo “$HILE 2 King’s”. CONCEPTION X BEEWAY': {'colores': ['Negro']},
+    'Polera Polo 🇯🇵🇯🇵🇯🇵 Beeway  —   (since 2018) tela pique': {'colores': ['Negro']},
+    'Polera Slim fit (OG)': {'colores': ['Negro']},
+    'Jockey Gamuza Shiny': {'colores': ['Negro']},
+    'Jockey Trucker Hat Shiny': {'colores': ['Negro']},
+    'SHORT DOBLE PRETINA BEEWAY': {'colores': ['Gris']},
+    'SHORT BEEWAY NUBE': {'colores': ['Beige']},
+    'PACK 2 T-SHIRT STAR ( BLACK Y WHITE)': {'colores': ['Negro', 'Blanco']},
+    'PACK 2 POLERAS BÁSICAS BOXY FIT': {'colores': ['Negro', 'Blanco']},
+    'JOCKEY REAL TREE': {'colores': ['Verde']},
+    'JOCKEY CAMO': {'colores': ['Verde']},
+    'JOCKEY BEEWAY': {'colores': ['Verde', 'Beige']},
+    'TANK TOP SLIM FIT (LÍNEAS CAMO )': {'colores': ['Verde']},
+    'POLERA SLIM FIT LÍNEAS CAMO': {'colores': ['Verde']},
+    'PANTALON MEZCLILLA              (SUPER BAGGY )': {'colores': ['Negro']},
+    'Gorra Project Expansión': {'colores': ['Azul']},
+    'HOODIE MULTIZIPER (FÉNIX)': {'colores': ['Negro']},
+    'HOODIE DOUBLE CAP (FULL ZIP)': {'colores': ['Negro']},
+    'JOCKEY CAMO (OSCURO)': {'colores': ['Verde']},
+    'HOODIE RESILIENCIE (FOCALIZADO)': {'colores': ['Negro']},
+    'SHORT METALLIC': {'colores': ['Negro']},
+    'Resilience Boxy Tee': {'colores': ['Gris']},
+    'Resilience Hoodie Boxy Fit': {'colores': ['Negro']},
+    # --- RRREUSED (2026-08-30) --- "crewneck"/"polar" no disparan la
+    # categoria poleron en clasificar_prenda() (solo mira hoodie/poleron/
+    # zip/canguro/sudadera) -- un crewneck es justo un poleron SIN cierre
+    # ni capucha, asi que categoria queda a mano. Colores: RRREUSED no
+    # declara color en NINGUNA ficha (solo talla/largo/ancho), asi que se
+    # tagean por handle (ver _RRREUSED_COLORES mas abajo), no por nombre --
+    # muchos productos distintos comparten el mismo nombre generico (ej.
+    # 2 "Pantalón Wrangler" de colores distintos), asi que un override por
+    # nombre aca los pisaria mal.
+    "Crewneck Nike Center": {"categoria": "poleron"},
+    "Crewneck Stussy": {"categoria": "poleron"},
+    "Crewneck Russell": {"categoria": "poleron"},
+    "Crewneck Carhartt Vintage": {"categoria": "poleron"},
+    "Polar The North Face": {"categoria": "poleron"},
+    # "abrigo" no es palabra clave de clasificar_prenda() (solo chaqueta/
+    # jacket) -- sin esto caia al default "polera". Foto real: chaqueta
+    # tipo chore-coat corta, no un abrigo formal -- por eso se incluyo.
+    "Abrigo Armani Exchange": {"categoria": "chaqueta"},
+    # --- IPREX (2026-08-30) --- typos reales de la propia tienda que
+    # rompen la deteccion por palabra clave: "Poleroon" (le sobra una
+    # "o", no matchea "poleron" ni tiene otra palabra gatillo) y
+    # "Chaaqueta" (le sobra una "a", no matchea "chaqueta").
+    'Poleroón ninja Draco': {"categoria": "poleron"},
+    'Chaaqueta Bud Negra': {"categoria": "chaqueta"},
+    # --- IPREX (2026-08-30) --- ninguna ficha declara color en
+    # texto; se tageo revisando la foto principal de cada uno (linea
+    # "Acid Wash"/Saddabae = tela gris jaspeada; linea "Ninja"/"full
+    # zip" = negro solido; ver hojas de contacto revisadas a mano).
+    'Chaqueta BMW': {"colores": ['Negro']},
+    'Chaqueta Ferrari cuero': {"colores": ['Negro']},
+    'Chaqueta Ferrari  Tricolor': {"colores": ['Blanco']},
+    'Chaqueta Mclaren': {"colores": ['Negro']},
+    'Chaqueta Nascar Bud': {"colores": ['Rojo']},
+    'Chaqueta  Nascar Jack Daniels': {"colores": ['Negro']},
+    'Poleón full zip Mortis': {"colores": ['Negro']},
+    'Polera Acid Wash Bestia': {"colores": ['Gris']},
+    'Polera Acid Wash Exanimis': {"colores": ['Gris']},
+    'Polera Acid Wash Flagitium': {"colores": ['Gris']},
+    'Polera Acid Wash Oblivio': {"colores": ['Gris']},
+    'Polera Acid Wash Ruinæ': {"colores": ['Gris']},
+    'Polera Acid Wash Sanguis': {"colores": ['Gris']},
+    'Polera Acid Wash Spiritus': {"colores": ['Gris']},
+    'Polera Acid Wash Supplicium': {"colores": ['Gris']},
+    'Polera Acid Wash Tartarus': {"colores": ['Gris']},
+    'Polera Baby Tee Brasil iprex': {"colores": ['Amarillo']},
+    'Polera Minimal m2 Saddabae': {"colores": ['Gris']},
+    'polera minimal saddabae': {"colores": ['Gris']},
+    'Polera Sad Rulay Saddabae': {"colores": ['Gris']},
+    'Polera Trivial Saddabae': {"colores": ['Gris']},
+    'Polera Waifu Saddabae': {"colores": ['Gris']},
+    'Polera Waifu triviales Saddabae': {"colores": ['Gris']},
+    'Polerón Acid Wash Ignis': {"colores": ['Negro']},
+    'Polerón full zip Scelus': {"colores": ['Negro']},
+    'Polerón full zip Solitudo': {"colores": ['Negro']},
+    'Polerón full zip Timor': {"colores": ['Negro']},
+    'Polerón Full zip Tristitia': {"colores": ['Negro']},
+    'Polerón full zip trivial M2 Saddabae': {"colores": ['Negro']},
+    'Polerón full zip Trivial m3 Saddabae': {"colores": ['Negro']},
+    'Polerón full zip trivial Saddabae': {"colores": ['Negro']},
+    'Polerón Minimal m2 Saddabae': {"colores": ['Negro']},
+    'Polerón minimal Saddabae': {"colores": ['Negro']},
+    'Polerón ninja Daemon': {"colores": ['Negro']},
+    'Polerón ninja Desperatio': {"colores": ['Negro']},
+    'Polerón ninja Flagitium': {"colores": ['Negro']},
+    'Polerón ninja Flagitium': {"colores": ['Negro']},
+    'Poleron ninja Gehenna': {"colores": ['Negro']},
+    'Polerón ninja Kuromi': {"colores": ['Negro']},
+    'Polerón Ninja Maledictio': {"colores": ['Negro']},
+    'Polerón ninja Manes': {"colores": ['Negro']},
+    'Polerón ninja Venom': {"colores": ['Negro']},
+    'Polerón Ninja Vampyrus': {"colores": ['Negro']},
+    'Polerón Ninja Vastitas': {"colores": ['Negro']},
+    'Polerón personajes Saddabae': {"colores": ['Negro']},
+    'Polerón Sad Rulay Saddabae': {"colores": ['Negro']},
+    'Poleroón ninja Draco': {"colores": ['Negro']},
+    "MOTION BASIC ACERO": {"categoria": "poleron"},
+    "SPACY GRAY": {"categoria": "poleron"},
+    "MOTION ACID WASH BASIC": {"categoria": "poleron"},
+    "MOTION BASIC GBLACK": {"categoria": "poleron"},
+    "MOTION CHOCOLATE": {"categoria": "poleron"},
+    "MOTION BASIC GRAY": {"categoria": "poleron"},
+    "MOTION BASIC": {"categoria": "poleron"},
+    "SPACY BLACK": {"categoria": "poleron"},
+    "GRAPE": {"categoria": "poleron"},
+    "WORK HRD": {"categoria": "poleron"},
+    "TRUE BLACK": {"categoria": "poleron"},
+    "CHERRY BOMB": {"categoria": "poleron"},
+    "HOODIE INSANE": {"categoria": "polera", "corte": "boxy fit"},
+    # "Top elasticado" (ficha real) -- categoria "top" no tiene palabra
+    # clave propia en clasificar_prenda() (solo "baby tee" cae ahi), y la
+    # ficha no especifica breteles/crop/corset para asignar un subtipo sin
+    # adivinar, se deja sin subtipo.
+    "STREET LINES TOP - White Edition": {"categoria": "top"},
+    "STREET LINES TOP - Black Edition": {"categoria": "top"},
+    # clasificar_prenda() solo reconoce "gorro"/"beanie", no "gorra" (las
+    # unicas 2 gorras de todo el catalogo hasta ahora) -- sin este override
+    # caian por default a "polera".
+    "GORRA WORLDWIDE GREEN": {"categoria": "gorro"},
+    "GORRA WORLDWIDE": {"categoria": "gorro"},
+
+    # --- Feroni Studios (2026-08-27) --- corte real sacado de la
+    # descripcion real de la ficha (nombre no trae la palabra clave).
+    "Long Sleeve FERONI": {"corte": "slim fit"},
+    "Full Zip Hoodie Leopardo": {"corte": "boxy fit"},
+
+    # --- Blazze (2026-08-27) --- ninguno de los 18 nombres trae la
+    # categoria/corte (son solo codigos "Blazze 0X - Color") -- todo sacado
+    # de la descripcion real de la ficha.
+    "Blazze 04 - Zip set indigo": {"categoria": "conjunto"},
+    "Blazze 04 - Button set raw": {"categoria": "conjunto"},
+    "Blazze 04 - Indigo": {"categoria": "pantalon", "subtipo": "jeans"},
+    "Blazze 04 - Raw": {"categoria": "pantalon", "subtipo": "jeans"},
+    "Blazze 04 - Black": {"categoria": "pantalon", "subtipo": "jeans"},
+    "Blazze 04 - Light blue": {"categoria": "pantalon", "subtipo": "jeans"},
+    "Blazze 04 - Zip jacket indigo": {"categoria": "chaqueta", "subtipo": "mezclilla"},
+    "Blazze 04 - Button jacket raw": {"categoria": "chaqueta", "subtipo": "mezclilla"},
+    "Blazze 03 - Bare Waist Black": {"categoria": "pantalon", "subtipo": "jeans"},
+    "Blazze 03 - Bare Waist Blue": {"categoria": "pantalon", "subtipo": "jeans"},
+    # "pierna recta" literal en la ficha real de los 4 "Blazze 01".
+    "Blazze 01 - Blue": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
+    "Blazze 01 - Gray": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
+    "Blazze 01 - White": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
+    "Blazze 01 - Black": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
+    # "El short tiro bajo..." literal en la ficha real de los 4 "Blazze 02".
+    "Blazze 02 - Black": {"categoria": "shorts", "subtipo": "jeans"},
+    "Blazze 02 - White": {"categoria": "shorts", "subtipo": "jeans"},
+    "Blazze 02 - Mid blue": {"categoria": "shorts", "subtipo": "jeans"},
+    "Blazze 02 - Light blue": {"categoria": "shorts", "subtipo": "jeans"},
+
+    # --- Kagi (2026-08-27) --- solo se cargaron 6 de 45 productos (pedido
+    # explicito del usuario: solo jeans/polerones/poleras/chalecos/
+    # chaquetas, el resto -- faldas/vestido/bolsos/bufanda/posavasos -- no
+    # calza con el foco streetwear). "Cardigan" no lo detecta
+    # clasificar_prenda() solo, necesita override ("Jort" si se detecta
+    # solo desde 2026-08-28, ver clasificar_prenda()).
+    "CÁRDIGAN KAGI": {"categoria": "chaleco"},
+
     # --- OVA Chile ---
     # "Basics Heavyweight": 100% algodon, 280g, regular fit (ficha propia).
     "Polera OVA Apparel Basics Heavyweight – Negra": {"material": "algodon_100", "gramaje_gsm": 280, "corte": "regular fit"},
@@ -96,6 +350,15 @@ VERIFICADO_A_MANO = {
     "POLERA OVA APPAREL UNITED BROTHERS VERDE": {"corte": "sin corte definido"},
     # "Art Verde": ficha no menciona ninguno de los cortes conocidos.
     "POLERA OVA APPAREL ART VERDE (PREVENTA)": {"corte": "sin corte definido"},
+    # "Buzo Baggy": clasificar_prenda() lo etiqueto "poleron" por la regla
+    # generica de la palabra "buzo" en el nombre -- pero la ficha real dice
+    # literal "este pantalon" ("Diseñado con un corte baggy, este pantalón
+    # entrega una silueta amplia..."): es un pantalon tipo jogger, no la
+    # parte de arriba. Bug real detectado por el usuario (2026-08-26):
+    # buscando "poleron oversize" aparecian estos "buzos" mezclados.
+    # Categoria override + subtipo "buzo" (pantalon admite ese subtipo).
+    "BUZO BAGGY OVA APPAREL NEGRO (PREVENTA)": {"categoria": "pantalon", "subtipo": "buzo"},
+    "BUZO BAGGY OVA APPAREL GRIS (PREVENTA)": {"categoria": "pantalon", "subtipo": "buzo"},
 
     # --- Oversaints ---
     # "Knit": ficha dice "Standar fit" -> mapeado a regular fit (el mas
@@ -115,13 +378,6 @@ VERIFICADO_A_MANO = {
     # "Washed OVRST": verificado en ficha real -- "Standar fit" (igual que
     # Knit y el poleron con cierre), no depende de la sigla del nombre.
     "Poleron Washed OVRST": {"corte": "regular fit"},
-
-    # --- El Pulento Style ---
-    # Unicos 2 productos de la coleccion sin "oversize"/"overzise" en el
-    # nombre (los otros 10 ya se detectan solos) -- la ficha tampoco
-    # menciona ningun corte especifico, no se generaliza el de los otros.
-    "CREAM & BROWN": {"corte": "sin corte definido"},
-    "STREET AND TRIP": {"corte": "sin corte definido"},
 
     # --- Rapt ---
     # Linea "Common" (Hoodie + Long Sleeve): ficha real confirma "Fit:
@@ -345,14 +601,14 @@ VERIFICADO_A_MANO = {
     "Noir Pulse - Aureum": {"categoria": "poleron", "corte": "oversize"},
     "Noir Pulse - Emerald": {"categoria": "poleron", "corte": "oversize"},
     "Noir Pulse - Morganite": {"categoria": "poleron", "corte": "oversize"},
-    "Nomad Jort": {"categoria": "shorts", "corte": "baggy", "subtipo": "jeans"},
+    "Nomad Jort": {"categoria": "shorts", "corte": "baggy"},
     "Nuit Volt": {"categoria": "poleron", "corte": "oversize"},
     "Nuit Volt - Heaven": {"categoria": "poleron", "corte": "oversize"},
     "Nuit Volt - Void": {"categoria": "poleron", "corte": "oversize"},
     "Polera Esencial - Blanca": {"corte": "boxy fit"},
     "Polera Esencial - Verde botella": {"corte": "boxy fit"},
-    "Shadow Jorts": {"categoria": "shorts", "corte": "baggy", "subtipo": "jeans"},
-    "Stealth Jorts": {"categoria": "shorts", "corte": "baggy", "subtipo": "jeans"},
+    "Shadow Jorts": {"categoria": "shorts", "corte": "baggy"},
+    "Stealth Jorts": {"categoria": "shorts", "corte": "baggy"},
 
     # --- BANG GANG (2026-08-23) --- ficha real: TODAS las poleras usan
     # "fit regular unisex" (verificado en "Polera 333 Black", texto de
@@ -698,8 +954,8 @@ VERIFICADO_A_MANO = {
     "POLERA STRASS GRIS": {"corte": "sin corte definido"},
     "LOGO STRASS TEE": {"corte": "sin corte definido"},
     "LOGO STRASS HOODIE": {"corte": "oversize"},
-    "JORT CARGO CAMO VERDE": {"categoria": "shorts", "corte": "baggy", "subtipo": "cargo"},
-    "JORT CARGO CAMO GRIS": {"categoria": "shorts", "corte": "baggy", "subtipo": "cargo"},
+    "JORT CARGO CAMO VERDE": {"categoria": "shorts", "corte": "baggy"},
+    "JORT CARGO CAMO GRIS": {"categoria": "shorts", "corte": "baggy"},
     "TANK TOP MEN": {"corte": "sin corte definido"},
     "TANK TOP GIRL": {"corte": "sin corte definido"},
     "BOXY TEE GRIS": {"corte": "sin corte definido"},
@@ -800,7 +1056,7 @@ VERIFICADO_A_MANO = {
     "CATS BLACK TEE": {"corte": "sin corte definido"},
     "3D CHROME LOGO HOODIE": {"corte": "oversize"},
     "POLERA DARK IGOR": {"corte": "sin corte definido"},
-    "JORT CARGO CORROÍDO": {"categoria": "shorts", "corte": "baggy", "subtipo": "cargo"},
+    "JORT CARGO CORROÍDO": {"categoria": "shorts", "corte": "baggy"},
     "CHAQUETA CORROÍDO": {"corte": "oversize"},
     "PANTALÓN CARGO": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo"},
     "PANTALÓN CARPINTERO": {"categoria": "pantalon", "corte": "baggy"},
@@ -840,6 +1096,18 @@ VERIFICADO_A_MANO = {
 #    "(texto)" o "(foto)" segun de donde salio el dato, para saber donde
 #    revisar primero si alguna vez hay dudas.
 CAPUCHA_CIERRE_VERIFICADO = {
+    # --- Feroni Studios --- ficha real dice literal "capucha interior
+    # estampada" y "cierre completo".
+    "Full Zip Hoodie Leopardo": {"capucha": "con capucha", "cierre": "con cierre"},
+
+
+    # --- Club 33 --- "HOODIE" en el nombre + la ficha real dice literal
+    # "Capucha amplia sin costura" -> con capucha. Sin cierre: la ficha
+    # describe "bolsillo tipo canguro frontal" (pullover) y la foto real de
+    # la persona usandolo confirma que no tiene cierre/zipper.
+    'HOODIE "C33" SS26.': {"capucha": "con capucha", "cierre": "sin cierre"},
+
+
     # --- OVA Chile --- ni ficha ni foto dan senal (la foto disponible esta
     # recortada a la altura del pecho, no se ve capucha ni cierre).
     "BUZO BAGGY OVA APPAREL NEGRO (PREVENTA)": {},
@@ -873,6 +1141,28 @@ CAPUCHA_CIERRE_VERIFICADO = {
     "COMMON HOODIE MORO": {"capucha": "con capucha", "cierre": "sin cierre"},
     "COMMON HOODIE AZURE": {"capucha": "con capucha", "cierre": "sin cierre"},
     "COMMON HOODIE MOSS": {"capucha": "con capucha", "cierre": "sin cierre"},
+
+    # --- Rapt, tanda 2 (2026-08-28) --- capucha por "HOODIE" en el nombre.
+    # Cierre solo donde la ficha real menciona "cierre YKK" explicitamente
+    # (linea Zip Hoodie Low Tide); el resto de los hoodies no lo menciona,
+    # queda "no especificado" (no se asume pullover ni cierre sin dato).
+    "BOXY NEXT CHAPTER HOODIE BROWN": {"capucha": "con capucha"},
+    "BOXY NEXT CHAPTER HOODIE GREEN": {"capucha": "con capucha"},
+    "BOXY NEXT CHAPTER HOODIE MELANGE": {"capucha": "con capucha"},
+    "BOXY NEXT CHAPTER HOODIE NAVY": {"capucha": "con capucha"},
+    "BOXY NEXT CHAPTER HOODIE PINK / PRE-ORDER": {"capucha": "con capucha"},
+    "HOODIE NEXT FORM PATCH BLACK": {"capucha": "con capucha"},
+    "BOXY HOODIE PHASE ICE": {"capucha": "con capucha"},
+    "BOXY HOODIE PHASE WINE": {"capucha": "con capucha"},
+    "BOXY HOODIE SHIFT CREAM": {"capucha": "con capucha"},
+    "BOXY HOODIE SHIFT NAVY / PRE-ORDER": {"capucha": "con capucha"},
+    "BOXY HOODIE SHIFT MYST / PRE-ORDER": {"capucha": "con capucha"},
+    "HOODIE THIRD WAVE CLASSIC / PRE-ORDER": {"capucha": "con capucha"},
+    "ZIP HOODIE LOW TIDE BLACK": {"capucha": "con capucha", "cierre": "con cierre"},
+    "ZIP HOODIE LOW TIDE BLUE": {"capucha": "con capucha", "cierre": "con cierre"},
+    "ZIP HOODIE LOW TIDE MOSS": {"capucha": "con capucha", "cierre": "con cierre"},
+    "ZIP HOODIE LOW TIDE STONE": {"capucha": "con capucha", "cierre": "con cierre"},
+    "ZIP HOODIE LOW TIDE V2 CEMENT": {"capucha": "con capucha", "cierre": "con cierre"},
 
     # --- Roots South --- cierre (texto) por "Zip"/"Zipper" en el nombre.
     # Capucha (foto): ninguna ficha la menciona, pero la foto real de
@@ -1220,7 +1510,6 @@ ES_BABY_TEE = {"dnd baby tee"}
 TALLAS_POR_TIENDA = {
     "OVA Chile": ["S", "M", "L", "XL"],
     "Oversaints": ["S", "M", "L", "XL"],
-    "El Pulento Style": ["S", "M", "L", "XL"],
     "Rapt": ["S", "M", "L", "XL"],
     "Roots South": ["S", "M", "L", "XL"],
     "Rotten": ["S", "M", "L", "XL"],
@@ -1246,6 +1535,31 @@ def _tiene_palabra(nombre, palabra):
     return palabra.lower() in nombre.lower()
 
 
+def _sin_tildes(texto):
+    """Quita tildes/acentos para que las palabras clave de clasificar_prenda()
+    (todas escritas sin tilde, ej. "poleron") tambien matcheen nombres reales
+    de tienda que SI las traen (ej. "Polerón") -- bug real encontrado con
+    Oopsi (2026-08-28): 4 productos llamados literal "Polerón ..." caian al
+    default "polera" porque "poleron" (sin tilde) no es substring de
+    "polerón" (con tilde). No cambia el resultado para nombres que ya vienen
+    sin tilde."""
+    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
+
+
+# Preferencia negativa "rotos/desgastados" (2026-08-28, pedido del usuario):
+# solo por PALABRA LITERAL en el nombre -- se probo buscar tambien en la
+# descripcion real y da falsos positivos masivos (un parrafo de marketing
+# generico con "estampado"/"desgastado" se repite en cientos de fichas sin
+# que la prenda sea realmente desgastada). Sin diccionario manual: las 4
+# coincidencias encontradas son inequivocas ("Ripped"/"Distressed" en el
+# nombre), no hace falta verificar foto para esto.
+_RX_DESGASTADO = re.compile(r"\broto(s)?\b|rasgad|desgastad|ripped|distress|destroyed")
+
+
+def _es_desgastado(nombre):
+    return bool(_RX_DESGASTADO.search(_sin_tildes(nombre.lower())))
+
+
 def detectar_corte(nombre):
     n = nombre.lower()
     if "baggy" in n:
@@ -1269,7 +1583,7 @@ def clasificar_prenda(nombre):
     """Devuelve (categoria, subtipo, manga, largo) a partir de palabras
     clave reales del nombre del producto. Reglas explicitas, en orden --
     ver docstring del modulo para el criterio general."""
-    n = nombre.lower()
+    n = _sin_tildes(nombre.lower())
 
     if nombre in ES_BABY_TEE or "baby tee" in n or "babytee" in n:
         # "Baby tee" es, por definicion propia del formulario de KOLIZION
@@ -1278,7 +1592,18 @@ def clasificar_prenda(nombre):
         # significa el subtipo en si.
         return "top", "babytee", None, "crop"
 
-    if "gorro" in n or "beanie" in n:
+    # 2026-08-30 -- bug real encontrado cargando BEEWAY (9 productos
+    # "Jockey.../Gorra..." caian al default "polera"): clasificar_prenda()
+    # solo miraba "gorro"/"beanie", pero "gorra"/"jockey" son sinonimos ya
+    # reconocidos en TIPOS_PRENDA_CONOCIDOS (usado por el buscador de
+    # texto libre) que nunca se habian sumado aca. "cap" (con limite de
+    # palabra) se probo tambien pero se saco de nuevo: BEEWAY tiene una
+    # linea de HOODIES literal "Double Cap" (5 productos) que con "cap"
+    # como gatillo quedaban mal clasificados como gorro -- ningun gorro
+    # real del catalogo dependia solo de "cap" para detectarse (todos
+    # tienen "gorro"/"gorra"/"jockey"/"beanie" tambien), asi que sacarlo
+    # no pierde nada y evita ese falso positivo real.
+    if "gorro" in n or "beanie" in n or "gorra" in n or "jockey" in n:
         return "gorro", None, None, None
 
     if "tracksuit" in n or "conjunto" in n:
@@ -1288,8 +1613,27 @@ def clasificar_prenda(nombre):
         # aplican a un conjunto de 2 piezas, no inventar un valor.
         return "conjunto", None, None, None
 
+    # 2026-08-28 -- "cardigan" es su propio subtipo dentro de chaleco (misma
+    # categoria que ya usa la app para esta prenda, ver Kagi), no un chaleco
+    # generico -- se distingue con subtipo="cardigan" porque la categoria
+    # "cardigan" es exclusiva de mujer (regla centralizada, pedido explicito
+    # del usuario) y un chaleco comun no lo es. Ver construir_producto() para
+    # donde se aplica el genero exclusivo.
+    if "cardigan" in n:
+        return "chaleco", "cardigan", None, None
+
     if "chaleco" in n or (n.startswith("knit") or " knit" in n) and "zip" not in n and "hoodie" not in n:
         return "chaleco", None, None, None
+
+    # 2026-08-28 -- "jort" es su propio subtipo dentro de shorts, no un
+    # alias de "short de jean" (pedido explicito del usuario). Un jort es
+    # por definicion denim ancho/baggy y mas largo que un short de jean
+    # clasico -- el nombre real de la tienda diciendo "jort/jorts" es la
+    # señal fuerte, se prioriza ANTES del chequeo de jean/denim de mas
+    # abajo (varios jorts reales tienen "denim" en el nombre, ej. "DENIM
+    # SKULL JORT", y caerian en la categoria pantalon si no se corta aca).
+    if "jort" in n:
+        return "shorts", "jorts", None, None
 
     if "jacket" in n or "chaqueta" in n:
         subtipo = None
@@ -1313,8 +1657,20 @@ def clasificar_prenda(nombre):
         subtipo = None
         if "cargo" in n:
             subtipo = "cargo"
-        elif "jean" in n or "denim" in n:
+        elif "jean" in n or "denim" in n or "mezclilla" in n:
+            # "mezclilla" agregado 2026-08-30 (BEEWAY: "Pantalon Mezclilla
+            # Super Baggy" caia con subtipo vacio -- "mezclilla" es
+            # sinonimo real de denim/jean, ya usado asi en SUBTIPOS_
+            # CONOCIDOS para chaqueta, nunca se habia sumado aca).
             subtipo = "jeans"
+        elif "buzo" in n:
+            # 2026-08-30 -- bug real encontrado cargando RRREUSED: "Pantalon
+            # Buzo Nike Tech" etc. ya caian bien en categoria "pantalon"
+            # (por la palabra "pantalon"), pero el subtipo se quedaba vacio
+            # porque esta rama solo miraba cargo/jean -- "Pantalon de buzo"
+            # ya existe como opcion en el formulario (SUBTIPO_OPCIONES en
+            # script.js) pero nunca se llenaba sola.
+            subtipo = "buzo"
         return "pantalon", subtipo, None, None
 
     # 2026-08-22 -- "short" nunca habia aparecido en las 8 tiendas piloto
@@ -1332,7 +1688,12 @@ def clasificar_prenda(nombre):
             subtipo = "tela"
         return "shorts", subtipo, None, None
 
-    if any(p in n for p in ("hoodie", "poleron", "zip", "canguro", "sudadera")):
+    # 2026-08-30 -- "crewneck"/"polar" (fleece pullover) nunca fueron
+    # disparadores aca: Doslobos y RRREUSED necesitaron overrides
+    # VERIFICADO_A_MANO producto por producto para varios "CREWNECK ..."
+    # (bug real, ya paso 2 veces) -- se centraliza de una vez para no
+    # repetirlo con WAV/futuras tiendas.
+    if any(p in n for p in ("hoodie", "poleron", "zip", "canguro", "sudadera", "crewneck", "polar")):
         return "poleron", None, None, None
 
     if "longsleeve" in n or "long sleeve" in n:
@@ -1347,11 +1708,41 @@ def clasificar_prenda(nombre):
     return "polera", None, "corta", "normal"
 
 
+# Palabra de color literal en el NOMBRE del producto -> bucket canonico de
+# COLORES_CONOCIDOS (2026-08-30). Uso: fallback automatico en
+# construir_producto() cuando nadie tageo color por otra via -- la propia
+# tienda ya escribio el color en el nombre (ej. "COMMON LONG SLEEVE MOSS",
+# "GRID LAYER TEE NAVY"), no es una suposicion. Separado de COLORES_
+# CONOCIDOS/COLORES_SIMILARES a proposito: esas 2 estructuras controlan que
+# tan estricto es el matching de una busqueda de texto libre ("rojo" exacto
+# vs "burdeo" solo como similar) y no se tocan -- esto es otra cosa, solo
+# decide que texto CANONICO se guarda cuando el nombre ya lo dice clarito.
+_COLOR_PALABRAS_NOMBRE = {
+    "rojo": "rojo", "roja": "rojo", "red": "rojo", "wine": "rojo", "maroon": "rojo",
+    "azul": "azul", "blue": "azul", "navy": "azul", "indigo": "azul",
+    "verde": "verde", "green": "verde", "moss": "verde", "olive": "verde", "mint": "verde",
+    "beige": "beige", "cream": "beige", "crema": "beige",
+    "negro": "negro", "negra": "negro", "black": "negro",
+    "blanco": "blanco", "blanca": "blanco", "white": "blanco",
+    "gris": "gris", "grey": "gris", "gray": "gris", "cemento": "gris", "concreto": "gris",
+    "cafe": "cafe", "marron": "cafe", "brown": "cafe", "chocolate": "cafe",
+    "amarillo": "amarillo", "amarilla": "amarillo", "yellow": "amarillo",
+    "naranja": "naranja", "naranjo": "naranja", "orange": "naranja",
+    "morado": "morado", "morada": "morado", "purple": "morado", "purpura": "morado",
+    "rosado": "rosado", "rosada": "rosado", "rosa": "rosado", "pink": "rosado", "fucsia": "rosado",
+    "celeste": "celeste",
+}
+
+
 def genero_de(nombre):
+    # Bug real (2026-08-29): "men" como substring (sin \b) marcaba "hombre"
+    # cualquier nombre que contuviera esas 3 letras dentro de otra palabra
+    # -- ej. "ZIP HOODIE LOW TIDE V2 CEMENT" quedaba "hombre" solo por
+    # "CEMENT". Con \b se exige que sea la palabra completa.
     n = nombre.lower()
-    if "mujer" in n or "women" in n:
+    if re.search(r"\bmujer\b|\bwomen\b", n):
         return "mujer"
-    if "hombre" in n or "men" in n:
+    if re.search(r"\bhombre\b|\bmen\b", n):
         return "hombre"
     return "unisex"
 
@@ -1413,6 +1804,31 @@ def _tallas_disponibles_shopify(producto_shopify):
     return tallas
 
 
+def _variantes_talla_shopify(producto_shopify):
+    """Todas las tallas reales del producto (disponible Y agotada) segun
+    products.json de Shopify -- a diferencia de _tallas_disponibles_shopify
+    (solo las que hoy tienen stock, usada para filtrar busquedas), esto es
+    para el selector de talla de la ficha de producto: mostrar tambien
+    cuales tallas existen pero estan agotadas, en vez de ocultarlas."""
+    opciones = producto_shopify.get("options", [])
+    idx_talla = None
+    for i, opt in enumerate(opciones):
+        if opt.get("name", "").strip().lower() in ("talla", "size", "tamano", "tamaño"):
+            idx_talla = i
+    variantes = []
+    vistas = set()
+    for variante in producto_shopify["variants"]:
+        if idx_talla is not None:
+            talla = variante.get(f"option{idx_talla + 1}")
+        else:
+            talla = variante.get("option1") or variante.get("title")
+        if not talla or talla in vistas:
+            continue
+        vistas.add(talla)
+        variantes.append({"talla": talla, "disponible": bool(variante.get("available"))})
+    return variantes
+
+
 def cargar_shopify_cache(ruta_json, excluir_handles=()):
     """Lee un products.json de Shopify ya cacheado en disco (ver
     data/shopify_cache/, bajado con curl real -- nunca inventado) y arma
@@ -1427,14 +1843,22 @@ def cargar_shopify_cache(ruta_json, excluir_handles=()):
         if p["handle"] in excluir_handles:
             continue
         variantes = p["variants"]
+        precio_clp = int(float(variantes[0]["price"]))
+        compare_at = variantes[0].get("compare_at_price")
+        # Precio anterior real (Shopify compare_at_price) -- solo cuenta como
+        # oferta si es estrictamente mayor al precio actual (evita marcar
+        # "oferta" cuando compare_at_price viene igual o vacio).
+        precio_original_clp = int(float(compare_at)) if compare_at else None
         productos.append({
             "nombre": p["title"],
-            "precio": int(float(variantes[0]["price"])),
+            "precio": precio_clp,
+            "precio_original_clp": precio_original_clp if precio_original_clp and precio_original_clp > precio_clp else None,
             "path": f"/products/{p['handle']}",
             "handle": p["handle"],
             "fotos": [img["src"] for img in p.get("images", [])],
             "descripcion_real": _limpiar_html(p.get("body_html")),
             "tallas_reales": _tallas_disponibles_shopify(p),
+            "tallas_variantes": _variantes_talla_shopify(p),
         })
     return productos
 
@@ -1447,11 +1871,242 @@ def datos_shopify_por_handle(ruta_json):
     return {p["handle"]: p for p in cargar_shopify_cache(ruta_json)}
 
 
+def _traducir_tallas_numericas(datos_por_handle, tabla):
+    """Tiendas que venden por talla numerica (ej. 40/42/44) en vez de
+    S/M/L/XL -- sin esto, el filtro de talla del buscador nunca las
+    encuentra (el usuario elige S/M/L/XL, nunca "42"). "tabla" es la
+    equivalencia REAL publicada en la guia de tallas del sitio (leida a
+    mano, 2026-08-29), nunca una conversion generica inventada. Un valor
+    numerico sin fila en la tabla (ej. Floating "50" = 2XL) se descarta en
+    vez de forzarlo a la talla mas cercana -- la app no modela 2XL."""
+    for datos in datos_por_handle.values():
+        if datos.get("tallas_reales"):
+            datos["tallas_reales"] = list(dict.fromkeys(
+                t if t in ("S", "M", "L", "XL") else tabla[t]
+                for t in datos["tallas_reales"] if t in ("S", "M", "L", "XL") or t in tabla
+            ))
+        if datos.get("tallas_variantes"):
+            for v in datos["tallas_variantes"]:
+                if v["talla"] not in ("S", "M", "L", "XL") and v["talla"] in tabla:
+                    v["talla"] = tabla[v["talla"]]
+    return datos_por_handle
+
+
+def datos_woocommerce_por_slug(ruta_json):
+    """Equivalente a datos_shopify_por_handle() pero para tiendas
+    WooCommerce (Store API publica, GET .../wp-json/wc/store/v1/products,
+    bajado con curl real). Mismo formato de salida indexado por el ultimo
+    segmento del path ("slug" aca) -- _handle_de_path() ya soporta la
+    barra final de "/producto/{slug}/"."""
+    productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = {}
+    for p in productos:
+        resultado[p["slug"]] = {
+            "fotos": [img["src"] for img in p.get("images", [])],
+            "descripcion_real": _limpiar_html(p.get("description")),
+            "tallas_reales": None,
+        }
+    return resultado
+
+
+def cargar_iprex_cache(ruta_json, excluir_slugs=()):
+    """IPREX (iprex.cl) es WordPress/WooCommerce con la API REST bloqueada
+    (wp-json devuelve 404) -- products.json/Store API no sirven aca. Cada
+    pagina de producto SI trae un <script type="application/ld+json">
+    real con Product/name/image/price/availability (confirmado a mano,
+    2026-08-30), asi que se bajo cada pagina con curl (sin IA de por
+    medio) y se parseo ese bloque -- mismo principio que cargar_shopify_
+    cache()/datos_woocommerce_por_slug(), adaptado al formato que si
+    existe aca. Sin tallas estructuradas (WooCommerce simple product, sin
+    variantes de talla en el JSON-LD) -- tallas_reales=None, cae al rango
+    generico de siempre."""
+    productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in productos:
+        if p["slug"] in excluir_slugs:
+            continue
+        resultado.append({
+            "nombre": p["nombre"],
+            "precio": int(float(p["precio"])),
+            "precio_original_clp": None,
+            "path": f"https://iprex.cl/producto/{p['slug']}",
+            "handle": p["slug"],
+            "fotos": p.get("imagenes") or [],
+            "descripcion_real": p.get("descripcion"),
+            "tallas_reales": [] if not p.get("disponible") else None,
+            "tallas_variantes": None,
+        })
+    return resultado
+
+
+TIENDAS_OFICIALES = {
+    # Tiendas con consentimiento explicito del dueno de la tienda para
+    # pasar de "vista previa" a ficha oficial lista para vender (no solo
+    # foto real -- eso ya lo tienen varias tiendas mas). Mientras el
+    # checkout interno no exista, el frontend muestra "Proximamente" en
+    # vez de linkear afuera para estas tiendas (2026-08-27).
+    "Novorich",
+    "Club 33",
+    "BANG GANG",
+    "Simpl.",
+    "ForceBlack",
+    "AbsolutelyWrong",
+    "UNK Chile",
+    "Doslobos",
+    "Rotten",
+    "OVA Chile",
+    "Floating",
+    "Oversaints",
+    "Roots South",
+    "Shatters",
+    "Stuffies Concept",
+    "Rapt",
+    "Selvanegrawear",
+    "Feroni Studios",
+    "Addictve",
+    "1Libra",
+    "Haze Concept",
+    "Kotonaru Store",
+    "Blazze",
+    "Kagi",
+    "Oopsi",
+    "28Keys",
+    "Traperas Company",
+    "Viloria",
+    "Enila",
+    "RRREUSED",
+    "IPREX",
+    "BEEWAY",
+    "WAV",
+}
+
+# Excepciones dentro de una tienda oficial: categorias que NO quedan
+# oficiales aunque el resto de la tienda si (2026-08-27). Selvanegrawear:
+# los 8 gorros usan imagen "Gemini_Generated_Image..." en el sitio real de
+# la tienda -- generadas por IA, no fotos reales -- mientras que las 12
+# poleras + 2 canguros si tienen fotos reales (verificado a mano). No se
+# puede prometer "foto real" en algo que la propia tienda no tiene.
+# 2026-08-30: el usuario pidio pasar igual los 8 gorros a oficial (con la
+# foto IA tal como esta), aceptando el riesgo -- "si yo noto q se ve mal
+# sacamos todos". Ya no hay excepcion.
+TIENDAS_OFICIALES_EXCEPCIONES = {}
+
+# Tiendas cuyo catalogo COMPLETO se asocia a un interes/hobby (2026-08-30,
+# IPREX): a diferencia de interes_musica/interes_arte por producto (que
+# exige evidencia real en nombre/descripcion de ESE producto puntual),
+# aca la tienda entera se describe a si misma como streetwear pensado
+# para ambientes de musica -- pedido explicito del usuario, no inferido
+# por Claude. Se aplica en construir_producto() como si cada producto
+# tuviera interes_musica=True, reusando el mismo mecanismo de ranking por
+# palabras (tags -> texto_producto() -> hobbies del perfil), sin taguear
+# producto por producto ni tocar Koko.
+TIENDAS_INTERES_COMPLETO = {
+    "IPREX": "musica",
+}
+
+
+# Preferencia negativa "graficos/texto/logos grandes" (2026-08-28, pedido
+# del usuario): foto principal revisada A MANO, una por una -- no se puede
+# inferir del nombre/descripcion (la descripcion real trae un parrafo de
+# marketing generico que menciona "estampado" en la mitad del catalogo sin
+# que la prenda tenga print grande, ver docs/catalogo_real.md). Lote piloto
+# (2026-08-28): solo estos 25 productos estan evaluados por ahora. El resto
+# del catalogo queda SIN estas 3 claves -- motor_recomendacion.py debe tratar
+# la ausencia como "no evaluado todavia", nunca como False (no se asume que
+# una prenda no tiene print grande solo porque no se ha mirado su foto).
+PRINT_GRANDE_VERIFICADO = {
+    'POLERA OVA APPAREL GOD´S PLAN NEGRA (PREVENTA)': {'grafico_grande': True, 'texto_grande': True},
+    'Poleron black zipper': {},
+    'GRID LAYER TEE MELANGE': {},
+    'Black Few Run': {},
+    'bedrot longsleeve': {'grafico_grande': True},
+    'Polera Logo Verde': {'grafico_grande': True, 'texto_grande': True, 'cara_logo_grande': True},
+    'POLERA .TXT (ACID WASH)': {'texto_grande': True},
+    'POLERA BOXY BLACKSUMMER (HEAVYWEIGHT)': {},
+    'FLTNG Zip Hoodie': {'texto_grande': True},
+    'Polera Crystals Logo Acid Wash': {},
+    'Hoodie Unk. Acid Blue': {},
+    'NITIDO long sleeve': {'texto_grande': True},
+    'HODDIE LUXURY SKY BLUE': {},
+    'Shatters Cloud Hoodie': {'grafico_grande': True, 'texto_grande': True},
+    'DICE HOODIE "Third Edition" Black': {},
+    'T-SHIRT "PACIFIC SUN"': {'grafico_grande': True, 'texto_grande': True},
+    'Long Sleeve FERONI': {},
+    'Sky Grey Frayed Heavyweight® Sweater': {},
+    '"YELLOW LABEL COMP"// OVERSIZED HOODIE': {'texto_grande': True},
+    '"Branded" Long Sleeve Tee': {'texto_grande': True},
+    'Hoodie BoxyFit zip up SLT2': {'grafico_grande': True},
+    'POLERA 14F': {'grafico_grande': True, 'texto_grande': True},
+    'Polerón LA Azul Eléctrico Over Size': {'texto_grande': True},
+    'POLERÓN "EMOTION" NEGRO': {'cara_logo_grande': True},
+    'HOODIE TEXTOS': {'texto_grande': True},
+}
+
+# Lote 2 y 3 (2026-08-29, 50 productos mas, 2 saltados por venir como SVG sin
+# descargar -- Oversaints todavia no tiene foto real para esos). Criterio
+# afinado en el lote piloto (pedido del usuario): un wordmark de marca en
+# rhinestone/bling de tamano moderado (ej. BANG GANG, Novorich) NO cuenta
+# como "gigante" -- se reservo cara_logo_grande para logos/wordmarks que
+# realmente dominan la prenda.
+PRINT_GRANDE_VERIFICADO.update({
+    'POLERA OVA APPAREL GOD´S PLAN BLANCA (PREVENTA)': {'grafico_grande': True, 'texto_grande': True},
+    'GRID LAYER TEE NAVY': {},
+    'Black Origin Layers': {},
+    'black blur tee': {'grafico_grande': True},
+    'Polera Oranwutang Logo Negra': {'grafico_grande': True, 'texto_grande': True, 'cara_logo_grande': True},
+    'POLERA .TXT (BLANCA)': {'texto_grande': True},
+    'POLERA HANNAH MONTANA OVERSIZED (HEAVYWEIGHT) NEGRO': {'texto_grande': True},
+    'Baby tee': {},
+    'Poleron Crystals Logo BG': {},
+    'Polera UNK. Infinity Black': {},
+    'WOLVES emblem tee': {'grafico_grande': True, 'texto_grande': True},
+    'HODDIE LUXURY BLACK TURCOISE': {},
+    'Smoke Hoodie': {'grafico_grande': True, 'texto_grande': True},
+    'DICE HOODIE "Third Edition" Blue Navy': {},
+    'T-SHIRT "LEMON PALETA"': {'grafico_grande': True, 'texto_grande': True},
+    'Baby Tee Fur': {'texto_grande': True},
+    'French Blue Frayed Heavyweight® Sweater': {},
+    'WASHED POCKET // POLERA OVERSIZED': {},
+    'Hoodie "The Locals" Black HEAVYWEIGHT': {'texto_grande': True},
+    'Camisa Bleeding Cowboys Type Font': {'grafico_grande': True, 'texto_grande': True},
+    'Blazze 04 - Zip set indigo': {},
+    'TEE REGALA FLORES': {'texto_grande': True},
+    'Polerón Blanco Estrella Negra Tachas Over Size': {'grafico_grande': True},
+    'Conjunto emotion negro "Ángel"': {'texto_grande': True},
+    'MOTION BASIC ACERO': {},
+    'TOADALLY FRESH': {'grafico_grande': True, 'texto_grande': True},
+    'POLERA OVA RETRO NEGRO': {'texto_grande': True},
+    'GRID SHIFT ZIP MELANGE': {},
+    'Black Zipper Layers': {},
+    'black love solitude tee': {'texto_grande': True},
+    'Polera Oranwutang Micro Blanca': {'grafico_grande': True, 'texto_grande': True, 'cara_logo_grande': True},
+    'POLERA .TXT (CAFÉ)': {'texto_grande': True},
+    'POLERA HANNAH MONTANA OVERSIZED (HEAVYWEIGHT) CREMA': {'texto_grande': True},
+    'FLTNG ZIP V2': {'texto_grande': True},
+    'Poleron Heavy Crystals': {},
+    'Polera UNK. Infinity Verde Amarelo': {},
+    'LOGO black tee': {},
+    'RI$H CLUB – White Purple Tee': {'texto_grande': True},
+    'Newland Hoodie': {'texto_grande': True},
+    'HOODIE "C33" SS26.': {},
+    'Baby Tee 8 Ball': {'texto_grande': True},
+    'Burgundy Frayed Heavyweight® Sweater': {},
+    'Hoodie "The Locals" Pink': {'texto_grande': True},
+    'Camisa Y2K': {'grafico_grande': True, 'cara_logo_grande': True},
+    'Blazze 04 - Button set raw': {},
+    'TEE FLORES, COMO LLAVES': {'texto_grande': True},
+    'Polerón Soccer 08 Franela Fantasía': {'texto_grande': True},
+})
+
+
 def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, imagen_rel,
                         marca_autor=True, es_gorro=False, color_dominante=None, forma_gorro=None,
-                        fotos=None, descripcion_real=None, tallas_reales=None):
+                        fotos=None, descripcion_real=None, tallas_reales=None, tallas_variantes=None,
+                        precio_original_clp=None, colores=None, interes_musica=False, interes_arte=False,
+                        interes_anime=False, franquicia_anime=None):
     categoria, subtipo, manga, largo = ("gorro", None, None, None) if es_gorro else clasificar_prenda(nombre)
     corte = detectar_corte(nombre)
+    genero = genero_de(nombre)
 
     extra = VERIFICADO_A_MANO.get(nombre, {})
     if extra.get("corte"):
@@ -1476,8 +2131,55 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         # explicitamente lo contrario -- no se asume el largo por el
         # nombre solo si la ficha lo contradice.
         largo = extra["largo"]
+    if extra.get("genero"):
+        # Override manual (2026-08-28): para prendas de genero exclusivo
+        # que el nombre no deja claro por si solo (ej. "Cardigan Cebra" de
+        # Oopsi -- categoria "cardigans" es exclusiva de mujer, pedido
+        # explicito del usuario, pero el nombre del producto no dice
+        # "mujer"). Nunca se usa para "adivinar" genero de una prenda
+        # comun, solo para reglas de categoria ya validadas.
+        genero = extra["genero"]
+    if extra.get("colores"):
+        # Override manual (2026-08-30, Enila): mismo mecanismo VERIFICADO_A_
+        # MANO de siempre, ahora tambien para color -- para cuando el color
+        # real (confirmado por foto o ficha) no coincide con lo que dice el
+        # nombre, o el nombre no dice nada. Centralizado aca en vez de una
+        # regla aparte por tienda.
+        colores = extra["colores"]
+    if subtipo == "cardigan":
+        # Regla centralizada (2026-08-28, pedido explicito del usuario):
+        # "cardigan" es categoria exclusiva de mujer sin importar la tienda
+        # ni si el nombre del producto lo menciona -- no depende de
+        # VERIFICADO_A_MANO por producto, aplica siempre que clasificar_
+        # prenda() detecte un cardigan.
+        genero = "mujer"
 
     corte_real = corte if corte and corte != "sin corte definido" else None
+
+    en_oferta = bool(precio_original_clp and precio_original_clp > precio_clp)
+    descuento_pct = round((1 - precio_clp / precio_original_clp) * 100) if en_oferta else None
+
+    # Intereses/gustos (2026-08-30, WAV): "musica"/"arte_cultura" son las
+    # mismas claves de HOBBIES_CONOCIDOS (constantes.py) -- solo se marcan
+    # cuando hay evidencia real en nombre/descripcion (nunca por "se ve
+    # que pega con la estetica"). Se guardan como campo booleano propio Y
+    # como palabra en "tags": texto_producto() (motor_recomendacion.py) ya
+    # incluye tags en el texto que se compara contra el pedido del
+    # usuario, y armar_resultados() ya mete las hobbies del perfil dentro
+    # de ese mismo texto de busqueda (ver app.py) -- asi que esto reusa el
+    # mecanismo de ranking por palabras ya existente en vez de crear un
+    # sistema de prioridad aparte, y no toca nada de Koko.
+    interes_tienda = TIENDAS_INTERES_COMPLETO.get(tienda)
+    interes_musica = bool(interes_musica or extra.get("interes_musica") or interes_tienda == "musica")
+    interes_arte = bool(interes_arte or extra.get("interes_arte") or interes_tienda == "arte_cultura")
+    interes_anime = bool(interes_anime or extra.get("interes_anime"))
+    franquicia_anime = franquicia_anime or extra.get("franquicia_anime")
+    tags_interes = (
+        (["musica"] if interes_musica else [])
+        + (["arte_cultura"] if interes_arte else [])
+        + (["anime"] if interes_anime else [])
+        + ([franquicia_anime.lower()] if franquicia_anime else [])
+    )
 
     producto = {
         "id": f"real_{tienda.lower().replace(' ', '').replace('.', '')}_{idx:04d}",
@@ -1487,16 +2189,21 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         "link": link_absoluto(dominio, path),
         "precio": limpiar_precio(precio_clp),
         "precio_clp": precio_clp,
-        "precio_original": "",
-        "descuento_pct": None,
-        "en_oferta": False,
+        "precio_original": limpiar_precio(precio_original_clp) if en_oferta else "",
+        "descuento_pct": descuento_pct,
+        "en_oferta": en_oferta,
         "descripcion": descripcion_real if descripcion_real else f"{marca} -- producto real de {tienda}, tienda chica chilena de streetwear. Precio y stock sujetos a cambios en el sitio de la tienda.",
         "imagen": fotos[0] if fotos else img_absoluta(imagen_rel),
-        "genero": genero_de(nombre),
+        "genero": genero,
         "categoria": categoria,
         "ocasiones": OCASIONES_DEFAULT,
-        "tags": ["streetwear", "urbano", marca.lower()] + ([corte_real] if corte_real else []),
+        "interes_musica": interes_musica,
+        "interes_arte": interes_arte,
+        "interes_anime": interes_anime,
+        "franquicia_anime": franquicia_anime,
+        "tags": ["streetwear", "urbano", marca.lower()] + ([corte_real] if corte_real else []) + tags_interes,
         "marca_autor": marca_autor,
+        "oficial": tienda in TIENDAS_OFICIALES and categoria not in TIENDAS_OFICIALES_EXCEPCIONES.get(tienda, set()),
     }
     if fotos:
         # Fotos reales completas de la ficha de la tienda (todas, no solo
@@ -1505,14 +2212,54 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         # producto todavia no tiene fotos reales cargadas.
         producto["fotos"] = fotos
 
+    # Color real (2026-08-29, pedido explicito del usuario con Viloria):
+    # centralizado aca para que cualquier tienda -- no solo gorro -- pueda
+    # declarar color(es) reales (de la ficha o de la foto cuando el color de
+    # la prenda es inequivocamente visible) y que el buscador/Koko los
+    # encuentren via _color_producto() (motor_recomendacion.py), que ya lee
+    # "color_dominante" sin importar la categoria. "colores" (lista) es para
+    # cuando la tienda declara variantes reales (ej. "Negro | Blanco"); se
+    # guarda completa en "colores_disponibles" (chips de la vista previa) y
+    # tambien arma el color_dominante de busqueda si no vino uno explicito.
+    # Sin tildes en color_dominante: asi matchea COLORES_CONOCIDOS (todo
+    # escrito sin tilde), aunque "colores_disponibles" para mostrar en UI
+    # se deja como vino (con tilde) para que se lea bien.
+    if colores:
+        producto["colores_disponibles"] = colores
+        if not color_dominante:
+            color_dominante = _sin_tildes(", ".join(colores).lower())
+    if not color_dominante:
+        # Fallback automatico (2026-08-30, bug real reportado por el
+        # usuario: "COMMON LONG SLEEVE MOSS" de Rapt es verde y no
+        # quedaba tagueach) -- si el NOMBRE trae una palabra de color
+        # inequivoca (la puso la propia tienda, no se adivina nada) y el
+        # producto no tiene color por ninguna otra via, se usa esa. Si el
+        # nombre trae mas de un color distinto (ej. "RED WHITE BLUE
+        # TEE"), no se elige ninguno a ciegas -- se deja sin tag, igual
+        # que antes.
+        _colores_en_nombre = {
+            _COLOR_PALABRAS_NOMBRE[w] for w in re.findall(r"[a-z]+", _sin_tildes(nombre.lower()))
+            if w in _COLOR_PALABRAS_NOMBRE
+        }
+        if len(_colores_en_nombre) == 1:
+            color_dominante = next(iter(_colores_en_nombre))
+    if color_dominante:
+        producto["color_dominante"] = color_dominante
+
     if es_gorro:
         producto["forma"] = forma_gorro or "lana"
-        if color_dominante:
-            producto["color_dominante"] = color_dominante
         if (forma_gorro or "lana") == "lana":
             # Dato real, literal en el nombre ("Gorro Lana ...") -- nunca
             # inventado, ver MATERIALES_CONOCIDOS en app.py.
             producto["material"] = "lana"
+        # 2026-08-30: sin esto, productoTieneStock() en comun.js ve
+        # tallas_disponibles vacio (nunca se seteo aca) y muestra
+        # "Proximamente" para siempre en vez de "Agregar al carrito",
+        # aunque la tienda sea oficial -- estos gorros son talla unica,
+        # sin tracking de stock por talla (a diferencia de un gorro
+        # cargado por Shopify, que si trae tallas_variantes reales y
+        # puede estar realmente agotado).
+        producto["tallas_disponibles"] = ["Única"]
     else:
         # tallas_reales=None (no vino de Shopify) -> rango tipico de la
         # tienda, como siempre. tallas_reales=[] es un dato REAL (Shopify
@@ -1522,6 +2269,12 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
             producto["tallas_disponibles"] = tallas_reales
         else:
             producto["tallas_disponibles"] = TALLAS_POR_TIENDA.get(tienda, ["S", "M", "L", "XL"])
+        if tallas_variantes:
+            # Todas las tallas reales (disponible Y agotada) -- solo existe
+            # para tiendas cargadas via Shopify, que es de donde sale este
+            # dato real. Las demas siguen sin esto (no se inventa cual
+            # talla especifica esta agotada si no viene de una fuente real).
+            producto["tallas_variantes"] = tallas_variantes
         if corte:
             producto["corte"] = corte
         if subtipo:
@@ -1530,10 +2283,43 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
             producto["manga"] = manga
         if largo:
             producto["largo"] = largo
+        if _es_desgastado(nombre):
+            producto["es_desgastado"] = True
+        if nombre in PRINT_GRANDE_VERIFICADO:
+            ver = PRINT_GRANDE_VERIFICADO[nombre]
+            producto["grafico_grande"] = bool(ver.get("grafico_grande"))
+            producto["texto_grande"] = bool(ver.get("texto_grande"))
+            producto["cara_logo_grande"] = bool(ver.get("cara_logo_grande"))
         if categoria == "poleron":
             cc = CAPUCHA_CIERRE_VERIFICADO.get(nombre, {})
             producto["capucha"] = cc.get("capucha", "no especificado")
             producto["cierre"] = cc.get("cierre", "no especificado")
+
+    if categoria == "gorro" and "forma" not in producto:
+        # 2026-08-30 -- bug real reportado por el usuario: gorros cargados
+        # por el camino normal (categoria "gorro" detectada por nombre via
+        # clasificar_prenda, es_gorro=False) nunca tenian "forma" -- solo
+        # los gorros de lana cargados a mano (es_gorro=True, ej.
+        # Selvanegrawear) la traian. Sin "forma", filtrar_gorros_por_forma()
+        # (motor_recomendacion.py) los saca de CUALQUIER busqueda con forma
+        # especifica ("Gorro curvo"/"plano"/"de lana"), aunque el gorro
+        # exista y calce. Default real: un jockey/gorra/trucker/cap SIN
+        # "beanie"/"snapback" en el nombre es casi siempre de visera curva
+        # -- no es una adivinanza a ciegas, es la forma abrumadoramente
+        # mas comun para ese tipo de gorro. VERIFICADO_A_MANO puede
+        # pisarlo con "forma_gorro" para el caso real que no lo sea.
+        _forma_detectada = extra.get("forma_gorro")
+        if not _forma_detectada:
+            _n_gorro = _sin_tildes(nombre.lower())
+            if "beanie" in _n_gorro:
+                _forma_detectada = "lana"
+            elif "snapback" in _n_gorro:
+                _forma_detectada = "plano"
+            else:
+                _forma_detectada = "curvo"
+        producto["forma"] = _forma_detectada
+        if _forma_detectada == "lana" and not producto.get("material"):
+            producto["material"] = "lana"
 
     if extra.get("material"):
         producto["material"] = extra["material"]
@@ -1582,20 +2368,14 @@ OVERSAINTS = [
     ("Poleron Washed OVRST", 69790, "/products/poleron-washed-ovrst", "//studioversaints.com/cdn/shop/files/mockupfeed_18.svg?width=1946"),
 ]
 
-PULENTO = [
-    ("BLACK & CENTER OVERZISE", 12490, "/producto/black-center-overzise/", "https://www.elpulentostyle.cl/wp-content/uploads/2025/11/IMG_9677-300x300.jpg"),
-    ("BLACK & DIAMON STYLE OVERSIZE", 12990, "/producto/black-diamon-style-oversize/", "https://www.elpulentostyle.cl/wp-content/uploads/2026/02/Photoroom_20260206_210353-300x300.png"),
-    ("RED LINES OVERSIZE STYLE", 14490, "/producto/red-lines-oversize-style/", "https://www.elpulentostyle.cl/wp-content/uploads/2026/01/IMG_0571-300x300.jpg"),
-    ("BLACK & MONEY OVERZISE", 12990, "/producto/black-money-overzise/", "https://www.elpulentostyle.cl/wp-content/uploads/2025/11/69FE52BB-909D-471B-871E-7FBD52BFA5F1-300x300.jpg"),
-    ("BLACK & STREET OVERZISE", 12490, "/producto/black-street-overzise/", "https://www.elpulentostyle.cl/wp-content/uploads/2025/11/IMG_0456-1-300x300.jpg"),
-    ("STREET ON FIRE STYLE OVERSIZE", 12990, "/producto/street-on-fire-style/", "https://www.elpulentostyle.cl/wp-content/uploads/2026/02/IMG_1471-300x300.jpeg"),
-    ("STREET YORK STYLE OVERSIZE", 12990, "/producto/street-york-style/", "https://www.elpulentostyle.cl/wp-content/uploads/2026/02/IMG_1444-1-300x300.jpg"),
-    ("BLACK & THORNS OVERZISE", 13490, "/producto/black-thorns-overzise/", "https://www.elpulentostyle.cl/wp-content/uploads/2025/11/7584FA37-4898-45D2-A40B-F9E86681BCCE-300x300.jpg"),
-    ("BROWN & OVERZISE", 11990, "/producto/brown-overzise/", "https://www.elpulentostyle.cl/wp-content/uploads/2025/11/IMG_9670-300x300.jpg"),
-    ("COFFE & THORNS OVERZISE", 13390, "/producto/coffe-thorns-overzise/", "https://www.elpulentostyle.cl/wp-content/uploads/2025/11/IMG_9666-1-300x300.jpg"),
-    ("CREAM & BROWN", 11990, "/producto/cream-brown/", "https://www.elpulentostyle.cl/wp-content/uploads/2026/01/IMG_0424-300x300.jpg"),
-    ("STREET AND TRIP", 11990, "/producto/street-and-trip/", "https://www.elpulentostyle.cl/wp-content/uploads/2026/01/IMG_0864-300x300.jpg"),
-]
+# PULENTO (El Pulento Style) sacada del catalogo el 2026-08-27 -- decision
+# explicita del usuario tras confirmar que 5/5 fotos reales revisadas a
+# mano muestran logos de marcas ajenas (Nike, Corteiz), no diseno propio,
+# pese a que la ficha del producto decia "Diseño Bordado"/"Diseño
+# Estampado" como si fuera de la marca. Mismo criterio que Reserved.cl/
+# Inkultura (reventa/replica de marca ajena). Ver docs/catalogo_real.md
+# para el detalle completo. Tambien sacada de TALLAS_POR_TIENDA (arriba),
+# data/tiendas.json y data/envios_tiendas.json.
 
 RAPT = [
     ("GRID LAYER TEE MELANGE", 27990, "/grid-layer-tee-melange", "https://cdnx.jumpseller.com/rapt/image/75814900/resize/480/600"),
@@ -1618,6 +2398,50 @@ RAPT = [
     ("COMMON LONG SLEEVE MOSS", 26990, "/common-tee-moss", "https://cdnx.jumpseller.com/rapt/image/78239091/resize/480/600"),
     ("FOUNDATION TROUSER BLACK", 54990, "/foundation-trouser-black", "https://cdnx.jumpseller.com/rapt/image/79535787/resize/480/600"),
     ("HOODIE ESSENCE CLASSIC II / PRE-ORDER", 38990, "/hoodie-essence-classic-ii", "https://cdnx.jumpseller.com/rapt/image/60258641/resize/480/600"),
+    # Tanda 2 (2026-08-28): 39 productos nuevos que aparecieron en el sitio
+    # desde la carga original del 2026-08-27 (mismo metodo Jumpseller
+    # og:tags via curl, ver DATOS_SHOPIFY_UPGRADE["Rapt"] para fotos/
+    # descripcion real/precio real de cada uno).
+    ("BOXY ESSENCE BLACK / PRE-ORDER", 23990, "/boxy-essence-black", "https://cdnx.jumpseller.com/rapt/image/61797633/resize/1200/630?1743210139"),
+    ("BOXY ESSENCE GRAY / PRE-ORDER", 23990, "/boxy-essence-gray", "https://cdnx.jumpseller.com/rapt/image/61010690/resize/1200/630?1744906225"),
+    ("BOXY ESSENCE II BROWN / PRE-ORDER", 23990, "/boxy-essence-ii-brown", "https://cdnx.jumpseller.com/rapt/image/61359846/resize/1200/630?1741970636"),
+    ("BOXY ESSENCE II CREAM / PRE-ORDER", 23990, "/boxy-essence-ii-cream", "https://cdnx.jumpseller.com/rapt/image/60257594/resize/1200/630?1742966188"),
+    ("BOXY ESSENCE II MOSS", 23990, "/boxy-essence-ii-moss", "https://cdnx.jumpseller.com/rapt/image/75847422/resize/1200/630?1776363998"),
+    ("BOXY ESSENCE II MYSTIC BLUE", 23990, "/boxy-essence-ii-mystic-blue", "https://cdnx.jumpseller.com/rapt/image/75847580/resize/1200/630?1776364323"),
+    ("BOXY LOW TEE BLACK / PRE-ORDER", 24990, "/boxy-low-tee-black", "https://cdnx.jumpseller.com/rapt/image/63916835/resize/1200/630?1776364342"),
+    ("BOXY LOW TEE MOSS", 24990, "/boxy-low-tee-moss", "https://cdnx.jumpseller.com/rapt/image/66413908/resize/1200/630?1755018513"),
+    ("BOXY LOW TEE STONE / PRE-ORDER", 24990, "/boxy-low-tee-stone", "https://cdnx.jumpseller.com/rapt/image/75827475/resize/1200/630?1776288767"),
+    ("BOXY NEXT CHAPTER BLACK", 23990, "/boxy-new-chapter-black", "https://cdnx.jumpseller.com/rapt/image/62241163/resize/1200/630?1743977223"),
+    ("BOXY NEXT CHAPTER HOODIE BROWN", 34990, "/boxy-new-chapter-hoodie-brown", "https://cdnx.jumpseller.com/rapt/image/62241149/resize/1200/630?1743977138"),
+    ("BOXY NEXT CHAPTER HOODIE GREEN", 34990, "/boxy-new-chapter-hoodie-green", "https://cdnx.jumpseller.com/rapt/image/62241150/resize/1200/630?1743977151"),
+    ("BOXY NEXT CHAPTER HOODIE MELANGE", 34990, "/boxy-new-chapter-hoodie-grey", "https://cdnx.jumpseller.com/rapt/image/62241189/resize/1200/630?1743977304"),
+    ("BOXY NEXT CHAPTER HOODIE NAVY", 34990, "/boxy-new-chapter-hoodie-navy", "https://cdnx.jumpseller.com/rapt/image/62241157/resize/1200/630?1743977183"),
+    ("BOXY NEXT CHAPTER HOODIE PINK / PRE-ORDER", 34990, "/boxy-new-chapter-hoodie-pink", "https://cdnx.jumpseller.com/rapt/image/62241162/resize/1200/630?1743977206"),
+    ("BOXY NEXT CHAPTER PINK", 23990, "/boxy-new-chapter-pink", "https://cdnx.jumpseller.com/rapt/image/62241169/resize/1200/630?1743977241"),
+    ("BOXY NEXT FORM BLACK", 23990, "/boxy-next-form-black", "https://cdnx.jumpseller.com/rapt/image/75847409/resize/1200/630?1776363953"),
+    ("BOXY NEXT FORM NAVY", 23990, "/boxy-next-form-navy", "https://cdnx.jumpseller.com/rapt/image/74639084/resize/1200/630?1773347867"),
+    ("BOXY NEXT FORM PATCH BLACK", 28990, "/boxy-next-form-patch-black", "https://cdnx.jumpseller.com/rapt/image/75847415/resize/1200/630?1776363969"),
+    ("BOXY NEXT FORM PATCH MELANGE", 28990, "/boxy-next-form-patch-melange", "https://cdnx.jumpseller.com/rapt/image/74518868/resize/1200/630?1773255666"),
+    ("BOXY PHASE NAVY / PRE-ORDER", 23990, "/boxy-phase-navy", "https://cdnx.jumpseller.com/rapt/image/61824296/resize/1200/630?1743085544"),
+    ("BOXY THIRD WAVE BLACK / PRE-ORDER", 23990, "/boxy-third-wave-black", "https://cdnx.jumpseller.com/rapt/image/75847511/resize/1200/630?1776364212"),
+    ("BOXY THIRD WAVE STONE / PRE-ORDER", 23990, "/boxy-third-wave-stone", "https://cdnx.jumpseller.com/rapt/image/61360025/resize/1200/630?1743027609"),
+    ("BOXY DUAL SET ECLIPSE / PRE-ORDER", 28990, "/boxydualseteclipse", "https://cdnx.jumpseller.com/rapt/image/69553908/resize/1200/630?1762828473"),
+    ("BOXY DUAL SET SANDWAVE / PRE-ORDER", 28990, "/boxydualsetsandwave", "https://cdnx.jumpseller.com/rapt/image/69554264/resize/1200/630?1762972384"),
+    ("CLASSIC ESSENCE GREY", 24990, "/classic-essence-grey", "https://cdnx.jumpseller.com/rapt/image/79532873/resize/1200/630?1785605496"),
+    ("BOXY ESSENCE BLUE / PRE-ORDER", 23990, "/essence-tee-blue", "https://cdnx.jumpseller.com/rapt/image/61010682/resize/1200/630?1741968020"),
+    ("BOXY ESSENCE MELANGE / PRE-ORDER", 23990, "/essence-tee-grey", "https://cdnx.jumpseller.com/rapt/image/75847496/resize/1200/630?1776364151"),
+    ("HOODIE NEXT FORM PATCH BLACK", 39990, "/hoodie-next-form-patch-black", "https://cdnx.jumpseller.com/rapt/image/75486324/resize/1200/630?1775180799"),
+    ("BOXY HOODIE PHASE ICE", 36990, "/hoodie-phase-ice", "https://cdnx.jumpseller.com/rapt/image/60781043/resize/1200/630?1744907581"),
+    ("BOXY HOODIE PHASE WINE", 36990, "/hoodie-phase-wine", "https://cdnx.jumpseller.com/rapt/image/60258132/resize/1200/630?1739823639"),
+    ("BOXY HOODIE SHIFT CREAM", 34990, "/hoodie-shift-cream", "https://cdnx.jumpseller.com/rapt/image/60277922/resize/1200/630?1739848875"),
+    ("BOXY HOODIE SHIFT NAVY / PRE-ORDER", 36990, "/hoodie-shift-navy", "https://cdnx.jumpseller.com/rapt/image/61797631/resize/1200/630?1744906236"),
+    ("BOXY HOODIE SHIFT MYST / PRE-ORDER", 36990, "/hoodie-shift-violet", "https://cdnx.jumpseller.com/rapt/image/60781078/resize/1200/630?1744906241"),
+    ("HOODIE THIRD WAVE CLASSIC / PRE-ORDER", 38990, "/hoodie-third-wave-classic", "https://cdnx.jumpseller.com/rapt/image/61326029/resize/1200/630?1742694972"),
+    ("ZIP HOODIE LOW TIDE BLACK", 39990, "/zip-hoodie-low-tide-black", "https://cdnx.jumpseller.com/rapt/image/79636225/resize/1200/630?1785980559"),
+    ("ZIP HOODIE LOW TIDE BLUE", 39990, "/zip-hoodie-low-tide-blue", "https://cdnx.jumpseller.com/rapt/image/66414455/resize/1200/630?1755473745"),
+    ("ZIP HOODIE LOW TIDE MOSS", 39990, "/zip-hoodie-low-tide-moss", "https://cdnx.jumpseller.com/rapt/image/66414476/resize/1200/630?1755473823"),
+    ("ZIP HOODIE LOW TIDE STONE", 39990, "/zip-hoodie-low-tide-stone", "https://cdnx.jumpseller.com/rapt/image/79297262/resize/1200/630?1785195620"),
+    ("ZIP HOODIE LOW TIDE V2 CEMENT", 39990, "/ziphoodielowtidev2cement", "https://cdnx.jumpseller.com/rapt/image/69554437/resize/1200/630?1762829208"),
 ]
 
 ROOTSOUTH = [
@@ -2296,6 +3120,631 @@ STUFFIESCONCEPT = cargar_shopify_cache(
     },
 )
 
+CLUB33 = cargar_shopify_cache(
+    BASE_DIR / "data" / "shopify_cache" / "club33.json",
+    excluir_handles={
+        # ICE STAR HOODIE / NOT FOR EVERYONE HOODIE: revisadas a mano
+        # (2026-08-27) -- casi todas sus fotos (7/8 y 8/8 respectivamente)
+        # tienen nombre de archivo "ChatGPT_Image_..."/"ai-creation-..." y,
+        # comparadas con la unica foto real que si tiene Ice Star (una
+        # colgada en un arbol, con imperfecciones reales), se confirma que
+        # son renders generados por IA, no fotos del producto fisico.
+        # Decision explicita del dueno: no cargarlas hasta que la tienda
+        # tenga fotos reales. No excluir sin volver a revisar si la tienda
+        # actualiza sus fotos mas adelante.
+        "hoodie-ice-star", "hoodie-navy-rey",
+    },
+)
+# body_html viene vacio para los 5 productos de Club 33 (nunca escribieron
+# descripcion en el campo que products.json expone) -- pero la pagina real
+# de cada producto SI tiene specs/descripcion en una seccion aparte
+# (confirmado con WebFetch el 2026-08-27, texto citado literal, no
+# inventado). Se pisa aca por handle porque cargar_shopify_cache() no
+# puede verla (no viene en el products.json publico).
+CLUB33_DESCRIPCION_REAL = {
+    "cargando-1": (
+        "Inspirada en el azul del mar pacifico, pieza minimalista de "
+        "verano. Composicion: Algodon 100%, polera de 280 gsm, calce "
+        "boxy fit medio. Mangas caidas para un look relajado, tela "
+        "firme, terminaciones limpias y costuras reforzadas. Estampados "
+        "en serigrafia. Recomendamos elegir tu talla habitual -- si lo "
+        "prefieres aun mas suelto, puedes subir una talla. No usar "
+        "secadora ni planchar directamente sobre el diseno."
+    ),
+    "cargando": (
+        "Composicion: Algodon 100%, tela de alto gramaje perfecta para "
+        "cualquier temporada. Polera de 280 gsm, calce boxy fit medio. "
+        "Mangas caidas para un look relajado, tela firme, terminaciones "
+        "limpias y costuras reforzadas. Estampados en serigrafia. "
+        "Recomendamos elegir tu talla habitual -- si lo prefieres aun "
+        "mas suelto, puedes subir una talla. No usar secadora ni "
+        "planchar directamente sobre el diseno."
+    ),
+    "hoodie-01-test": (
+        "Hoodie de 900 gsm, calce boxy fit medio, 100% algodon -- tela "
+        "de alto gramaje perfecta para cualquier temporada. Mangas "
+        "caidas para un look relajado, capucha amplia sin costura, "
+        "bolsillo tipo canguro frontal, terminaciones limpias y "
+        "costuras reforzadas. Recomendamos elegir tu talla habitual -- "
+        "si lo prefieres mas suelto, puedes subir una talla. No usar "
+        "secadora ni planchar directamente sobre el diseno."
+    ),
+}
+for _p in CLUB33:
+    _real = CLUB33_DESCRIPCION_REAL.get(_p["handle"])
+    if _real:
+        _p["descripcion_real"] = _real
+
+# Tanda 6 (2026-08-27): 3 tiendas nuevas, todas Shopify -- mismo mecanismo
+# 100% real de siempre. Consentimiento confirmado por el dueno del
+# proyecto para las 3.
+FERONI = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "feroni.json")
+
+ADDICTVE = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "addictve.json")
+
+LIBRA1 = cargar_shopify_cache(
+    BASE_DIR / "data" / "shopify_cache" / "1libra.json",
+    excluir_handles={
+        # Packs/sets de 2-3 prendas distintas vendidos como una sola ficha
+        # (ej. "hoodie + polera") -- no representable honestamente como 1
+        # sola prenda (mismo criterio que los packs "Mystery" de BANG GANG).
+        "super-6-pack-polera-overisized-basic-mini-logo-v2-1",
+        "pack-hoodie-polera-heavyweight-yellow-club-monocromo",
+        "pack-yellow-club-heavyweight-oversized",
+        "pack-hoodie-polera-heavyweight-yellow-club-monocromo-1",
+        "pack-hoodie-yellow-club-monocromo",
+        "pack-3basicas-blank-essenciales",
+        "pack-hoodies-3-basicos-blank-essenciales-envio-gratis",
+        "race-dept-clasic-font-pack-polera-poleron-envio-gratis",
+        "set-3-poleras-acid-wash",
+        "race-dept-rotacion-hoo-polera",
+        "3-polerones-mejor-en-pack-envio-gratis",
+        "core-pack-2-hoodies-1-polera-envio-gratis",
+        "3-poleras-pack",
+        "hoodie-polera",
+        # Snapback: gorro CON visera, mismo motivo de siempre (el flujo de
+        # gorro de la app solo maneja curvo/plano/lana).
+        "yellow-club-classic-cap-snapback-5", "yellow-club-classic-cap-snapback-4",
+        "yellow-club-classic-cap-snapback-3", "yellow-club-classic-cap-snapback-copia",
+        "yellow-club-classic-cap-snapback-2", "yellow-club-classic-cap-snapback-1",
+        "yellow-club-classic-cap-snapback",
+        # Gift card: no es una prenda.
+        "1lb-gift-card",
+        # Linea "RACE DEPT"/Porsche/Rothmans/AMG (2026-08-27, ~19 productos):
+        # diseños que copian el escudo de Porsche, dicen literal "PORSCHE"
+        # en el estampado, y usan el estilo/colores de Rothmans (marca real
+        # de carreras) -- decision explicita del dueno del proyecto de NO
+        # cargar esta linea (mismo criterio que Reserved.cl/Inkultura, pero
+        # acotado solo a esta linea, no a toda la tienda -- el resto de
+        # 1Libra es diseño propio sin marca ajena). Ver docs/catalogo_real.md.
+        "amg-190-e-oversized-hoodie",
+        "racedept-big-logo-polera-oversized",
+        "race-dept-tex-oversized-tees-acid-wash",
+        "race-dept-clasic-font-oversized-hoodie",
+        "race-dept-clasic-font-oversized-hoodie-1",
+        "colors-polera-oversized-copia",
+        "race-dept-clasic-font-poleras-oversized-marron",
+        "race-dept-clasic-font-poleras-oversized-blanca",
+        "polera-oversized-san-valentin-day-vintage-look-copia",
+        "rothmans-race-polera-oversized-rosado",
+        "porsche-logo-polera-oversized-vintage-look",
+        "poleras-oversized-basica-mini-logo-v2-copia-2",
+        "porsche-logo-poleras-oversized-gris",
+        "race-dept-clasic-font-poleras-oversized-rosado",
+        "rothmans-race-hoodie-oversized",
+        "rothmans-escudo-hoodie-oversized-negro",
+        "porsche-logo-polera-oversized",
+        "rothmans-race-oversized-hoodie",
+        "porsche-logo-polera-oversized-gris",
+    },
+)
+
+HAZE = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "hazeconcept.json")
+
+BLAZZE = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "blazze.json")
+
+# Kagi (kagi.cl, 2026-08-27): catalogo real tiene 45 productos, pero la
+# mayoria (faldas, vestido, cardigan aparte, bolsos/tote, bufanda, gorro,
+# posavasos, giftcard) no es streetwear -- decision explicita del usuario
+# de cargar SOLO lo que si encaja: jeans/polerones/poleras/chalecos/
+# chaquetas. De esa lista, Kagi solo tenia real: 1 jort de denim, 2
+# poleras, 1 chaqueta y 1 cardigan (tratado como chaleco, mismo criterio
+# ya usado con Doslobos) -- no tenia ningun poleron ni jean-pantalon real.
+KAGI_HANDLES_STREETWEAR = {
+    "jort-tableado", "sin-nombre-17feb_20-11", "regala-flores-tee",
+    "regala-flores-tee-copia", "chaqueta-i", "cardigan",
+}
+KAGI = [
+    p for p in cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "kagi.json")
+    if p["handle"] in KAGI_HANDLES_STREETWEAR
+]
+
+# Oopsi (oopsi.cl, 2026-08-28): catalogo real tiene 228 productos, pero el
+# usuario ya definio a mano la seleccion exacta de 10 a cargar (8 polerones/
+# hoodies + 2 chaquetas + 2 cardigans) -- no se carga el resto del catalogo
+# (jerseys y todo lo demas quedan fuera, pedido explicito). "precio_original_
+# clp" es el compare_at_price real de Shopify (los 10 estan en oferta real).
+# Tallas: la tienda no usa S/M/L/XL sino una talla unica por prenda ("Default
+# Title"/"Over Size"/"S-M"-"M-L"/"Short"-"Long", real de la ficha) -- se deja
+# tallas_reales=None (cae al rango generico S/M/L/XL para que el filtro de
+# talla del buscador no descarte estos productos) y se guarda la talla real
+# en tallas_variantes para que el selector de la ficha muestre la opcion
+# verdadera de compra, no una inventada.
+OOPSI = [
+    {
+        "nombre": "Polerón LA Azul Eléctrico Over Size",
+        "precio": 32990,
+        "precio_original_clp": 46990,
+        "path": "/products/poleron-essentials-azul",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/image0_26.jpg?v=1779807929", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poler_n_LA_Azul_El_ctrico_Over_Size.jpg?v=1748746722", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_LA_Azul_Electrico_Over_Size3.jpg?v=1748749952", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_LA.jpg?v=1748749952", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poler_n_LA_Azul_El_ctrico_Over_Size1.jpg?v=1748749952", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_LA1.jpg?v=1748749930"],
+        "descripcion_real": "En Oopsi, apostamos por un estilo sin complicaciones, y nuestra nueva colección de polarones es justo lo que tu armario necesita para crear estilismos cómodos y sin esfuerzo. Estos polerones son la clave para un outfit diario instantáneo, brindando versatilidad gracias a su estampado original. Diseñado para adaptarse a distintas siluetas ya sea clásica, oversize o crop, el polerón \"LA Azul Eléctrico\" garantiza un ajuste perfecto y un look moderno. Confeccionados con una tela de franela de alta calidad, compuesta por 80% / 20% y tejida en Chile, ofrecen una textura suave y duradera que se adapta a cualquier ocasión.",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Default Title", "disponible": True}],
+    },
+    {
+        "nombre": "Polerón Blanco Estrella Negra Tachas Over Size",
+        "precio": 32990,
+        "precio_original_clp": 46990,
+        "path": "/products/poleron-blanco-estrella-negra-tachas-over-size",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_Blanco_Estrella_Negra_Tachas1.jpg?v=1748748396", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_Blanco_Estrella_Negra_Tachas.jpg?v=1748748396", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_Blanco_Estrella_Negra_Tachas2.jpg?v=1748748334"],
+        "descripcion_real": "Medidas Centímetros Largo 75 cm Ancho 69Cm",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Default Title", "disponible": True}],
+    },
+    {
+        "nombre": "Polerón Soccer 08 Franela Fantasía",
+        "precio": 28990,
+        "precio_original_clp": 46990,
+        "path": "/products/poleron-soccer-08-franela-fantasia",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/image2_19.jpg?v=1779806726", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/PoleronSoccer08.jpg?v=1748733649", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/PoleronSoccer081.jpg?v=1748733649", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/PoleronSoccer082.jpg?v=1748733649", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_Soccer0824.jpg?v=1748750075", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Poleron_Soccer084.jpg?v=1748750048"],
+        "descripcion_real": "Polerón franela fantasía tejida en Chile con cuello V y capucha ajustable por cordones, manga larga y acabados en puño fantasía. Estampados O8 en frontis, 08 maga, estrella manga. Medidas Centímetros Largo 75 cm Ancho 69Cm",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Default Title", "disponible": True}],
+    },
+    {
+        "nombre": "Hoodie Time Unisex OverSize Gris Mauve",
+        "precio": 29990,
+        "precio_original_clp": 42990,
+        "path": "/products/time-hoodie-unisex-oversize-gris-mauve",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/HoddieTimeUnisexOversize4.jpg?v=1745200240", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/HoddieTimeUnisexOversize.jpg?v=1745200240", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/HoddieTimeUnisexOversize1.jpg?v=1745200240", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/HoddieTimeUnisexOversize2.jpg?v=1745200240", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/HoddieTimeUnisexOversize3.jpg?v=1745200240"],
+        "descripcion_real": "Este Hoddie esta confeccionado con algodón de las más alta gama tejida en Chile. Es un tela suave, y tiene un dieño ultra cómodo, bolsillo frontal, capucha completan un diseño al estilo de Oopsi. Medidas Centímetros Largo 76 cm Ancho 62 Cm Largo Mango desde Hombro 67 Cm",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Default Title", "disponible": True}],
+    },
+    {
+        "nombre": "Polerón Spicy Pink Over Size",
+        "precio": 29990,
+        "precio_original_clp": 46990,
+        "path": "/products/poleron-spicy-pink-over-size",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/PoleronSpicyPink.jpg?v=1748833522", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/PoleronSpicyPink1.jpg?v=1748833522", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/PoleronSpicyPink2.jpg?v=1748833522"],
+        "descripcion_real": "Medidas Centímetros Largo 75 cm Ancho 69Cm",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Default Title", "disponible": True}],
+    },
+    {
+        "nombre": "Hoodie Soles Tabaco",
+        "precio": 19990,
+        "precio_original_clp": 28990,
+        "path": "/products/hoodie-soles-tabaco",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/products/HoddieSolesArena.jpg?v=1663643573", "https://cdn.shopify.com/s/files/1/0066/8247/6613/products/HoddieSolesArena1.jpg?v=1663643571"],
+        "descripcion_real": "El Hoodie Soles Tabaco de OOPSI redefine el estilo de los días frescos con su diseño distintivo. Este polerón oversize destaca por sus aplicaciones de soles bordados en las mangas, aportando un toque único y sofisticado a tu atuendo. Confeccionado en un tejido suave y ligero, garantiza comodidad y calidez sin sacrificar el estilo. Su capucha ajustable y su ajuste relajado ofrecen una excelente libertad de movimiento. Medidas Centímetros Largo Short 76 Cm Long 81Cm Ancho bajo busto 62 Cm Ancho espalda 64 Cm Largo Manga 60 Cm",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Short", "disponible": True}, {"talla": "Long", "disponible": True}],
+    },
+    {
+        "nombre": "Chaqueta Bomber Marrón",
+        "precio": 32990,
+        "precio_original_clp": 44990,
+        "path": "/products/chaqueta-bomber-marron",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Bomber.jpg?v=1778028613", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Bomber1.jpg?v=1778028612", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Bomber2.jpg?v=1778028613", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Bomber4.jpg?v=1778028612", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Bomber5.jpg?v=1778029157"],
+        "descripcion_real": "Chaqueta de gamuza en tono marrón. Oversize, cómoda. Medidas S-M / M-L: Largo 57 Cm / 60 cm, Ancho 60 Cm / 62 Cm, Largo Manga 65 Cm / 67 Cm.",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "S-M", "disponible": True}, {"talla": "M-L", "disponible": True}],
+    },
+    {
+        "nombre": "Chaqueta Sherpa Urban",
+        "precio": 34990,
+        "precio_original_clp": 42990,
+        "path": "/products/chaqueta-sherpa-urban",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/Chaqueta_Sherpa_Urban_0.jpg?v=1754007344", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/ChaquetaSherpaUrban1.jpg?v=1754007344", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/ChaquetaSherpaUrban.jpg?v=1754007344", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/ChaquetaSherpaUrban3.jpg?v=1754007344", "https://cdn.shopify.com/s/files/1/0066/8247/6613/files/ChaquetaSherpaUrban2.jpg?v=1754007344"],
+        "descripcion_real": "",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "S-M", "disponible": True}, {"talla": "M-l", "disponible": True}],
+    },
+    {
+        "nombre": "Cardigan Cebra",
+        "precio": 22990,
+        "precio_original_clp": 29990,
+        "path": "/products/cardigan-cebra",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/products/CardiganCebra.jpg?v=1637725752", "https://cdn.shopify.com/s/files/1/0066/8247/6613/products/CardiganCebra1.jpg?v=1637725752", "https://cdn.shopify.com/s/files/1/0066/8247/6613/products/CardiganCebra2.jpg?v=1637725752"],
+        "descripcion_real": "¡La primavera llega con estilo a Oopsi con nuestro Cardigan Cebra! Este cardigan de personalidad única destaca por sus detalles que hacen toda la diferencia, combinando elegancia y confort en una prenda esencial para tu guardarropa. El diseño over size proporciona una caída relajada y moderna, mientras que la tela de franela de algodón garantiza una suavidad excepcional y un ajuste flexible.",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Over Size", "disponible": True}],
+    },
+    {
+        # Nota: la ficha real de este producto dice literal "estampado de
+        # cebra" en su descripcion (copy-paste del otro cardigan, error de
+        # la tienda) -- se deja tal cual viene, no se corrige el texto de
+        # un tercero.
+        "nombre": "Cardigan Tabacco",
+        "precio": 22990,
+        "precio_original_clp": 32990,
+        "path": "/products/cardigan-tabaco",
+        "fotos": ["https://cdn.shopify.com/s/files/1/0066/8247/6613/files/cardigantabaco.jpg?v=1717424558", "https://cdn.shopify.com/s/files/1/0066/8247/6613/products/CardiganTabaco.jpg?v=1717424558", "https://cdn.shopify.com/s/files/1/0066/8247/6613/products/CardiganTabaco3.jpg?v=1717424558"],
+        "descripcion_real": "¡La primavera llega con estilo a Oopsi con nuestro Cardigan Tabacco! Este cardigan de personalidad única destaca por sus detalles que hacen toda la diferencia, combinando elegancia y confort en una prenda esencial para tu guardarropa. El diseño over size proporciona una caída relajada y moderna, mientras que la tela de franela de algodón garantiza una suavidad excepcional y un ajuste flexible. Perfecto para la temporada primaveral, este cardigan captura el espíritu único de Oopsi con su estampado de cebra distintivo, añadiendo un toque de frescura y sofisticación a cualquier look.",
+        "tallas_reales": None,
+        "tallas_variantes": [{"talla": "Over Size", "disponible": True}],
+    },
+]
+
+# 28Keys (28keys.cl, 2026-08-28): catalogo real tiene 64 productos. Se
+# excluyen 28 por marca de tercero (Supreme, NBA, Bathing/BAPE x Stussy,
+# Chrome Hearts, Corteiz) -- decision final del usuario (2026-08-28): estas
+# son replicas no autorizadas, quedan FUERA del catalogo por completo (ni
+# oficial ni linkeando afuera), no solo marcadas "no marca de autor" como
+# se probo primero. Solo se cargan los 36 productos de linea propia de la
+# tienda. Regla permanente: cualquier caso similar de marca de tercero se
+# pregunta antes de decidir, no se asume.
+_28KEYS_EXCLUIR = {
+    "hoodie-supreme-big-logo", "hoodie-essentials-nba-gris",
+    "hoodie-essentials-nba-negro", "polera-bape-x-stussy",
+    "poleron-chrome-hearts-gris-negro", "poleron-chrome-hearts-manga-larga-1",
+    "poleron-chrome-hearts-negro", "gorro-chrome-hearts-curvo-full-brillos",
+    "poleron-corteiz-clasico", "gorro-chrome-hearts-curvo-logo",
+    "polera-chrome-hearts", "gorro-chrome-hearts-blanco-2",
+    "gorro-chrome-hearts-triple-black-ajustable", "poleron-chrome-hearts-manga-larga",
+    "gorro-chrome-hearts-visera-plana", "gorro-chrome-hearts-clasico-visera-plana",
+    "gorro-chrome-hearts-blanco", "polera-chrome-hearts-negra",
+    "polera-chrome-hearts-manga-larga-copia-1", "gorro-chrome-hearts-cuero-ajustable",
+    "gorro-chrome-hearts-cruz-cuero", "gorro-chrome-hearts-militar",
+    "gorro-chrome-hearts-cruz-blanco", "gorro-chrome-hearts-cruz-rojo",
+    "gorro-chrome-hearts-cruz", "gorro-chrome-hearts",
+    "polera-chrome-hearts-manga-larga-1", "polera-chrome-hearts-manga-larga",
+}
+KEYS28 = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "28keys.json", excluir_handles=_28KEYS_EXCLUIR)
+for _p in KEYS28:
+    if _p["handle"] == "jeans-purple-flared-eco-cuero":
+        # Unica prenda con talla numerica (40/42/44/46/48) en vez de S/M/L/
+        # XL -- no hay tabla de equivalencia real publicada en el sitio (a
+        # diferencia de ForceBlack, que si la trae), asi que no se inventa
+        # una conversion. tallas_reales=None cae al rango generico de la
+        # tienda para que el filtro de talla no descarte el producto;
+        # tallas_variantes se deja intacto (dato real, numerico, para el
+        # selector de la ficha).
+        _p["tallas_reales"] = None
+
+# Traperas Company (traperascompany.com, 2026-08-28): Shopify. Se excluyen
+# los 3 collares (joyeria, fuera del catalogo de vestuario de KOLIZION) --
+# el resto son hoodies/poleras/gorras/tops, dentro de alcance.
+_TRAPERAS_EXCLUIR = {"collar-maxi-estrella-dorada", "collar-concha", "collar-maxi-estrella"}
+TRAPERAS = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "traperas.json", excluir_handles=_TRAPERAS_EXCLUIR)
+# Casi todo el catalogo de Traperas es "talla unica" (ficha real: "talla
+# estandar unisex (talla unica)") -- Shopify expone esto como una sola
+# variante "Default Title" (o, en un caso, "Negro" -- el option1 quedo
+# mal etiquetado como color en vez de talla en la propia tienda). Ninguno
+# de esos valores matchea el vocabulario S/M/L/XL del buscador, y
+# filtrar_por_talla() no exime a poleron/polera/top como si exime a
+# "gorro" -- sin este ajuste, cualquier busqueda CON talla especifica
+# dejaria estos productos invisibles. Mismo criterio ya usado con Oopsi/
+# 28Keys: tallas_reales=None cae al rango generico S/M/L/XL (visible en
+# el buscador), tallas_variantes se deja intacto (real, para la ficha).
+# Las tallas SI reales (ej. "L" en HOODIE SPACY RED) no se tocan.
+_TRAPERAS_TALLAS_VALIDAS = {"S", "M", "L", "XL"}
+for _p in TRAPERAS:
+    if _p["tallas_reales"] and not any(t in _TRAPERAS_TALLAS_VALIDAS for t in _p["tallas_reales"]):
+        _p["tallas_reales"] = None
+
+# Enila (enila.cl, 2026-08-30): Shopify. Se incluye SOLO una seleccion
+# aprobada por el usuario (10 de 37 productos del feed real) -- bombers/
+# chaquetas/denim compatibles con streetwear/diseñador contemporaneo. Se
+# excluyen blazers, blusas, vestidos, pantalones de sastreria, Abrigo
+# Linaje, Pantalon Velo, y los 6 chalecos Hebra/Deriva -- ficha real dice
+# "calce normal"/"calce ajustado" en cashmere/lana/alpaca (verificado
+# tambien por foto): no cumplen el criterio de oversized/urbano pedido.
+_ENILA_INCLUIR = {
+    "bomber-corteza", "bomber-brena", "bomber-indigo", "bomber-alba-1", "bomber-granate",
+    "chaqueta-archivo", "chaqueta-vestigio", "denim-corteza-negro-xs", "jeans-corteza", "denim-alba",
+}
+ENILA = [
+    p for p in cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "enila.json")
+    if p["handle"] in _ENILA_INCLUIR
+]
+# Los bombers venden por talla combinada real ("S/M", "M/L") en vez de
+# S/M/L/XL sueltas -- se separa cada combinada en sus letras (si hay stock
+# en "S/M", hay stock real en S Y en M) para que el filtro de talla del
+# buscador las encuentre, mismo criterio que _traducir_tallas_numericas
+# (reinterpretar un dato real, no inventar uno nuevo).
+_ENILA_TALLAS_VALIDAS = {"S", "M", "L", "XL"}
+for _p in ENILA:
+    if _p["tallas_reales"]:
+        _expandidas = []
+        for _t in _p["tallas_reales"]:
+            _partes = _t.split("/")
+            _expandidas.extend(_partes if all(pp in _ENILA_TALLAS_VALIDAS for pp in _partes) else [_t])
+        _p["tallas_reales"] = list(dict.fromkeys(_expandidas))
+
+# RRREUSED (rrreused.com, 2026-08-30): Shopify, ropa vintage/usada real (no
+# marca propia -- se resetea marca_autor=False para toda la tienda, cosa
+# que ninguna otra tienda de este catalogo necesitaba hasta ahora). Colores
+# NO vienen en la ficha (solo talla/largo/ancho) y muchos productos
+# distintos comparten nombre generico (ej. 2 "Pantalón Wrangler" de colores
+# distintos) -- confirmado real revisando la foto principal de cada uno,
+# tageados por HANDLE (unico) en vez de por nombre (VERIFICADO_A_MANO no
+# sirve aca porque el nombre se repite). 158 productos reales en el sitio;
+# se carga solo la primera mitad (79) por pedido explicito del usuario para
+# no gastar tokens revisando las 158 fotos de una sola vez -- la otra mitad
+# queda pendiente para otra sesion (recordarselo al usuario).
+_RRREUSED_COLORES = {
+    "pantalon-levis-511": ["Negro"], "pantalon-faded-glory": ["Negro"],
+    "pantalon-levis-2": ["Negro"], "pantalon-wrangler-4": ["Negro"],
+    "poleron-true-religion-1": ["Negro"], "poleron-nike-zip-up-10": ["Negro"],
+    "pantalon-wrangler-3": ["Negro"], "pantalon-buzo-adidas-1": ["Negro"],
+    "pantalon-eddie-bauer": ["Negro"], "pantalon-rustler-1": ["Negro"],
+    "poleron-lululemon-1": ["Negro"], "poleron-nike-tech-1": ["Negro"],
+    "poleron-nike-13": ["Negro"], "poleron-nike-12": ["Negro"],
+    "pantalon-rustler": ["Gris"], "pantalon-paco-jeans-1": ["Azul"],
+    "pantalon-carhartt-carpintero-10": ["Azul"],
+    "chaqueta-carhartt-vintage-blanket-lined-canvas": ["Verde"],
+    "chaqueta-carhartt-bankston": ["Azul"],
+    "chaqueta-carhartt-insulated-storm-defender": ["Azul"],
+    "chaqueta-de-cuero-all-saints": ["Negro"], "chaqueta-levis": ["Verde"],
+    "chaqueta-workwear-schmidt": ["Café"], "poleron-sp5der": ["Café"],
+    "pantalon-phat-farm-flare": ["Azul"], "pantalon-levis-507": ["Azul"],
+    "pantalon-levis-559": ["Azul"], "poleron-vintage-nfl-bulls-nutmeg": ["Gris"],
+    "poleron-obey": ["Negro"], "chaqueta-carhartt-duck-active-19": ["Negro"],
+    "crewneck-nike-center-1": ["Negro"], "poleron-nike-zip-up-9": ["Negro"],
+    "pantalon-levis-1": ["Azul"], "pantalon-polo-2": ["Azul"],
+    "pantalon-tommy-hilfiger": ["Azul"], "pantalon-polo-1": ["Azul"],
+    "pantalon-rocawear-3": ["Azul"], "pantalon-y2k-royal-republic": ["Azul"],
+    "pantalon-rocawear-2": ["Negro"], "polera-polo-14": ["Negro"],
+    "polera-polo-13": ["Negro"], "polera-harley-davidson-5": ["Negro"],
+    "polera-carhartt-4": ["Verde"], "chaqueta-vintage-duck-active-3": ["Negro"],
+    "chaqueta-vintage-duck-active-2": ["Café"],
+    "chaqueta-cortavientos-tommy-hilfiger": ["Beige"],
+    "chaqueta-wrangler-detroit": ["Negro"], "pantalon-levis-560": ["Negro"],
+    "pantalon-levis-542": ["Negro"], "pantalon-vintage-baggy": ["Gris"],
+    "pantalon-tommy-hilfiger-baggy": ["Azul"], "pantalon-rocawear-1": ["Azul"],
+    "pantalon-diesel-1": ["Azul"],
+    "chaqueta-carhartt-duck-active-j130cr": ["Granate"],
+    "poleron-ecko": ["Negro"], "pantalon-buzo-nike-cargo": ["Negro"],
+    "poleron-polo-zip-up-2": ["Negro"], "polera-vintage-nascar-3": ["Negro"],
+    "polera-billie-eilish": ["Blanco"], "polera-manga-larga-polo-5": ["Blanco"],
+    "polera-manga-larga-levis": ["Negro"], "pantalon-buzo-adidas": ["Negro"],
+    "buzo-nike-tech-1": ["Negro"], "polera-carhartt-3": ["Gris"],
+    "chaqueta-sin-mangas-the-north-face": ["Negro"], "polera-polo-12": ["Amarillo"],
+    "polera-polo-11": ["Verde"], "polera-vintage-y2k-2": ["Azul"],
+    "polera-tank-harley-davidson-1": ["Negro"], "polera-chase-atlantic-1": ["Negro"],
+    "polera-ripndip": ["Negro"], "polera-harley-davidson-vintage-1": ["Negro"],
+    "polera-diamond": ["Negro"], "polera-wwe-d-generation": ["Negro"],
+    "polera-keith-haring-2": ["Blanco"], "polera-helmut-lang": ["Blanco"],
+    "polera-cactus-jack-x-mcdonald": ["Blanco"], "polera-travis-scott-utopia": ["Blanco"],
+    "quarter-zip-polo-6": ["Granate"],
+    # Segunda mitad (2026-08-30), mismo criterio -- foto principal revisada
+    # una por una, misma limitacion de la ficha (sin color en texto).
+    "poleron-lululemon": ["Negro"], "poleron-yeezy-hd-01": ["Negro"],
+    "polera-santa-cruz": ["Negro"], "polera-vintage-pantera": ["Negro"],
+    "polera-chase-atlantic": ["Negro"], "polera-polo-10": ["Negro"],
+    "polera-tank-harley-davidson": ["Negro"], "polera-tank-stussy": ["Beige"],
+    "polera-polo-9": ["Azul"], "polera-manga-larga-realtree-2": ["Verde"],
+    "pantalon-carpintero-levis-1": ["Azul"], "poleron-nike-11": ["Gris"],
+    "poleron-nike-zip-up-8": ["Negro"], "poleron-nike-vintage": ["Gris"],
+    "chaqueta-sin-mangas-carhartt-9": ["Café"],
+    "polera-vintage-harley-davidson-5": ["Negro"],
+    "chaqueta-duck-active-lee": ["Negro"],
+    "chaqueta-carhartt-duck-active-18": ["Negro"],
+    "chaqueta-carhartt-duck-active-17": ["Azul"],
+    "pantalon-nautica-baggy": ["Azul"], "pantalon-levis-502": ["Gris"],
+    "polera-manga-larga-harley-davidson-6": ["Café"],
+    "polera-ralph-lauren-manga-larga": ["Azul"],
+    "polera-polo-manga-larga-6": ["Gris"], "polera-monster-manga-larga": ["Blanco"],
+    "crewneck-stussy": ["Verde"], "poleron-patagonia-zip-up": ["Azul"],
+    "polera-thrasher-2": ["Azul"], "polera-vintage-new-york-yankees": ["Gris"],
+    "polera-harley-davidson-vintage": ["Negro"], "polera-harley-davidson-4": ["Negro"],
+    "polera-broken-planet": ["Negro"], "polera-moonlight-mansion": ["Blanco"],
+    "polera-travis-scott-seing-is-believing-2017-tour": ["Beige"],
+    "polera-dickies-2": ["Blanco"], "polera-polo-8": ["Beige"],
+    "polera-thrasher-1": ["Blanco"], "polera-burberry": ["Negro"],
+    "polera-vintage-harley-davidson-4": ["Negro"], "polera-thrasher": ["Azul"],
+    "polera-nike-2": ["Negro"], "polera-manga-larga-polo-4": ["Azul"],
+    "poleron-carhartt-13": ["Azul"], "chaqueta-sin-mangas-carhartt-8": ["Negro"],
+    "chaqueta-carhartt-arctic-3": ["Negro"],
+    "chaqueta-carhartt-santa-fe-vintage": ["Café"],
+    "chaqueta-sin-mangas-carhartt-7": ["Café"], "abrigo-armani-exchange": ["Café"],
+    "polera-cookies-x-rolling-stone": ["Gris"], "pantalon-carhartt-5": ["Gris"],
+    "chaqueta-duck-active-walls-2": ["Negro"],
+    "chaqueta-sin-mangas-carhartt-5": ["Verde"], "polar-the-north-face-3": ["Azul"],
+    "buzo-nike-1": ["Gris"], "crewneck-carhartt-vintage": ["Verde"],
+    "crewneck-russell": ["Gris"], "polar-cardigan-patagonia": ["Negro"],
+    "polera-manga-larga-big-dogs": ["Azul"], "polera-ovo": ["Blanco"],
+    "pantalon-levis-bootcut": ["Azul"], "polera-manga-larga-big-dog": ["Azul"],
+    "polera-nike": ["Negro"], "beanie-mountain-hardwear": ["Negro"],
+    "polera-dickies": ["Gris"], "polera-antisocialclub": ["Blanco"],
+    "chaqueta-sin-mangas-wrangler": ["Amarillo"], "pantalon-cargo-dickies-tela": ["Azul"],
+    "pantalon-levis-508": ["Negro"], "pantalon-vintage-con-rayas": ["Gris"],
+    "pantalon-dickies-tela": ["Azul"], "polera-polo-manga-larga": ["Rojo"],
+    "polera-vintage-raiders": ["Negro"], "polera-vintage-nascar-1995": ["Negro"],
+    "polera-juice-wrld": ["Negro"], "gorro-new-era-washington-nationals": ["Negro"],
+    "gorro-los-angeles-dodgers": ["Azul"], "polera-vintage-ford-expedition-1999": ["Negro"],
+    "pantalon-marithe-francois-girbaud": ["Café"],
+    # "polera-jordan": grafico multicolor tipo patchwork, no hay un color
+    # dominante claro en la foto -- lista vacia = incluido pero sin tag de
+    # color, en vez de elegir uno a ciegas (mismo criterio que el detector
+    # automatico de nombre cuando hay mas de un color).
+    "polera-jordan": [],
+}
+_rrreused_todos = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "rrreused.json")
+RRREUSED = [p for p in _rrreused_todos if p["handle"] in _RRREUSED_COLORES]
+for _p in RRREUSED:
+    _p["colores"] = _RRREUSED_COLORES[_p["handle"]]
+    _p["marca_autor"] = False
+
+# IPREX (iprex.cl, 2026-08-30): WordPress/WooCommerce, ver cargar_iprex_
+# cache(). Se excluyen 5 productos que NO son retail streetwear real:
+# 3 packs "al por mayor (12 unidades)" (mayorista, no venta individual),
+# 1 "Pedido Fade Away (paralizado)" (pedido interno detenido, no un
+# producto en venta) y 1 poleron con "TEST" literal en el nombre
+# (producto de prueba, no real).
+_IPREX_EXCLUIR = {
+    "polera-gris-oversize-al-por-mayor-12-unidades",
+    "polera-negra-oversize-al-por-mayor-12-unidades",
+    "poleron-gris-oversize-al-por-mayor-12-unidades",
+    "poleron-negro-oversize-a-por-mayor-12-unidades",
+    "poleron-sad-rulay-m2-saddabae",
+}
+IPREX = cargar_iprex_cache(BASE_DIR / "data" / "woocommerce_cache" / "iprex.json", excluir_slugs=_IPREX_EXCLUIR)
+# Interes "anime" (2026-08-30, pedido del usuario): revisado nombre +
+# descripcion + imagen principal de TODO IPREX buscando referencias reales
+# a anime/manga -- la unica evidencia real es "Kuromi" (personaje real de
+# Sanrio, con series de anime propias -- Onegai My Melody / Kuromi's Pretty
+# Journey), confirmado ademas por la imagen (cara/orejas de Kuromi en el
+# grafico). El resto de candidatos revisados (poleras "Waifu Saddabae" x2,
+# "personajes Saddabae") son arte anime-style ORIGINAL de la marca (sin
+# franquicia real detras) -- no se tagean, ver docs/catalogo_real.md.
+_IPREX_INTERESES = {
+    "poleron-ninja-kuromi": {"interes_anime": True, "franquicia_anime": "Kuromi"},
+}
+for _p in IPREX:
+    _p.update(_IPREX_INTERESES.get(_p["handle"], {}))
+
+# BEEWAY (beeway.cl, 2026-08-30): Shopify. Se excluyen 2 productos que no
+# son prendas: una entrada de evento (fiesta) y "PAGO DS" (link de pago
+# interno, no un producto real).
+_BEEWAY_EXCLUIR = {
+    "entrada-party-aniversario-project-009-streetwear-18",
+    "sin-nombre-25ago_12-41",
+}
+BEEWAY = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "beeway.json", excluir_handles=_BEEWAY_EXCLUIR)
+
+# WAV (wearewav.cl, 2026-08-30): Shopify. Se excluyen: 6 "Bundle WAV"
+# (combos de varios productos distintos en 1 sola ficha -- no se puede
+# taguear color/categoria real de un combo, mismo criterio que los packs
+# mayoristas de IPREX aunque WAV no lo pidio explicito, ver nota al
+# usuario) y 6 accesorios que no son vestuario ni gorro (2 anillos =
+# joyeria, 2 bolsos, 2 pañoletas -- fuera del alcance de KOLIZION, mismo
+# criterio ya aplicado a Traperas/Viloria).
+_WAV_EXCLUIR = {
+    "bundle-wav-3-basicas", "bundle-wav-2-basicas", "bundle-wav-babytee-panoleta",
+    "bundle-wav-polera-jort", "bundle-wav-babytee-short", "bundle-wav-basica-beanie",
+    "bundle-wav-poleron-polera",
+    "tote-bag-wav", "kome-bag-wav", "anillo-old-money", "old-money-wav",
+    "flowers-wav", "tiger-eating-wav",
+}
+WAV = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "wav.json", excluir_handles=_WAV_EXCLUIR)
+# Colores no declarados en texto para varios productos WAV -- revisados
+# por foto real. Intereses musica/arte: SOLO donde la descripcion real lo
+# dice explicito (ver docstring de mas abajo), nunca por estetica.
+_WAV_COLORES = {
+    # Confirmados por la descripcion real (no por foto): "Haring Jort" y
+    # "Warhol" dicen literal "cafe oscuro"; "Ghost Input 808" dice
+    # literal "matices negros sobre negro".
+    "haring-jort-japones-cafe": ["Café"],
+    "polera-con-capucha-warhol-blooming-wav-clouds": ["Café"],
+    "ghost-input-808": ["Negro"],
+    "polar-micelio": None,  # tie-dye multi-tono real, sin un color dominante claro -- no se fuerza uno
+    "jockey-gamuza-wav": ["Verde"],
+    "jockey-walk-with-your-friends": ["Negro"],
+    "short-happy-flower": ["Café"],
+    "striped-baby": ["Verde", "Blanco"],
+    "morpho-menelaus": ["Blanco"],  # la ficha dice "Morpho azul" pero es la mariposa del grafico, la polera real es blanca (confirmado por foto)
+    "super-mr-wav": ["Gris"],  # la ficha dice "nubes azules" pero es la escena del grafico, la polera real es gris (confirmado por foto)
+    "happy-flower": ["Blanco"],
+    "ume-no-hakiri": ["Negro"],
+    "hidden-clover": ["Negro"],
+    "jockeys-chiporro": ["Negro"],
+    "hongo-corazon": ["Café"],
+    "warm-inside": ["Negro"],
+    "dormant-love": ["Blanco"],
+    "poleron-hoodie-house-of-love": ["Negro"],
+    "poleron-crewneck-art-escapist": ["Negro"],
+}
+_WAV_INTERESES = {
+    # "808" (Roland TR-808) es un termino de produccion musical inequivoco,
+    # esta en el NOMBRE real del producto -- evidencia valida segun el
+    # usuario (nombre/descripcion/coleccion/grafico). Sin genero especifico:
+    # 808 se asocia a varios generos (hip-hop, trap, electronica) y la
+    # descripcion real no menciona ninguno en particular, asi que no se
+    # inventa uno.
+    "ghost-input-808": {"interes_musica": True},
+    # Descripcion real dice literal "la musica, el baile" Y "el arte" en
+    # la misma frase -- ambos intereses tienen evidencia explicita aca.
+    "poleron-crewneck-art-escapist": {"interes_musica": True, "interes_arte": True},
+    # Keith Haring / Andy Warhol: referencia artistica explicita real
+    # (nombre + descripcion), NO musical -- mismo ejemplo que dio el
+    # usuario (Warhol = arte, no se convierte en musica).
+    "haring-jort-japones-cafe": {"interes_arte": True},
+    "polera-con-capucha-warhol-blooming-wav-clouds": {"interes_arte": True},
+}
+for _p in WAV:
+    if _p["handle"] in _WAV_COLORES and _WAV_COLORES[_p["handle"]]:
+        _p["colores"] = _WAV_COLORES[_p["handle"]]
+    _p.update(_WAV_INTERESES.get(_p["handle"], {}))
+
+# Kotonaru Store (kotonaru-store.cl, 2026-08-27): plataforma Jumpseller,
+# igual que Rapt -- sin products.json/Store API publico, armado a mano por
+# producto sacando og:title/og:description/og:image/product:price:amount
+# de cada pagina real (curl, sin IA de por medio). Todas las fotos son la
+# unica foto real disponible por producto (1 sola, no una galeria completa
+# -- Jumpseller no expone las demas fotos de forma barata de scrapear,
+# mismo criterio/limitacion ya aceptada para Rapt).
+#
+# 9 productos del sitio real NO se cargaron:
+# - "Cap Reichsadler" y "Yellow Club Classic Cap" tipo (visera, sin
+#   categoria de gorro en la app -- mismo motivo de siempre).
+# - "Cadena Logo 003 Minami": colgante/cadena, no es una prenda.
+# - "Star woolHat": gorro de lana, pero el nombre no lo detecta como tal
+#   (clasificar_prenda() necesita "gorro"/"beanie" en el nombre) -- 1 solo
+#   producto, no se armo el mecanismo de gorro aparte para no complicar.
+# - "Afriel Slim-fit T-shirt", "Hoodie Oversize Skeleton Logo", "Hoodie
+#   Oversize Misa Amane", "T-Shirt oversize Misa Amane", "Tank Tejido":
+#   su UNICA foto en el sitio real tiene nombre de archivo literal
+#   "mock_up_.../mack_up_.../mockup..." -- mockup/render, no foto real de
+#   la prenda fisica (mismo criterio que las fotos de IA descartadas en
+#   Club 33: no se promete "foto real" con una imagen que no lo es).
+# - "Reichsadler T-shirt Focalizado": la ficha real muestra el escudo del
+#   aguila imperial alemana ("Reichsadler") de forma explicita y grande --
+#   decision explicita del dueño del proyecto de no cargarla por el peso
+#   historico/simbolico de la imagen, aunque no sea la esvastica nazi. El
+#   hoodie "Hoodie BoxyFit CROP Reichsadler" SI se carga -- su diseño real
+#   es abstracto/gotico, sin el aguila visible (revisado a mano).
+KOTONARU = [
+    {"nombre": "Hoodie BoxyFit zip up SLT2", "precio": 47990, "path": "/boxy-zip1", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/50309837/3.jpg"], "descripcion_real": "Hoodie BoxyFit zip up SLT2. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Camisa Bleeding Cowboys Type Font", "precio": 44990, "path": "/camisa-dress-shirt-y2k-v2-copiar", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/68098979/IMG_4776.jpg"], "descripcion_real": "Camisa Bleeding Cowboys Type Font. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Camisa Y2K", "precio": 29990, "path": "/camisa-y2k", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/33801372/IMG_6520.jpg"], "descripcion_real": "Camisa Y2K. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Cloud FF7 Boxy-fit T-shirt", "precio": 24990, "path": "/cloud", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/65678854/1_20copia.jpg"], "descripcion_real": "Cloud FF7 boxy-fit T-shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "DREAM DROP DISTANCE Boxy-fit T-shirt", "precio": 24990, "path": "/dream", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/62597430/3.jpg"], "descripcion_real": "DREAM DROP DISTANCE Boxy-fit T-shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Dress T-Shirt Boxy Fit red", "precio": 27990, "path": "/dress-t-shirt-boxy-fit-red", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/76104720/IMG_6914_20copia.jpg"], "descripcion_real": "Dress T-Shirt Boxy Fit RED. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Dress T-Shirt Boxy Fit", "precio": 27990, "path": "/dressss", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/55498952/1-1.jpg"], "descripcion_real": "Dress T-Shirt Boxy Fit. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "F**K LOBBY Boxy-fit T-shirt", "precio": 24990, "path": "/f-lobby", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/69167825/WWWWW.jpg"], "descripcion_real": "F**K LOBBY Boxy-fit T-shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Eyes Heat-Map T-shirt", "precio": 24990, "path": "/heat-map", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/80095619/IMG_7603_20copia.jpg"], "descripcion_real": "Eyes Heat-Map T-shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Hoodie BoxyFit CROP Reichsadler", "precio": 44990, "path": "/hoodie-boxyfit-crp", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/79448465/_MG_6469_20copia.jpg"], "descripcion_real": "Hoodie BoxyFit CROP Reichsadler. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Hoodie BoxyFit zip up Logo 003", "precio": 47990, "path": "/hoodie-logo", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/50401551/2.jpg"], "descripcion_real": "Hoodie BoxyFit zip up Logo 003. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Mountain Type Hoodie", "precio": 47990, "path": "/hoodies/mountain-type", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/71084959/222.jpg"], "descripcion_real": "Mountain Type Hoodie. Prenda de confeccion nacional.", "tallas_reales": None},
+    {"nombre": "Jorts Baggy Tribal", "precio": 44990, "path": "/jorts", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/61527853/1_copia.jpg"], "descripcion_real": "Jorts Baggy Tribal.", "tallas_reales": None},
+    {"nombre": "Neo Loli Sigilism", "precio": 14990, "path": "/loli1", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/51986297/2.jpg"], "descripcion_real": "Neo Loli Sigilism. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Minami Garms Season Regular T-Shirt", "precio": 14990, "path": "/mgs", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/75900419/IMG_6860_20copia.jpg"], "descripcion_real": "Minami Garms Season Regular T-Shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Eyes Neo Sigilism T-Shirt Croped", "precio": 19990, "path": "/minami/eyes", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/42741978/640.jpg"], "descripcion_real": "Eyes Neo Sigilism T-Shirt Croped. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "T-Shirt Long-Long Sleve (Chii Neo Sigilism)", "precio": 24990, "path": "/minami/long-sleeve", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/39599086/Sin_t_tulo-1.jpg"], "descripcion_real": "T-Shirt Long-Long Sleve (Chii Neo Sigilism). Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Ninja Hoodie (Medium Contrast) Oversize boxy", "precio": 54990, "path": "/minami/ninja", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/41515482/2.jpg"], "descripcion_real": "Ninja Hoodie (Medium Contrast) Oversize boxy. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Neo Sigilism Parachute Pants Impermeable", "precio": 44990, "path": "/minami/pants-neo", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/40158379/s2.jpg"], "descripcion_real": "Neo Sigilism Parachute Pants Impermeable. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Camisa (Dress Shirt) Y2K v.2", "precio": 29990, "path": "/minami/y2k-v2", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/39020661/resize/1200/630"], "descripcion_real": "Camisa (Dress Shirt) Y2K v.2. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "707 Nana VW T-Shirt Boxy", "precio": 24990, "path": "/nana-croped", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/43587221/1.jpg"], "descripcion_real": "707 Nana VW T-Shirt Croped. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Flared Pants RE: Cargo", "precio": 44990, "path": "/pants/flard", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/55458284/10.jpg"], "descripcion_real": "Flared Pants RE: Cargo.", "tallas_reales": None},
+    {"nombre": "T-Shirt Raglan Minami Logo Star", "precio": 24990, "path": "/ranglan1", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/58057251/11.jpg"], "descripcion_real": "T-Shirt Ranglan Minami Logo Star. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Riku Regular T-shirt Acid Wash", "precio": 24990, "path": "/riku", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/70617482/1.jpg"], "descripcion_real": "Riku Acid Regular T-shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Minami Grams Logo Slim-fit T-shirt", "precio": 24990, "path": "/slim", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/62597446/1.jpg"], "descripcion_real": "Minami Grams Logo Slim-fit T-shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "SLT1H204 Zip Hoodie", "precio": 34990, "path": "/slt1-hoodie", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/73996241/resize/1200/630"], "descripcion_real": "SLT1H204 Zip Hoodie. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "SLT1H204 T-Shirt", "precio": 16990, "path": "/slt1-tshirt", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/43534810/3.jpg"], "descripcion_real": "SLT1H204 T-Shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "SLT3 Boxy-Fit T-shirt", "precio": 24990, "path": "/slt3", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/63226634/5.jpg"], "descripcion_real": "SLT3 Boxy-Fit T-shirt. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "SLT4 T-shirt Focalizado", "precio": 24990, "path": "/slt4", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/73134733/jsjsj.jpg"], "descripcion_real": "SLT4 T-shirt Focalizado. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Star T-Shirt Croped", "precio": 19990, "path": "/star-tshit", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/49065375/ESTRELLA_copia.jpg"], "descripcion_real": "Star T-Shirt Croped. Polera estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Sweater Lined Tribal Dark Grey", "precio": 49990, "path": "/sweater/grey", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/57685227/g1.jpg"], "descripcion_real": "Sweater Lined Tribal Dark Grey. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Sweater Tribal Low Contrast", "precio": 35000, "path": "/sweater/low-contrast", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/64857012/1.jpg"], "descripcion_real": "Sweater Tribal Low Contrast. Prenda tejida en dos tonos de grises jaspeado.", "tallas_reales": None},
+    {"nombre": "Sweatpants 2 Waistband Grey", "precio": 44990, "path": "/sweatpants", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/77992635/2.jpg"], "descripcion_real": "Sweatpants 2 Waistband Grey.", "tallas_reales": None},
+    {"nombre": "Tank Top Woman 001", "precio": 22000, "path": "/tank-top-woman", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/77992742/1.jpg"], "descripcion_real": "Tank Top Woman 001. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Sweater Lined Tribal Red Bullet", "precio": 49990, "path": "/tribal-lined", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/54270396/ww2.jpg"], "descripcion_real": "Sweater Lined Tribal Red Bullet. Prenda estampada en serigrafia.", "tallas_reales": None},
+    {"nombre": "Neo Yukii Vampire", "precio": 14990, "path": "/yuki", "fotos": ["https://cdnx.jumpseller.com/kotonaru-clothes/image/51985421/1.jpg"], "descripcion_real": "Neo Yukii Vampire. Polera estampada en serigrafia.", "tallas_reales": None},
+]
+
 # ---------------------------------------------------------------------
 # Piloto de upgrade a fotos/descripcion/stock reales (2026-08-24) para 2
 # tiendas YA cargadas a mano (las 2 mas chicas de las 14 que ademas
@@ -2313,8 +3762,19 @@ DATOS_SHOPIFY_UPGRADE = {
     "Rotten": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "rotten.json"),
     "Simpl.": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "simpl.json"),
     "AbsolutelyWrong": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "absolutelywrong.json"),
-    "ForceBlack": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "forceblack.json"),
-    "Floating": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "floating.json"),
+    # Talla numerica -> S/M/L/XL con la tabla real de cada sitio (revisada
+    # 2026-08-29, ver _traducir_tallas_numericas): antes quedaban como
+    # "40"/"42"/etc. y el filtro de talla del buscador nunca las
+    # encontraba. ForceBlack: 40=S,42=M,44=L,46/48=XL. Floating: 42=S,
+    # 44=M,46=L,48=XL (50=2XL, no representable, se descarta).
+    "ForceBlack": _traducir_tallas_numericas(
+        datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "forceblack.json"),
+        {"40": "S", "42": "M", "44": "L", "46": "XL", "48": "XL"},
+    ),
+    "Floating": _traducir_tallas_numericas(
+        datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "floating.json"),
+        {"42": "S", "44": "M", "46": "L", "48": "XL"},
+    ),
     # Tanda 3 (2026-08-25): las 3 tiendas mas grandes del catalogo, mismo
     # metodo -- cache paginado (products.json tiene mas de 250 productos en
     # estas 3) cruzado por handle contra las tuplas ya cargadas y
@@ -2322,6 +3782,326 @@ DATOS_SHOPIFY_UPGRADE = {
     "BANG GANG": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "banggang.json"),
     "UNK Chile": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "unkchile.json"),
     "Doslobos": datos_shopify_por_handle(BASE_DIR / "data" / "shopify_cache" / "doslobos.json"),
+    # Tanda 5 (2026-08-27): Selvanegrawear es WooCommerce, no Shopify --
+    # mismo cruce por handle/slug via su Store API publica (ver
+    # datos_woocommerce_por_slug()). Los gorros (Gemini_Generated_Image,
+    # ver TIENDAS_OFICIALES_EXCEPCIONES) no se tocan aca -- se cargan
+    # aparte, mas abajo en el loop de SELVANEGRA_GORROS, sin este cruce.
+    "Selvanegrawear": datos_woocommerce_por_slug(BASE_DIR / "data" / "woocommerce_cache" / "selvanegrawear.json"),
+    # Rapt (Jumpseller, no Shopify/WooCommerce -- sin products.json publico
+    # ni Store API): no hay un archivo cacheado que parsear, asi que este
+    # dict se armo a mano por producto, sacando "og:description" real de
+    # cada pagina (WebFetch/curl, 2026-08-27) -- unico dato nuevo real que
+    # se pudo sacar sin scrapear cada galeria a mano (costoso en tokens).
+    # "fotos" reutiliza la MISMA imagen real que ya tenia el producto desde
+    # el 2026-08-19 (Rapt siempre tuvo foto real, nunca ilustrativa) -- se
+    # pasa como lista de 1 solo elemento para que el modal ya no use el
+    # truco de imagen ilustrativa, no porque haya mas fotos reales
+    # disponibles. "tallas_reales": None dej a el rango generico de la
+    # tienda (Jumpseller no expone stock por talla publicamente).
+    "Rapt": {
+        "grid-layer-tee-melange": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75814900/resize/480/600"],
+            "descripcion_real": "Una base clásica con una capa extra. Detalle justo, sin exagerar. 60% algodón. Diseño layered.",
+            "tallas_reales": None,
+        },
+        "grid-layer-tee-navy": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75815328/resize/480/600"],
+            "descripcion_real": "Polera de doble manga que suma profundidad sin esfuerzo. Se ve simple, pero no lo es. 60% algodón. Diseño layered.",
+            "tallas_reales": None,
+        },
+        "grid-shift-zip-melange": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75816556/resize/480/600"],
+            "descripcion_real": "Polerón con cierre y detalles en patrón grid que suman textura sin exagerar. Un básico elevado, pensado para el día a día. 70% algodón / 30% poliéster. Cierre YKK de alta calidad. Detalles en patrón grid.",
+            "tallas_reales": None,
+        },
+        "grid-shift-zip-navy": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75816371/resize/480/600"],
+            "descripcion_real": "Polerón con cierre y detalles en patrón grid que suman textura sin exagerar.Un básico elevado, pensado para el día a día. 70% algodón / 30% poliéster. Cierre YKK de alta calidad. Detalles en patrón grid.",
+            "tallas_reales": None,
+        },
+        "raw-shift-hoodie-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75819668/resize/480/600"],
+            "descripcion_real": "Costuras expuestas que muestran la prenda tal como es. Sin filtros. 70% algodón / 30% poliéster.",
+            "tallas_reales": None,
+        },
+        "acid-shift-hoodie": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75815640/resize/480/600"],
+            "descripcion_real": "Acabado acid que le da carácter propio. Ninguno es exactamente igual. 70% algodón / 30% poliéster.",
+            "tallas_reales": None,
+        },
+        "dual-shift-tee-sand": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75842970/resize/480/600"],
+            "descripcion_real": "Dos tonos, una sola idea. Fácil de usar, difícil de ignorar. 60% algodón.",
+            "tallas_reales": None,
+        },
+        "patch-shift-zip-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75834611/resize/480/600"],
+            "descripcion_real": "Polerón negro con cierre y parche frontal en textura. Una pieza más trabajada, donde cada detalle suma. Edición limitada — solo 10 unidades disponibles. 70% algodón / 30% poliéster. Cierre YKK. Parche frontal con textura. Cordón grueso.",
+            "tallas_reales": None,
+        },
+        "shift-longsleeve-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/76168998/resize/480/600"],
+            "descripcion_real": "Una básica bien hecha. Mejor fit, logo al frente. Funciona con todo. 60% algodón. Logo en el pecho.",
+            "tallas_reales": None,
+        },
+        "foundation-jacket": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/78942775/resize/480/600"],
+            "descripcion_real": "Producción limitada. Esta prenda se confecciona bajo pedido. Plazo estimado de confección: 7 a 15 días hábiles. La Foundation Jacket reinterpreta elementos de la sastrería tradicional desde una perspectiva contemporánea. Confeccionada en casimir listado, su silueta boxy entrega una estructura relajada sin perder presencia.",
+            "tallas_reales": None,
+        },
+        "foundation-trouser": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/78941214/resize/480/600"],
+            "descripcion_real": "Producción limitada. Esta prenda se confecciona bajo pedido. Plazo estimado de confección: 7 a 15 días hábiles. El Foundation Trouser lleva la estética de la sastrería hacia un uso más cotidiano. Confeccionado en casimir, su silueta baggy entrega comodidad y presencia, mientras que las pinzas frontales generan una caída más limpia y estructurada.",
+            "tallas_reales": None,
+        },
+        "raw-denim-jacket": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/79261184/resize/480/600"],
+            "descripcion_real": "Producción limitada. Esta prenda se confecciona bajo pedido. Plazo estimado de confección: 7 a 15 días hábiles. Construida sobre una base de raw denim, esta chaqueta prioriza la simplicidad, la durabilidad y la estructura. Su silueta boxy y diseño minimalista, acompañado de un cierre YKK en acabado bronce envejecido, remaches y broches metálicos.",
+            "tallas_reales": None,
+        },
+        "common-hoodie-moro": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/77844170/resize/480/600"],
+            "descripcion_real": "El Common Hoodie está diseñado desde una visión minimalista de la comodidad cotidiana. Confeccionado en 80% algodón, combina una silueta boxy con una composición de dos tonos cuidadosamente equilibrada, aportando profundidad visual sin perder una estética limpia y versátil.",
+            "tallas_reales": None,
+        },
+        "common-hoodie-azure": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/77844186/resize/480/600"],
+            "descripcion_real": "El Common Hoodie está diseñado desde una visión minimalista de la comodidad cotidiana. Confeccionado en 80% algodón, combina una silueta boxy con una composición de dos tonos cuidadosamente equilibrada, aportando profundidad visual sin perder una estética limpia y versátil.",
+            "tallas_reales": None,
+        },
+        "common-hoodie-moss": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/78874781/resize/480/600"],
+            "descripcion_real": "El Common Hoodie está diseñado desde una visión minimalista de la comodidad cotidiana. Confeccionado en 80% algodón, combina una silueta boxy con una composición de dos tonos cuidadosamente equilibrada, aportando profundidad visual sin perder una estética limpia y versátil.",
+            "tallas_reales": None,
+        },
+        "common-tee-moro": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/78934163/resize/480/600"],
+            "descripcion_real": "La COMMON LONG SLEEVE interpreta el contraste desde la simplicidad. Su diseño en dos tonos aporta profundidad visual manteniendo una estética limpia y equilibrada. Confeccionada en 50% algodón, su silueta boxy de mangas amplias entrega comodidad, estructura y versatilidad para el uso diario.",
+            "tallas_reales": None,
+        },
+        "common-tee-azure": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/78239087/resize/480/600"],
+            "descripcion_real": "La COMMON LONG SLEEVE interpreta el contraste desde la simplicidad. Su diseño en dos tonos aporta profundidad visual manteniendo una estética limpia y equilibrada. Confeccionada en 50% algodón, su silueta boxy de mangas amplias entrega comodidad, estructura y versatilidad para el uso diario.",
+            "tallas_reales": None,
+        },
+        "common-tee-moss": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/78239091/resize/480/600"],
+            "descripcion_real": "La COMMON LONG SLEEVE interpreta el contraste desde la simplicidad. Su diseño en dos tonos aporta profundidad visual manteniendo una estética limpia y equilibrada.Confeccionada en 50% algodón, su silueta boxy de mangas amplias entrega comodidad, estructura y versatilidad para el uso diario.",
+            "tallas_reales": None,
+        },
+        "foundation-trouser-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/79535787/resize/480/600"],
+            "descripcion_real": "Producción limitada. Esta prenda se confecciona bajo pedido. Plazo estimado de confección: 7 a 15 días hábiles. El Foundation Trouser lleva la estética de la sastrería hacia un uso más cotidiano. Confeccionado en casimir negro, su silueta baggy entrega comodidad y presencia, mientras que las pinzas frontales generan una caída más limpia y estructurada.",
+            "tallas_reales": None,
+        },
+        "hoodie-essence-classic-ii": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/60258641/resize/480/600"],
+            "descripcion_real": "Un diseño que marca la evolución. La ESSENCE CLASSIC II sigue fiel a su esencia, pero con un giro renovado. En la parte frontal, justo debajo del cuello, destaca la frase ESSENCE // PHASE 2. A NEW CHAPTER, SAME FOUNDATION, reflejando la continua evolución de la marca sin perder sus raíces. En la parte trasera, el logo RAPT ocupa el centro de la espalda.",
+            "tallas_reales": None,
+        },
+        # Tanda 2 (2026-08-28) -- mismo metodo (og:description real via curl).
+        "boxy-essence-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61797633/resize/1200/630?1743210139"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.Un básico bien hecho. Escudo en el pecho, la 'R' al lado izquierdo y el nombre al centro. Nada más, nada menos. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-essence-gray": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61010690/resize/1200/630?1744906225"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra. Un básico bien hecho. Escudo en el pecho, la 'R' al lado izquierdo y el nombre al centro. Nada más, nada menos. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-essence-ii-brown": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61359846/resize/1200/630?1741970636"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.Un básico bien hecho. Nuevo corte con mangas mejoradas para un fit más definido. Escudo en el pecho con la 'R' al lado izquierdo y el nombre al centro. Diseño minimalista, sin detalles en la espalda. Menos es más. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-essence-ii-cream": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/60257594/resize/1200/630?1742966188"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.Lo esencial evoluciona. La BOXY ESSENCE II regresa en un tono crema, manteniendo su diseño limpio y atemporal. Escudo en el pecho, la 'R' al lado izquierdo y el nombre al centro. Nada más, nada menos. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-essence-ii-moss": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75847422/resize/1200/630?1776363998"],
+            "descripcion_real": "Un básico bien hecho. Nuevo corte con mangas mejoradas para un fit más definido. Escudo en el pecho con la 'R' al lado izquierdo y el nombre al centro. Diseño minimalista, sin detalles en la espalda. Menos es más. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-essence-ii-mystic-blue": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75847580/resize/1200/630?1776364323"],
+            "descripcion_real": "Un básico bien hecho. Nuevo corte con mangas mejoradas para un fit más definido. Escudo en el pecho con la 'R' al lado izquierdo y el nombre al centro. Diseño minimalista, sin detalles en la espalda. Menos es más. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-low-tee-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/63916835/resize/1200/630?1776364342"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.BOXY LOW TIDE TEE Corte boxy, limpio y con presencia. Las franjas blancas en las mangas le dan un aire técnico y diferente. Logo al centro, claro y sin vueltas. LOW TIDE es la calma antes del movimiento. 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-low-tee-moss": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/66413908/resize/1200/630?1755018513"],
+            "descripcion_real": "BOXY LOW TIDE TEE Corte boxy, limpio y con presencia. Las franjas blancas en las mangas le dan un aire técnico y diferente. Logo al centro, claro y sin vueltas. LOW TIDE es la calma antes del movimiento. 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-low-tee-stone": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75827475/resize/1200/630?1776288767"],
+            "descripcion_real": "BOXY LOW TIDE TEE Corte boxy, limpio y con presencia. Las franjas blancas en las mangas le dan un aire técnico y diferente. Logo al centro, claro y sin vueltas. LOW TIDE es la calma antes del movimiento. 60% algodón / 40% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-new-chapter-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/62241163/resize/1200/630?1743977223"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 4 a 10 días hábiles desde la compra. El clásico estilo boxy regresa con la BOXY NEXT CHAPTER TEE, parte del Drop 4 de RAPT. Un diseño minimalista que marca el inicio de una nueva etapa, fusionando lo mejor del pasado con lo que está por venir. En el lado izquierdo del pecho, el logo de RAPT.",
+            "tallas_reales": None,
+        },
+        "boxy-new-chapter-hoodie-brown": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/62241149/resize/1200/630?1743977138"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 4 a 10 días hábiles desde la compra. La historia continúa con el BOXY NEXT CHAPTER HOODIE, parte del Drop 4 de RAPT. Con un diseño minimalista y un fit boxy, este polerón ofrece la mezcla perfecta de comodidad y estilo. En el lado izquierdo del pecho, el logo de RAPT.",
+            "tallas_reales": None,
+        },
+        "boxy-new-chapter-hoodie-green": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/62241150/resize/1200/630?1743977151"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 4 a 10 días hábiles desde la compra. La historia continúa con el BOXY NEXT CHAPTER HOODIE, parte del Drop 4 de RAPT. Con un diseño minimalista y un fit boxy, este polerón ofrece la mezcla perfecta de comodidad y estilo. En el lado izquierdo del pecho, el logo de RAPT.",
+            "tallas_reales": None,
+        },
+        "boxy-new-chapter-hoodie-grey": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/62241189/resize/1200/630?1743977304"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra. La historia continúa con el BOXY NEXT CHAPTER HOODIE, parte del Drop 4 de RAPT. Con un diseño minimalista y un fit boxy, este polerón ofrece la mezcla perfecta de comodidad y estilo. En el lado izquierdo del pecho, el logo de RAPT.",
+            "tallas_reales": None,
+        },
+        "boxy-new-chapter-hoodie-navy": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/62241157/resize/1200/630?1743977183"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra. La historia continúa con el BOXY NEXT CHAPTER HOODIE, parte del Drop 4 de RAPT. Con un diseño minimalista y un fit boxy, este polerón ofrece la mezcla perfecta de comodidad y estilo. En el lado izquierdo del pecho, el logo de RAPT.",
+            "tallas_reales": None,
+        },
+        "boxy-new-chapter-hoodie-pink": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/62241162/resize/1200/630?1743977206"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra. La historia continúa con el BOXY NEXT CHAPTER HOODIE, parte del Drop 4 de RAPT. Con un diseño minimalista y un fit boxy, este polerón ofrece la mezcla perfecta de comodidad y estilo. En el lado izquierdo del pecho, el logo de RAPT en texto discreto.",
+            "tallas_reales": None,
+        },
+        "boxy-new-chapter-pink": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/62241169/resize/1200/630?1743977241"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 4 a 10 días hábiles desde la compra. El clásico estilo boxy regresa con la BOXY NEXT CHAPTER TEE, parte del Drop 4 de RAPT. Un diseño minimalista que marca el inicio de una nueva etapa, fusionando lo mejor del pasado con lo que está por venir. En el lado izquierdo del pecho, el logo de RAPT.",
+            "tallas_reales": None,
+        },
+        "boxy-next-form-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75847409/resize/1200/630?1776363953"],
+            "descripcion_real": "Parte del Drop 08 de RAPT. Una polera boxy de diseño limpio que representa la evolución de la marca. En el pecho, el logo R acompañado de la inscripción DROP 08 — NEXT FORM, marcando el inicio de una nueva etapa. Minimalismo en su forma más pura. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-next-form-navy": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/74639084/resize/1200/630?1773347867"],
+            "descripcion_real": "Parte del Drop 08 de RAPT. Una polera boxy de diseño limpio que representa la evolución de la marca. En el pecho, el logo R acompañado de la inscripción DROP 08 — NEXT FORM, marcando el inicio de una nueva etapa. Minimalismo en su forma más pura. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-next-form-patch-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75847415/resize/1200/630?1776363969"],
+            "descripcion_real": "Un básico bien hecho. Letras cortadas de la misma tela de la prenda, cosidas en el pecho y desgastadas a mano. Cada pieza tiene un desgaste único. Edición limitada / pocas unidades. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-next-form-patch-melange": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/74518868/resize/1200/630?1773255666"],
+            "descripcion_real": "Un básico bien hecho. Letras cortadas de la misma tela de la prenda, cosidas en el pecho y desgastadas a mano. Cada pieza tiene un desgaste único. Edición limitada / pocas unidades. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxy-phase-navy": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61824296/resize/1200/630?1743085544"],
+            "descripcion_real": "La esencia no se desvanece, solo evoluciona. Esta polera boxy fit en un tono azul profundo refleja la transición de ESSENCE PHASE 2. Su diseño minimalista en el costado izquierdo, ubicado estratégicamente desde la parte superior hasta abajo, presenta el mensaje: ESSENCE // PHASE 2 THE ESSENCE NEVER FADES, IT ONLY EVOLVES.",
+            "tallas_reales": None,
+        },
+        "boxy-third-wave-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75847511/resize/1200/630?1776364212"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra. La polera Boxy de la colección THIRD WAVE tiene un diseño simple con el logo renovado de RAPT en el frente. Su mensaje refleja la evolución: 'THIRD WAVE // FASE 3' y 'THE ESSENCE SURGES AGAIN. EVOLUTION NEVER STOPS.'",
+            "tallas_reales": None,
+        },
+        "boxy-third-wave-stone": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61360025/resize/1200/630?1743027609"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.La polera Boxy de la colección THIRD WAVE tiene un diseño simple con el logo renovado de RAPT en el frente. Su mensaje refleja la evolución: 'THIRD WAVE // FASE 3' y 'THE ESSENCE SURGES AGAIN. EVOLUTION NEVER STOPS.'",
+            "tallas_reales": None,
+        },
+        "boxydualseteclipse": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/69553908/resize/1200/630?1762828473"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.Corte boxy, pensada para verse sólida desde cualquier ángulo. El doble tono crea un detalle visual fuerte sin gritar. Dualidad, equilibrio y presencia: eso es DUAL SET. 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "boxydualsetsandwave": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/69554264/resize/1200/630?1762972384"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.Corte boxy, pensada para verse sólida desde cualquier ángulo. El doble tono crea un detalle visual fuerte sin gritar. Dualidad, equilibrio y presencia: eso es DUAL SET. 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "classic-essence-grey": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/79532873/resize/1200/630?1785605496"],
+            "descripcion_real": "Producción limitada. Diseño minimalista y urbano. Esta polera presenta el icónico logo de RAPT en gran tamaño en la espalda, acompañado de un detalle en letras pequeñas debajo. En la parte frontal, justo bajo el cuello, lleva la frase Serie 001 - RAPT EST 2020. The Essence Returns en un tamaño muy pequeño, aportando un toque sutil pero distintivo.",
+            "tallas_reales": None,
+        },
+        "essence-tee-blue": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61010682/resize/1200/630?1741968020"],
+            "descripcion_real": "Un básico bien hecho. Escudo en el pecho, la 'R' al lado izquierdo y el nombre al centro. Nada más, nada menos. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "essence-tee-grey": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75847496/resize/1200/630?1776364151"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.Un básico bien hecho. Escudo en el pecho, la 'R' al lado izquierdo y el nombre al centro. Nada más, nada menos. Material: 50% algodón / 50% poliéster",
+            "tallas_reales": None,
+        },
+        "hoodie-next-form-patch-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/75486324/resize/1200/630?1775180799"],
+            "descripcion_real": "Parte del Drop 08 de RAPT. Un polerón boxy donde el diseño se construye desde la misma prenda. En la espalda, letras cortadas de la propia tela y cosidas, con bordes desgastados a mano. Al frente, detalles de desgaste en el bolsillo y en el borde del gorro. Cada pieza presenta un desgaste único. Edición limitada. Material: 70% algodón / 30% poliéster",
+            "tallas_reales": None,
+        },
+        "hoodie-phase-ice": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/60781043/resize/1200/630?1744907581"],
+            "descripcion_real": "La esencia evoluciona en cada detalle. En un tono azul hielo, este hoodie destaca por su diseño limpio y equilibrado. Justo debajo de la costura del gorro, en la parte delantera, una R discreta refuerza la identidad de RAPT, agregando carácter sin exceso. Material: 60% algodón / 40% poliéster",
+            "tallas_reales": None,
+        },
+        "hoodie-phase-wine": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/60258132/resize/1200/630?1739823639"],
+            "descripcion_real": "La esencia evoluciona en cada detalle. En un tono burdeo, este hoodie destaca por su diseño limpio y equilibrado. Justo debajo de la costura del gorro, en la parte delantera, una R discreta refuerza la identidad de RAPT, agregando carácter sin exceso. Material: 60% algodón / 40% poliéster",
+            "tallas_reales": None,
+        },
+        "hoodie-shift-cream": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/60277922/resize/1200/630?1739848875"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 4 a 10 días hábiles desde la compra. Un nuevo enfoque de la esencia. En un tono crema, este hoodie presenta un diseño equilibrado con detalles únicos. Dos gráficos ubicados estratégicamente en el centro, más abajo del pecho, añaden carácter y modernidad.",
+            "tallas_reales": None,
+        },
+        "hoodie-shift-navy": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61797631/resize/1200/630?1744906236"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra.Un nuevo enfoque de la esencia. En un tono navy profundo, este hoodie presenta un diseño equilibrado con detalles únicos. Dos gráficos ubicados estratégicamente en el centro, más abajo del pecho, añaden carácter y modernidad.",
+            "tallas_reales": None,
+        },
+        "hoodie-shift-violet": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/60781078/resize/1200/630?1744906241"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra. Un nuevo enfoque de la esencia. En un tono lila, este hoodie presenta un diseño equilibrado con detalles únicos. Dos gráficos ubicados estratégicamente en el centro, más abajo del pecho, añaden carácter y modernidad.",
+            "tallas_reales": None,
+        },
+        "hoodie-third-wave-classic": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/61326029/resize/1200/630?1742694972"],
+            "descripcion_real": "PRE-ORDER: Este producto se enviará en un plazo de 7 a 15 días hábiles desde la compra. HOODIE THIRD WAVE // La evolución de un clásico. Con un fit boxy y caída estructurada, este hoodie negro está diseñado para ofrecer comodidad sin perder estilo. En la espalda, el icónico 'RAPT' en grande.",
+            "tallas_reales": None,
+        },
+        "zip-hoodie-low-tide-black": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/79636225/resize/1200/630?1785980559"],
+            "descripcion_real": "Producción limitada. Parte del Drop 5. Diseño limpio con cierre YKK en bronce envejecido que suma carácter. Logo pequeño en la espalda. Presente, pero sin hacer ruido. 70% algodón / 30% poliéster. Cierre YKK bronce envejecido.",
+            "tallas_reales": None,
+        },
+        "zip-hoodie-low-tide-blue": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/66414455/resize/1200/630?1755473745"],
+            "descripcion_real": "ZIP HOODIE LOW TIDE Parte del Drop 6. Diseño limpio con cierre YKK en bronce envejecido que suma carácter. Logo pequeño en la espalda. Presente, pero sin hacer ruido. 60% algodón / 40% poliéster. Cierre YKK bronce envejecido.",
+            "tallas_reales": None,
+        },
+        "zip-hoodie-low-tide-moss": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/66414476/resize/1200/630?1755473823"],
+            "descripcion_real": "ZIP HOODIE LOW TIDE Parte del Drop 6. Diseño limpio con cierre YKK en bronce envejecido que suma carácter. Logo pequeño en la espalda. Presente, pero sin hacer ruido. 60% algodón / 40% poliéster. Cierre YKK bronce envejecido.",
+            "tallas_reales": None,
+        },
+        "zip-hoodie-low-tide-stone": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/79297262/resize/1200/630?1785195620"],
+            "descripcion_real": "Producción limitada. Parte del Drop 5. Diseño limpio con cierre YKK en bronce envejecido que suma carácter. Logo pequeño en la espalda. Presente, pero sin hacer ruido. 70% algodón / 30% poliéster. Cierre YKK bronce envejecido.",
+            "tallas_reales": None,
+        },
+        "ziphoodielowtidev2cement": {
+            "fotos": ["https://cdnx.jumpseller.com/rapt/image/69554437/resize/1200/630?1762829208"],
+            "descripcion_real": "Parte del Drop 7. Diseño limpio con cierre YKK en bronce envejecido que suma carácter. Logo pequeño en la espalda. Presente, pero sin hacer ruido. 60% algodón / 40% poliéster. Cierre YKK bronce envejecido.",
+            "tallas_reales": None,
+        },
+    },
 }
 
 
@@ -2338,7 +4118,6 @@ def main():
     fuentes = [
         ("OVA Chile", "ovachile.cl", "OVA Apparel", OVA),
         ("Oversaints", "studioversaints.com", "Oversaints", OVERSAINTS),
-        ("El Pulento Style", "www.elpulentostyle.cl", "El Pulento Style", PULENTO),
         ("Rapt", "rapt.cl", "Rapt", RAPT),
         ("Roots South", "rootsouth.cl", "Roots South", ROOTSOUTH),
         ("Rotten", "rottenbrand.cl", "Rotten", ROTTEN),
@@ -2363,6 +4142,7 @@ def main():
                         fotos=datos_reales["fotos"],
                         descripcion_real=datos_reales["descripcion_real"],
                         tallas_reales=datos_reales["tallas_reales"],
+                        tallas_variantes=datos_reales.get("tallas_variantes"),
                     )
                 )
             else:
@@ -2376,6 +4156,22 @@ def main():
         ("Novorich", "www.novorich.cl", "NovoRich", NOVORICH),
         ("Shatters", "shatters.cl", "Shatters", SHATTERS),
         ("Stuffies Concept", "stuffiesconcept.com", "Stuffies Concept", STUFFIESCONCEPT),
+        ("Club 33", "club33.cl", "Club 33", CLUB33),
+        ("Feroni Studios", "feronistudios.cl", "FERONI", FERONI),
+        ("Addictve", "addictve.cl", "Addictve", ADDICTVE),
+        ("1Libra", "1libra.cl", "1Libra", LIBRA1),
+        ("Haze Concept", "hazeconcept.com", "Haze Concept", HAZE),
+        ("Kotonaru Store", "www.kotonaru-store.cl", "Kotonaru", KOTONARU),
+        ("Blazze", "blazze.cl", "Blazze", BLAZZE),
+        ("Kagi", "kagi.cl", "Kagi", KAGI),
+        ("Oopsi", "www.oopsi.cl", "Oopsi", OOPSI),
+        ("28Keys", "www.28keys.cl", "28Keys", KEYS28),
+        ("Traperas Company", "traperascompany.com", "Traperas Company", TRAPERAS),
+        ("Enila", "enila.cl", "Enila", ENILA),
+        ("RRREUSED", "rrreused.com", "RRREUSED", RRREUSED),
+        ("IPREX", "iprex.cl", "IPREX", IPREX),
+        ("BEEWAY", "beeway.cl", "BEEWAY", BEEWAY),
+        ("WAV", "wearewav.cl", "WAV", WAV),
     ]
     for tienda, dominio, marca, productos in nuevas_tiendas_shopify:
         for i, p in enumerate(productos, start=1):
@@ -2383,8 +4179,35 @@ def main():
                 construir_producto(
                     i, tienda, dominio, marca, p["nombre"], p["precio"], p["path"], None,
                     fotos=p["fotos"], descripcion_real=p["descripcion_real"], tallas_reales=p["tallas_reales"],
+                    tallas_variantes=p.get("tallas_variantes"),
+                    precio_original_clp=p.get("precio_original_clp"),
+                    marca_autor=p.get("marca_autor", True),
+                    colores=p.get("colores"),
+                    interes_musica=p.get("interes_musica", False),
+                    interes_arte=p.get("interes_arte", False),
+                    interes_anime=p.get("interes_anime", False),
+                    franquicia_anime=p.get("franquicia_anime"),
                 )
             )
+
+    # Viloria (2026-08-29): catalogo MANUAL via WhatsApp Business, ver
+    # data/catalogo_manual_viloria.py -- unico archivo a tocar para
+    # actualizar precio/stock/tallas/colores/productos de esta tienda,
+    # sin revisar el resto del pipeline. "link" ya es la URL completa de
+    # WhatsApp (link_absoluto() la deja pasar tal cual), asi que el
+    # "dominio" del llamado no se usa. fotos=[imagen] marca la foto como
+    # real (no dispara el fallback de espejar/recortar un SVG).
+    for p in VILORIA_PRODUCTOS:
+        nuevo_catalogo.append(
+            construir_producto(
+                p["idx"], "Viloria", "wa.me", "Viloria", p["nombre"], p["precio"], p["link"], None,
+                fotos=[p["imagen"]],
+                descripcion_real=p.get("descripcion"),
+                tallas_reales=p.get("tallas"),
+                precio_original_clp=p.get("precio_original"),
+                colores=p.get("colores"),
+            )
+        )
 
     # Gorros de Selvanegrawear (forma lana, sin tallas_disponibles).
     for i, (nombre, precio, path, imagen, color) in enumerate(SELVANEGRA_GORROS, start=1):
@@ -2395,6 +4218,41 @@ def main():
                 es_gorro=True, color_dominante=color, forma_gorro="lana",
             )
         )
+
+    # Correcciones de forma de gorro hechas a mano en /admin/clasificar-
+    # gorros (2026-08-30) -- se pisan encima del default automatico para
+    # que sobrevivan a la proxima corrida de este script.
+    _tags_forma_path = BASE_DIR / "data" / "tags_forma_gorro.json"
+    if _tags_forma_path.exists():
+        _tags_forma = json.loads(_tags_forma_path.read_text(encoding="utf-8"))
+        for _p in nuevo_catalogo:
+            if _p["id"] in _tags_forma:
+                _p["forma"] = _tags_forma[_p["id"]]
+
+    # Clasificacion grafica hecha en /admin/clasificar-graficos (2026-08-30):
+    # ese formulario guarda en data/tags_grafico.json por id, con nombres de
+    # tag propios (cara_logo_gigante) que no coinciden 1 a 1 con los campos
+    # que ya usaba filtrar_por_exclusiones_checkbox() (texto_grande,
+    # grafico_grande, cara_logo_grande -- del lote piloto via VERIFICADO_A_
+    # MANO). Bug real detectado por el usuario: "Boxy Essence" de Rapt
+    # aparecia igual con el filtro "no me gustan los textos grandes"
+    # prendido porque este archivo nunca se aplicaba sobre el catalogo --
+    # se guardaba el tag pero el filtro real seguia leyendo solo el campo
+    # viejo. Mismo mecanismo que forma de gorro: se pisa encima, solo hacia
+    # True (nunca resetea a False lo que ya estaba confirmado a mano).
+    _tags_grafico_path = BASE_DIR / "data" / "tags_grafico.json"
+    if _tags_grafico_path.exists():
+        _tags_grafico = json.loads(_tags_grafico_path.read_text(encoding="utf-8"))
+        for _p in nuevo_catalogo:
+            _entry = _tags_grafico.get(_p["id"])
+            if not _entry:
+                continue
+            _t = set(_entry.get("tags", []))
+            if "texto_grande" in _t:
+                _p["texto_grande"] = True
+            if "cara_logo_gigante" in _t:
+                _p["cara_logo_grande"] = True
+                _p["grafico_grande"] = True
 
     CATALOG_PATH.write_text(json.dumps(nuevo_catalogo, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Catalogo real escrito: {len(nuevo_catalogo)} productos en {CATALOG_PATH}")

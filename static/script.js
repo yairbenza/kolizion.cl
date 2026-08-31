@@ -160,7 +160,7 @@ function continuarConGuiaBienvenida() {
 // real sin querer, en vez de no filtrar nada. "Otro" si puede quedar al
 // final -- no es neutro, es un camino aparte (texto libre).
 const TIPO_PRENDA_OPCIONES = {
-  "prenda superior": ["Me da igual", "Polera", "Poleron", "Chaqueta", "Camisa", "Camiseta", "Top", "Otro"],
+  "prenda superior": ["Me da igual", "Polera", "Poleron", "Chaqueta", "Camisa", "Camiseta", "Top", "Chaleco", "Otro"],
   "prenda inferior": [
     "Me da igual", "Pantalon", "Shorts",
     ["Falda cargo", "con bolsillos grandes al costado"],
@@ -192,7 +192,14 @@ const CORTE_OPCIONES = {
 // Solo aplica cuando el tipo de prenda elegido es "pantalon", "shorts", "top" o "chaqueta".
 const SUBTIPO_OPCIONES = {
   "pantalon": ["Cualquiera", "Pantalón de buzo", "Pantalón de jeans", "Pantalón cargo"],
-  "shorts": ["Cualquiera", "Short de jeans", "Short de tela", "Short cargo", "Short de baño"],
+  "shorts": [
+    "Cualquiera",
+    ["Jorts", "denim ancho/baggy, más largo que un short de jean clásico"],
+    "Short de jeans",
+    "Short cargo",
+    "Short de tela",
+    "Short de baño",
+  ],
   "top": [
     "Cualquiera",
     ["Crop top / crop hoodie", "corto, deja el abdomen a la vista"],
@@ -203,6 +210,7 @@ const SUBTIPO_OPCIONES = {
     ["Camisas/blusas", "con botones, más estructurada"],
   ],
   "chaqueta": ["Cualquiera", "Bomber", "Mezclilla", "Cuero"],
+  "chaleco": ["Cualquiera", ["Cardigan", "categoría de mujer"]],
 };
 
 // El largo es independiente del corte (una prenda puede ser oversize Y
@@ -341,10 +349,6 @@ function configurarBusquedaPrenda(prefix) {
   const ocasionOtroCampo = document.getElementById(`campo-ocasion-otro-${prefix}`);
   const ocasionOtroInput = ocasionOtroCampo.querySelector("input");
 
-  const gorroCaminoCampo = document.getElementById(`campo-gorro-camino-${prefix}`);
-  const gorroCaminoSelect = document.getElementById(`gorro-camino-${prefix}`);
-  const gorroColoresCampo = document.getElementById(`campo-gorro-colores-${prefix}`);
-  const gorroOutfitCampo = document.getElementById(`campo-gorro-outfit-${prefix}`);
   const gorroFormaCampo = document.getElementById(`campo-gorro-forma-${prefix}`);
   const gorroFormaSelect = document.getElementById(`gorro-forma-${prefix}`);
 
@@ -359,29 +363,14 @@ function configurarBusquedaPrenda(prefix) {
     actualizarSelectSimple(tipoPrendaSelect.value, CIERRE_OPCIONES, cierreCampo, cierreSelect);
   }
 
-  // Gorro no usa corte/subtipo -- tiene su propio flujo (camino de color +
-  // forma). "campo-gorro-camino" y "campo-gorro-forma" se muestran/ocultan
-  // segun si la categoria elegida es "gorro"; dentro de eso, cual de los 2
-  // caminos (colores especificos / combinar con outfit) se ve depende de
-  // gorroCaminoSelect.
+  // Gorro no usa corte/subtipo -- solo pregunta el tipo de gorro. El color
+  // ya no tiene una pregunta obligatoria propia: usa el mismo checkbox
+  // opcional de color que el resto de las prendas (campo-color).
   function refrescarCamposGorro() {
     const esGorro = categoriaSelect.value === "gorro";
-    gorroCaminoCampo.classList.toggle("oculto", !esGorro);
     gorroFormaCampo.classList.toggle("oculto", !esGorro);
-    gorroCaminoSelect.required = esGorro;
     gorroFormaSelect.required = esGorro;
-
-    if (!esGorro) {
-      gorroColoresCampo.classList.add("oculto");
-      gorroOutfitCampo.classList.add("oculto");
-      return;
-    }
-    const camino = gorroCaminoSelect.value || "colores";
-    gorroColoresCampo.classList.toggle("oculto", camino !== "colores");
-    gorroOutfitCampo.classList.toggle("oculto", camino !== "outfit");
   }
-
-  gorroCaminoSelect.addEventListener("change", refrescarCamposGorro);
 
   categoriaSelect.addEventListener("change", () => {
     const valor = categoriaSelect.value;
@@ -436,6 +425,24 @@ function configurarBusquedaPrenda(prefix) {
     ocasionOtroCampo.classList.toggle("oculto", !esOtro);
     ocasionOtroInput.required = esOtro;
   });
+
+  limitarSeleccionCheckboxes(`campo-color-${prefix}`, 3);
+}
+
+// Bloquea el resto de los checkboxes de un grupo (sin desmarcar nada) en
+// cuanto ya hay "max" marcados, para que no se puedan elegir mas -- pedido
+// del usuario: maximo 3 colores por busqueda (2026-08-27).
+function limitarSeleccionCheckboxes(contenedorId, max) {
+  const checkboxes = Array.from(
+    document.querySelectorAll(`#${contenedorId} input[type="checkbox"]`)
+  );
+  const actualizar = () => {
+    const marcados = checkboxes.filter((cb) => cb.checked).length;
+    checkboxes.forEach((cb) => {
+      cb.disabled = !cb.checked && marcados >= max;
+    });
+  };
+  checkboxes.forEach((cb) => cb.addEventListener("change", actualizar));
 }
 
 // Si el select vale "otro", usa lo que el usuario escribio en el campo
@@ -470,16 +477,14 @@ function leerBusquedaPrenda(prefix) {
       document.getElementById(`corte-${prefix}`),
       document.getElementById(`campo-corte-otro-${prefix}`)
     ),
+    colores: Array.from(
+      document.querySelectorAll(`#campo-color-${prefix} input[type="checkbox"]:checked`)
+    ).map((el) => el.value),
     ocasion: valorFinal(
       document.getElementById(`ocasion-${prefix}`),
       document.getElementById(`campo-ocasion-otro-${prefix}`)
     ),
     precio: document.getElementById(`precio-${prefix}`).value,
-    gorro_camino: document.getElementById(`gorro-camino-${prefix}`).value,
-    gorro_colores: Array.from(
-      document.querySelectorAll(`#campo-gorro-colores-${prefix} input[type="checkbox"]:checked`)
-    ).map((el) => el.value),
-    gorro_outfit: document.getElementById(`gorro-outfit-${prefix}`).value,
     gorro_forma: document.getElementById(`gorro-forma-${prefix}`).value,
     priorizar_material_natural: document.getElementById(`prioridad-material-${prefix}`).checked,
     solo_marca_autor: document.getElementById(`solo-marca-autor-${prefix}`).checked,
@@ -565,6 +570,16 @@ function restaurarFiltros(prefix, payload) {
   const corteOtroInput = corteOtroCampo.querySelector("input");
   restaurarSelectConOtro(corteSelect, corteOtroCampo, corteOtroInput, payload.corte);
 
+  const colorCheckboxes = document.querySelectorAll(`#campo-color-${prefix} input[type="checkbox"]`);
+  if (Array.isArray(payload.colores)) {
+    colorCheckboxes.forEach((cb) => {
+      cb.checked = payload.colores.includes(cb.value);
+    });
+  }
+  // Vuelve a calcular cuales quedan bloqueados por el limite de 3 colores
+  // (restaurar no dispara "change" solo, hay que pedirlo a mano).
+  if (colorCheckboxes[0]) colorCheckboxes[0].dispatchEvent(new Event("change"));
+
   const ocasionSelect = document.getElementById(`ocasion-${prefix}`);
   const ocasionOtroCampo = document.getElementById(`campo-ocasion-otro-${prefix}`);
   const ocasionOtroInput = ocasionOtroCampo.querySelector("input");
@@ -576,19 +591,8 @@ function restaurarFiltros(prefix, payload) {
   document.getElementById(`prioridad-material-${prefix}`).checked = Boolean(payload.priorizar_material_natural);
   document.getElementById(`solo-marca-autor-${prefix}`).checked = Boolean(payload.solo_marca_autor);
 
-  const gorroCaminoSelect = document.getElementById(`gorro-camino-${prefix}`);
-  if (payload.gorro_camino) gorroCaminoSelect.value = payload.gorro_camino;
-  const gorroOutfitSelect = document.getElementById(`gorro-outfit-${prefix}`);
-  if (payload.gorro_outfit) gorroOutfitSelect.value = payload.gorro_outfit;
   const gorroFormaSelect = document.getElementById(`gorro-forma-${prefix}`);
   if (payload.gorro_forma) gorroFormaSelect.value = payload.gorro_forma;
-  if (Array.isArray(payload.gorro_colores)) {
-    document.querySelectorAll(`#campo-gorro-colores-${prefix} input[type="checkbox"]`).forEach((cb) => {
-      cb.checked = payload.gorro_colores.includes(cb.value);
-    });
-  }
-  // Dispara el listener de gorro-camino: muestra colores u outfit segun corresponda.
-  gorroCaminoSelect.dispatchEvent(new Event("change"));
 
   mostrarSeccion(`seccion-busqueda-${prefix}`);
 }
@@ -607,6 +611,21 @@ function limpiarFiltros(prefix) {
   document.getElementById(`categoria-${prefix}`).dispatchEvent(new Event("change"));
   document.getElementById(`corte-${prefix}`).dispatchEvent(new Event("change"));
   document.getElementById(`ocasion-${prefix}`).dispatchEvent(new Event("change"));
+  // form.reset() no reactiva los checkboxes de color que hayan quedado
+  // bloqueados por el limite de 3 (ver limitarSeleccionCheckboxes).
+  const primerCheckboxColor = document.querySelector(`#campo-color-${prefix} input[type="checkbox"]`);
+  if (primerCheckboxColor) primerCheckboxColor.dispatchEvent(new Event("change"));
+}
+
+// Mismo aviso que "Encontramos productos para ti hace un momento" del chat
+// de Koko (koko.js) -- si el usuario ya hizo una busqueda esta sesion (via
+// el buscador o via Koko) y volvio al paso inicial sin pasar por
+// /resultados de nuevo (ej: se fue a Descubre y volvio), se lo recordamos
+// con un acceso directo en vez de que tenga que rehacer la busqueda.
+function actualizarAvisoResultadosPendientes() {
+  const aviso = document.getElementById("aviso-resultados-pendientes");
+  if (!aviso) return;
+  aviso.classList.toggle("oculto", !hayResultadosRecientes());
 }
 
 function mostrarPasoInicial() {
@@ -614,6 +633,7 @@ function mostrarPasoInicial() {
   if (perfil) {
     document.getElementById("resumen-perfil").textContent =
       `Hola ${perfil.nombre}, tu perfil: ${perfil.genero}, ${perfil.edad} años.`;
+    actualizarAvisoResultadosPendientes();
     mostrarSeccion("seccion-quien");
   } else {
     mostrarSeccion("seccion-perfil");
@@ -761,6 +781,10 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarPasoInicial();
   });
 
+  document.getElementById("btn-ver-resultados-pendientes").addEventListener("click", () => {
+    window.location.href = "/resultados";
+  });
+
   document.getElementById("btn-para-mi").addEventListener("click", () => {
     mostrarSeccion("seccion-busqueda-yo");
   });
@@ -834,6 +858,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     buscar({
       modo: "yo", email: perfilCompleto.gmail || "", perfil: perfilParaBuscar,
+      preferencias_negativas: getPreferenciasNegativas(),
       ...leerBusquedaPrenda("yo"),
     });
   });

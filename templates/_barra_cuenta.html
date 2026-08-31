@@ -1,0 +1,97 @@
+<!-- Icono fijo "Mi cuenta" (2026-08-30, pedido del usuario: separar datos de
+     CONTACTO -- correo/nombre/telefono -- de "Mi perfil" -- altura/peso/
+     hobbies/direccion, que quedan solo en perfil.html/perfil.js). Se incluye
+     en TODAS las paginas que ya tienen _barra_nav.html, arriba a la
+     derecha, para que sea accesible desde cualquier lugar. "usuario" llega
+     por el context processor de app.py (_inyectar_usuario_sesion), no hace
+     falta que cada ruta lo pase a mano.
+     Sin sesion: el icono manda directo a /login (nada que mostrar todavia).
+     Con sesion: abre un modal chico con correo/nombre/telefono + foto +
+     cerrar sesion (mismo formulario que antes vivia dentro de perfil.html). -->
+{% if usuario %}
+<button type="button" id="btn-abrir-cuenta" class="fab-cuenta" aria-label="Mi cuenta">
+  <img src="{{ url_for('static', filename=usuario.foto_perfil) if usuario.foto_perfil else url_for('static', filename='img/kolizion-logo.png') }}" alt="">
+</button>
+
+<div id="modal-cuenta" class="oculto modal-overlay">
+  <div class="tarjeta-modal tarjeta-modal-cuenta">
+    <button id="btn-cerrar-cuenta" class="btn-cerrar-tour" type="button" aria-label="Cerrar">×</button>
+    <h2>Mi cuenta</h2>
+
+    <div class="fila-ajuste">
+      <img id="foto-perfil-actual"
+           src="{{ url_for('static', filename=usuario.foto_perfil) if usuario.foto_perfil else url_for('static', filename='img/kolizion-logo.png') }}"
+           alt="" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover;">
+      <label style="flex: 1;">
+        Cambiar foto
+        <input type="file" id="input-foto-perfil" accept=".jpg,.jpeg,.png,.webp">
+      </label>
+    </div>
+    <p class="ayuda" id="estado-foto-perfil"></p>
+
+    <form method="post" action="/perfil/actualizar">
+      <label>
+        Nombre
+        <input type="text" name="nombre" value="{{ usuario.nombre or '' }}">
+      </label>
+      <label>
+        Apellido
+        <input type="text" name="apellido" value="{{ usuario.apellido or '' }}">
+      </label>
+      <label>
+        Correo
+        <input type="email" value="{{ usuario.email }}" disabled>
+      </label>
+      <label>
+        Teléfono <span class="ayuda">(opcional)</span>
+        <input type="tel" name="telefono" value="{{ usuario.telefono or '' }}">
+      </label>
+      <button type="submit">Guardar cambios</button>
+    </form>
+
+    <form method="post" action="/logout" style="margin-top: 0.75rem;">
+      <button type="submit" class="btn-ubicacion-actual">Cerrar sesión</button>
+    </form>
+  </div>
+</div>
+{% else %}
+<a href="/login" class="fab-cuenta" aria-label="Iniciar sesión">
+  <img src="{{ url_for('static', filename='img/kolizion-logo.png') }}" alt="">
+</a>
+{% endif %}
+
+<script>
+  (function () {
+    var btn = document.getElementById("btn-abrir-cuenta");
+    var modal = document.getElementById("modal-cuenta");
+    if (!btn || !modal) return;
+    btn.addEventListener("click", function () { modal.classList.remove("oculto"); });
+    document.getElementById("btn-cerrar-cuenta").addEventListener("click", function () { modal.classList.add("oculto"); });
+    modal.addEventListener("click", function (e) { if (e.target === modal) modal.classList.add("oculto"); });
+
+    // Subir foto de perfil (movido desde perfil.js: ahora vive aca porque
+    // el modal es global, no solo de la pagina /perfil).
+    var input = document.getElementById("input-foto-perfil");
+    input.addEventListener("change", async function () {
+      var archivo = input.files[0];
+      if (!archivo) return;
+      var estado = document.getElementById("estado-foto-perfil");
+      estado.textContent = "Subiendo...";
+      try {
+        var formData = new FormData();
+        formData.append("foto", archivo);
+        var resp = await fetch("/perfil/foto", { method: "POST", body: formData });
+        var data = await resp.json();
+        if (data.foto_perfil) {
+          document.getElementById("foto-perfil-actual").src = data.foto_perfil;
+          btn.querySelector("img").src = data.foto_perfil;
+          estado.textContent = "¡Listo!";
+        } else {
+          estado.textContent = data.error || "No se pudo subir la foto.";
+        }
+      } catch (e) {
+        estado.textContent = "No se pudo subir la foto -- intenta de nuevo.";
+      }
+    });
+  })();
+</script>

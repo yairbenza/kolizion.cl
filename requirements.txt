@@ -2,3 +2,5 @@ flask
 anthropic
 flask-limiter
 openpyxl
+python-dotenv
+gunicorn

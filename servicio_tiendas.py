@@ -12,6 +12,7 @@ from constantes import (
     HISTORIAL_PATH,
     REGIONES_CHILE,
     REPORTES_MANUALES_PATH,
+    RESENAS_PATH,
     TIENDAS_PATH,
     load_json,
     _normalizar_email,
@@ -19,6 +20,7 @@ from constantes import (
     _quitar_tildes,
     _texto_seguro,
 )
+from motor_recomendacion import armar_resultados
 
 
 def cargar_historial():
@@ -31,7 +33,7 @@ def guardar_historial(historial):
     HISTORIAL_PATH.write_text(json.dumps(historial, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def registrar_busqueda(email, ocasion, categoria, tipo_prenda, corte):
+def registrar_busqueda(email, ocasion, categoria, tipo_prenda, corte, payload=None):
     email = _normalizar_email(email)
     if not email:
         return
@@ -43,6 +45,11 @@ def registrar_busqueda(email, ocasion, categoria, tipo_prenda, corte):
         "categoria": categoria or "",
         "tipo_prenda": tipo_prenda or "",
         "corte": corte or "",
+        # Guarda lo necesario para volver a correr esta misma busqueda desde
+        # el historial (2026-08-28, pedido del usuario) -- None en entradas
+        # viejas, guardadas antes de este cambio, asi que el frontend no
+        # ofrece "volver" ahi (no hay como reconstruir esa busqueda).
+        "payload": payload or None,
     })
     guardar_historial(historial)
 
@@ -165,6 +172,51 @@ def _armar_tendencias(catalog_disponible, cantidad):
     return resultado
 
 
+def _armar_basado_en_busquedas(email, catalog_disponible, reglas, cantidad):
+    """Fila "Basado en tus ultimas busquedas" de /vitrina (2026-08-30,
+    pedido del usuario) -- solo para cuentas con sesion real, porque el
+    historial de busquedas ya no se guarda para invitados (ver
+    _email_sesion_actual en app.py). Reutiliza el mismo motor de siempre
+    (armar_resultados/elegir_candidatos) con los criterios de las ultimas
+    3 busquedas guardadas -- no inventa ningun criterio nuevo ni vuelve a
+    analizar catalogo o fotos. Sin filtro de talla (esta fila es solo un
+    vistazo, no vuelve a pedir el perfil)."""
+    email = _normalizar_email(email)
+    if not email:
+        return []
+    busquedas = cargar_historial().get(email, {}).get("busquedas", [])
+    payloads = [b["payload"] for b in busquedas[-3:] if b.get("payload")]
+    if not payloads:
+        return []
+
+    catalog_por_id = {p["id"]: p for p in catalog_disponible}
+    ids_usados = set()
+    resultado = []
+    for payload in payloads:
+        genero = (payload.get("perfil") or {}).get("genero", "")
+        texto_pedido = " ".join([
+            payload.get("categoria", ""), payload.get("tipo_prenda", ""),
+            payload.get("subtipo", ""), payload.get("largo", ""),
+            payload.get("manga", ""), payload.get("capucha", ""),
+            payload.get("cierre", ""), payload.get("corte", ""),
+            payload.get("ocasion", ""),
+        ])
+        candidatos = armar_resultados(
+            genero, payload.get("ocasion", ""), payload.get("categoria", ""),
+            texto_pedido, catalog_disponible, reglas,
+            color_pedido=payload.get("colores") or None,
+        )
+        for c in candidatos:
+            producto = catalog_por_id.get(c["id"])
+            if producto is None or c["id"] in ids_usados:
+                continue
+            ids_usados.add(c["id"])
+            resultado.append(producto)
+            if len(resultado) >= cantidad:
+                return resultado
+    return resultado
+
+
 def cargar_tiendas():
     if not TIENDAS_PATH.exists():
         return {}
@@ -225,6 +277,32 @@ def _estimar_envio_real(direccion_usuario, nombre_tienda):
     }
 
 
+def resumen_envio_general(nombre_tienda):
+    """Politica de envio de la tienda SIN personalizar por direccion del
+    usuario (a diferencia de _estimar_envio_real) -- para mostrar en la
+    ficha de producto, seccion "Envios y cambios". None si no hay dato
+    investigado para esa tienda (nunca se inventa un plazo)."""
+    info = cargar_envios_tiendas().get(nombre_tienda)
+    if not info:
+        return None
+
+    def _linea(etiqueta, segmento):
+        segmento = segmento or {}
+        dias = segmento.get("dias_habiles", "no especificado")
+        if not segmento.get("disponible") or (dias or "").startswith("no especificado"):
+            return f"{etiqueta}: sin plazo publicado por la tienda"
+        return f"{etiqueta}: {dias}"
+
+    lineas = [
+        _linea("RM", info.get("envio_rm")),
+        _linea("Regiones", info.get("envio_regiones")),
+    ]
+    retiro = info.get("retiro_tienda") or {}
+    if retiro.get("disponible"):
+        lineas.append(f"Retiro en tienda disponible ({retiro.get('comuna') or 'sin comuna publicada'})")
+    return " · ".join(lineas)
+
+
 def cargar_clics_tiendas():
     if not CLICS_TIENDAS_PATH.exists():
         return []
@@ -260,3 +338,34 @@ def registrar_reporte_manual(tienda_id, fecha, monto):
 
 def _fecha_clic(clic):
     return _parsear_fecha_iso(clic.get("fecha", ""))
+
+
+# --- Resenas de producto (2026-08-27) -------------------------------------
+# Guardadas por NOMBRE del producto (mismo criterio que favoritos.py --
+# el id de catalog.json no es estable entre corridas de
+# construir_catalogo_real.py, el nombre real de la tienda si lo es). Nunca
+# se inventa una resena -- si no hay ninguna cargada para ese nombre, se
+# devuelve el resumen vacio (total=0), nunca datos de relleno.
+def cargar_resenas():
+    if not RESENAS_PATH.exists():
+        return {}
+    return load_json(RESENAS_PATH)
+
+
+def resumen_resenas(nombre_producto):
+    nombre = _texto_seguro(nombre_producto)
+    items = cargar_resenas().get(nombre, []) if nombre else []
+    distribucion = {str(n): 0 for n in range(5, 0, -1)}
+    suma = 0
+    for r in items:
+        estrellas = r.get("estrellas")
+        if estrellas in (1, 2, 3, 4, 5):
+            distribucion[str(estrellas)] += 1
+            suma += estrellas
+    total = len(items)
+    return {
+        "promedio": round(suma / total, 1) if total else 0,
+        "total": total,
+        "distribucion": distribucion,
+        "items": sorted(items, key=lambda r: r.get("fecha", ""), reverse=True),
+    }

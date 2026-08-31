@@ -66,7 +66,7 @@ def _google_intercambiar_code(code):
         "code": code,
         "client_id": GOOGLE_CLIENT_ID,
         "client_secret": GOOGLE_CLIENT_SECRET,
-        "redirect_uri": url_for("auth_google_callback", _external=True),
+        "redirect_uri": url_for("auth_bp.auth_google_callback", _external=True),
         "grant_type": "authorization_code",
     }
     try:
@@ -181,7 +181,7 @@ def auth_google_iniciar():
 
     parametros = {
         "client_id": GOOGLE_CLIENT_ID,
-        "redirect_uri": url_for("auth_google_callback", _external=True),
+        "redirect_uri": url_for("auth_bp.auth_google_callback", _external=True),
         "response_type": "code",
         "scope": "openid email profile",
         "state": state,
@@ -255,6 +255,18 @@ def subir_foto_perfil():
 @auth_bp.route("/perfil/actualizar", methods=["POST"])
 @requiere_cuenta
 def actualizar_perfil_cuenta():
-    perfil = _perfil_desde_formulario(request.form)
+    # Solo datos de contacto (2026-08-30, pedido del usuario: separar "Mi
+    # cuenta" -- correo/nombre/telefono -- de "Mi perfil" -- altura/peso/
+    # direccion/hobbies, que ahora vive solo en el perfil de busqueda local,
+    # ver perfil.js). A diferencia de _perfil_desde_formulario (usada en el
+    # registro, que si necesita altura/peso/direccion/hobbies del perfil
+    # migrado), aca NO se puede reusar esa funcion: manda "" para cualquier
+    # campo no incluido en el form, y actualizar_perfil() lo tomaria como
+    # "borrar" ese dato en vez de "no tocarlo".
+    perfil = {
+        "nombre": _texto_seguro(request.form.get("nombre", ""), 200),
+        "apellido": _texto_seguro(request.form.get("apellido", ""), 200),
+        "telefono": _texto_seguro(request.form.get("telefono", ""), 200),
+    }
     db_usuarios.actualizar_perfil(session["usuario_id"], perfil)
-    return redirect("/perfil")
+    return redirect(request.referrer or "/perfil")

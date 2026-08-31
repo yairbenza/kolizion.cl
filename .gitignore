@@ -10,6 +10,15 @@ data/tiendas.json
 data/clics_tiendas.json
 data/reportes_manuales.json
 data/favoritos.json
+data/resenas.json
 data/limite_koko.json
 data/kolizion.db
 static/img/usuarios/
+cloudflared.exe
+tunel_temporal.log
+tunel_temporal_out.log
+tunel_temporal_url.txt
+scratch_chat.txt
+kolizion.db
+data/shopify_cache/
+data/woocommerce_cache/

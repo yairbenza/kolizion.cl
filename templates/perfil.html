@@ -25,61 +25,11 @@
       </label>
     </div>
 
-    <!-- Cuenta real (Google/email+contraseña, ver docs/cuentas.md) -- esto
-         es aparte del "perfil" de localStorage de mas abajo, que sigue
-         existiendo igual que siempre (se usa para personalizar busquedas
-         sin necesitar cuenta). La cuenta solo hace falta para comprar. -->
-    {% if usuario %}
-    <section class="resultado-card">
-      <h2>Tu cuenta</h2>
-      <div class="fila-ajuste">
-        <img id="foto-perfil-actual"
-             src="{{ url_for('static', filename=usuario.foto_perfil) if usuario.foto_perfil else url_for('static', filename='img/kolizion-logo.png') }}"
-             alt="" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover;">
-        <label style="flex: 1;">
-          Cambiar foto
-          <input type="file" id="input-foto-perfil" accept=".jpg,.jpeg,.png,.webp">
-        </label>
-      </div>
-      <p class="ayuda" id="estado-foto-perfil"></p>
-
-      <form method="post" action="/perfil/actualizar">
-        <label>
-          Nombre
-          <input type="text" name="nombre" value="{{ usuario.nombre or '' }}">
-        </label>
-        <label>
-          Apellido
-          <input type="text" name="apellido" value="{{ usuario.apellido or '' }}">
-        </label>
-        <label>
-          Correo
-          <input type="email" value="{{ usuario.email }}" disabled>
-        </label>
-        <label>
-          Teléfono <span class="ayuda">(opcional)</span>
-          <input type="tel" name="telefono" value="{{ usuario.telefono or '' }}">
-        </label>
-        <label>
-          Altura
-          <input type="text" name="altura" value="{{ usuario.altura or '' }}" placeholder="ej: 1.75m">
-        </label>
-        <label>
-          Peso
-          <input type="text" name="peso" value="{{ usuario.peso or '' }}" placeholder="ej: 70kg">
-        </label>
-        <label>
-          Dirección <span class="ayuda">(para "Llegan rápido a ti" en Descubre)</span>
-          <input type="text" name="direccion" value="{{ usuario.direccion or '' }}">
-        </label>
-        <button type="submit">Guardar cambios</button>
-      </form>
-
-      <form method="post" action="/logout" style="margin-top: 0.75rem;">
-        <button type="submit" class="btn-ubicacion-actual">Cerrar sesión</button>
-      </form>
-    </section>
-    {% else %}
+    <!-- Datos de contacto de la cuenta (correo/nombre/telefono/foto) se
+         movieron al icono "Mi cuenta" fijo arriba de la pantalla (2026-08-30,
+         pedido del usuario: separar eso de las caracteristicas de busqueda
+         de aca abajo) -- ver _barra_cuenta.html. -->
+    {% if not usuario %}
     <section class="resultado-card">
       <h2>Tu cuenta</h2>
       <p class="descripcion">Crea una cuenta (o inicia sesión) para poder comprar en KOLIZION.</p>
@@ -97,10 +47,57 @@
       <p>Todavía no tienes un perfil guardado.</p>
       <p><a href="/" class="volver">Crear mi perfil</a></p>
     </div>
+
+    <!-- Preferencias negativas (2026-08-28, pedido del usuario; rediseño
+         compacto 2026-08-29): se guardan aparte en localStorage
+         (preferenciasNegativas, ver comun.js), no mezcladas dentro del
+         perfil de busqueda -- se auto-guardan al tocar cada opcion, sin
+         boton "Guardar". Mismos checkboxes/ids de siempre (pref-rotos,
+         pref-grafico, pref-texto, pref-cara-logo), ahora dentro de un
+         dropdown compacto en vez del bloque grande -- la logica de guardado
+         en perfil.js (MAPA_PREFERENCIAS_NEGATIVAS) no cambia. motor_recomendacion.py
+         las usa para sacar del todo esos productos de CUALQUIER busqueda "yo". -->
+    <h2>¿Quieres excluir algo de tus búsquedas?</h2>
+    <div class="selector-exclusiones" id="selector-exclusiones">
+      <button type="button" id="btn-selector-exclusiones" class="selector-exclusiones-boton" aria-haspopup="listbox" aria-expanded="false">
+        <span id="selector-exclusiones-texto">Seleccionar preferencias</span>
+        <span class="selector-exclusiones-flecha">▾</span>
+      </button>
+      <div id="selector-exclusiones-panel" class="selector-exclusiones-panel oculto">
+        <label class="selector-exclusiones-opcion"><input type="checkbox" id="pref-rotos"> Pantalones rotos/desgastados</label>
+        <label class="selector-exclusiones-opcion"><input type="checkbox" id="pref-grafico"> Gráficos o dibujos muy grandes</label>
+        <label class="selector-exclusiones-opcion"><input type="checkbox" id="pref-texto"> Frases o texto muy grande</label>
+        <label class="selector-exclusiones-opcion"><input type="checkbox" id="pref-cara-logo"> Caras o logos gigantes</label>
+      </div>
+      <div id="selector-exclusiones-chips" class="selector-exclusiones-chips"></div>
+    </div>
+
+    <!-- El historial solo se muestra con sesion REAL iniciada (Google/
+         email+contraseña, ver docs/cuentas.md) -- a diferencia del "perfil
+         de busqueda" de mas arriba (dato local, no verificado), esto son
+         busquedas guardadas contra una cuenta real. Pedido del usuario
+         (2026-08-26): que no cualquiera pueda ver el historial de otra
+         persona con solo saber su correo. -->
+    {% if usuario %}
+    <div id="bloque-historial">
+      <h2>Tu historial</h2>
+      <p class="ayuda">Tus búsquedas y los productos que viste con tu cuenta iniciada.</p>
+      <button type="button" id="btn-ver-historial" class="btn-editar-perfil">Ver historial</button>
+      <button type="button" id="btn-hablar-koko-historial" class="btn-editar-perfil oculto">💬 Ver conversación con Koko</button>
+      <div id="historial-contenido" class="oculto"></div>
+    </div>
+    {% else %}
+    <div>
+      <h2>Tu historial</h2>
+      <p class="ayuda">Inicia sesión para ver tus búsquedas anteriores y los productos que viste.</p>
+      <a href="/login" class="btn-editar-perfil">Iniciar sesión</a>
+    </div>
+    {% endif %}
   </main>
 
   {% include "_panel_koko.html" %}
   {% include "_guia_bienvenida.html" %}
+  {% include "_barra_cuenta.html" %}
   {% include "_barra_nav.html" %}
 
   <script src="{{ url_for('static', filename='comun.js') }}"></script>

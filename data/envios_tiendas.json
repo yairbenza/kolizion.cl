@@ -1,7 +1,119 @@
 {
   "_meta": {
     "descripcion": "Politica de envio por tienda, revisada a mano entrando al sitio real de cada una. Usado para 'Llegan rapido a ti' (comparar comuna del usuario vs RM/regiones/retiro en tienda). Si una tienda no publica el dato claramente, se deja como 'no especificado' en vez de asumir.",
-    "ultima_revision": "2026-08-24"
+    "ultima_revision": "2026-08-27"
+  },
+  "WAV": {
+    "envio_rm": {"disponible": true, "dias_habiles": "2 a 7 dias habiles, desde $5.170"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "hasta 7-12 dias habiles en regiones extremas, costo calculado en el pago (gratis sobre $100.000)"},
+    "retiro_tienda": {"disponible": null, "comuna": "Providencia", "es_rm": true},
+    "fuente": "https://wearewav.cl/policies/shipping-policy",
+    "notas": "Direccion fisica publicada (Av Rancagua 514, Providencia) pero el sitio no confirma explicitamente que ahi se pueda retirar pedidos -- se deja retiro_tienda.disponible en 'no especificado' en vez de asumirlo."
+  },
+  "IPREX": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://iprex.cl/",
+    "notas": "Despacho a todo Chile via Chilexpress/Starken/Blue Express/DHL/Correos de Chile, envio gratis sobre $150.000. No publica plazo en dias habiles ni diferencia RM/regiones. Sin pagina de politicas de envio dedicada (wp-json bloqueado, sin /policies/shipping-policy)."
+  },
+  "BEEWAY": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://beeway.cl/ (revisado /policies/shipping-policy y /pages/envios, ambos 404)",
+    "notas": "El sitio no tiene pagina de politicas de envio publicada -- no hay dato publico que registrar sin inventarlo."
+  },
+  "RRREUSED": {
+    "envio_rm": {"disponible": true, "dias_habiles": "hasta 5 dias habiles tras la compra"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "hasta 5 dias habiles tras la compra"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://rrreused.com/policies/shipping-policy",
+    "notas": "Envio via Starken 'por pagar' (el costo se paga al recibir, no viene indicado en el sitio), hasta 5 dias habiles desde el dia siguiente de la compra. No diferencia RM/regiones en el plazo. No menciona retiro en tienda fisica."
+  },
+  "Enila": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://enila.cl/ (revisado /policies/shipping-policy y sitemap de paginas, 2026-08-30)",
+    "notas": "El sitio no tiene pagina de politicas de envio publicada (/policies/shipping-policy da 404, y el sitemap de paginas solo lista /pages/contact) -- no hay dato publico que registrar sin inventarlo."
+  },
+  "Viloria": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://wa.me/56981427342 (WhatsApp Business, sin sitio web)",
+    "notas": "Viloria vende solo por WhatsApp Business (catalogo wa.me), no tiene sitio propio ni pagina de politicas de envio publicada -- se coordina directo por chat al hacer el pedido, no hay plazo/costo estandar publico que registrar sin inventarlo."
+  },
+  "Traperas Company": {
+    "envio_rm": {"disponible": true, "dias_habiles": "48 horas tras la compra"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "desde 5 dias habiles tras la compra"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://traperascompany.com/pages/politicas-de-envio",
+    "notas": "RM (Santiago, todas las comunas) desde $3.500 segun peso. Regiones: costo variable segun comuna y courier (Chilexpress/Starken/Correos de Chile). El sitio advierte posibles atrasos de 1 a 10 dias habiles a regiones en casos excepcionales. No menciona retiro en tienda fisica."
+  },
+  "28Keys": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://www.28keys.cl/policies/shipping-policy",
+    "notas": "Envio a todo Chile via Starken o Chilexpress, costo calculado segun destino/dimensiones al finalizar la compra. El sitio no publica plazo en dias habiles. 'Sucursal' en el banner del sitio es retiro en agencia de despacho (Starken/Chilexpress), no retiro en tienda fisica propia -- no se cuenta como tal."
+  },
+  "Oopsi": {
+    "envio_rm": {"disponible": true, "dias_habiles": "24 a 48 horas tras el despacho (despacho en maximo 48 horas habiles tras confirmar el pago)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "48 a 72 horas habiles tras el despacho"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://www.oopsi.cl/policies/shipping-policy",
+    "notas": "RM $3.900 via '7 Ocho Mil', regiones $5.900 via Bluexpress/Starken/Correos de Chile (envio gratis sobre $100.000, segun banner del sitio). No menciona retiro en tienda fisica en ninguna parte del sitio."
+  },
+  "Blazze": {
+    "envio_rm": {"disponible": true, "dias_habiles": "2 a 5 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "2 a 5 dias habiles"},
+    "retiro_tienda": {"disponible": true, "comuna": null, "es_rm": null},
+    "fuente": "https://blazze.cl/policies/shipping-policy",
+    "notas": "El sitio no separa el plazo por RM/regiones ('segun tu ubicacion'). Productos en preventa: envio comienza aprox 2 semanas despues de la compra (no es el plazo general). Ofrecen retiro en 'punto Blazze', sin comuna publicada."
+  },
+  "Kagi": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://kagi.cl/",
+    "notas": "No se encontro plazo en dias en el sitio (pagina de politica de envio da 404, tampoco esta en el home)."
+  },
+  "Haze Concept": {
+    "envio_rm": {"disponible": true, "dias_habiles": "hasta 24 horas de procesamiento + 1 a 5 dias habiles de transito (Same Day disponible en RM Lun/Mie/Jue antes de 11 AM)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "hasta 24 horas de procesamiento + 1 a 5 dias habiles de transito"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://hazeconcept.com/policies/shipping-policy",
+    "notas": "El sitio no separa el plazo de transito por RM/regiones (solo aclara que hay Same Day en RM como opcion mas rapida)."
+  },
+  "Kotonaru Store": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://www.kotonaru-store.cl/",
+    "notas": "No se encontro plazo en dias en el sitio (ni en el home ni en la politica de reembolso, no tiene pagina de politica de envio aparte)."
+  },
+  "1Libra": {
+    "envio_rm": {"disponible": true, "dias_habiles": "3 a 7 dias habiles de preparacion + 24 a 48 horas habiles de transito (Bluexpress)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "3 a 7 dias habiles de preparacion + hasta 5 dias habiles de transito (hasta 12 en zonas alejadas)"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://1libra.cl/policies/shipping-policy",
+    "notas": "En fechas de descuento (Cyber, Black Friday, etc.) el propio sitio avisa que el envio puede demorar hasta 19 dias habiles -- no se tomo ese numero como el plazo normal, queda aclarado aca por si se quiere mostrar en el futuro."
+  },
+  "Addictve": {
+    "envio_rm": {"disponible": true, "dias_habiles": "1 a 3 dias habiles de procesamiento + hasta 24 horas de transito una vez despachado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "1 a 3 dias habiles de procesamiento + 1 a 5 dias habiles de transito"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://addictve.cl/policies/shipping-policy",
+    "notas": "Envio por Bluexpress (por pagar) a domicilio. Tambien ofrecen enviar a sucursal de Starken previa coordinacion por Instagram/email -- es retiro en un punto del courier, no en una tienda fisica de Addictve."
+  },
+  "Feroni Studios": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://feronistudios.cl/",
+    "notas": "El sitio solo dice 'DESPACHO A TODO CHILE' en el banner principal, sin plazo en dias ni pagina de politica de envio aparte."
   },
   "AbsolutelyWrong": {
     "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
@@ -17,19 +129,19 @@
     "fuente": "https://bvnggvng.cl/policies/shipping-policy",
     "notas": "Envio via Bluexpress; sector rural va a Punto Blue en vez de domicilio."
   },
+  "Club 33": {
+    "envio_rm": {"disponible": true, "dias_habiles": "1 a 2 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "3 a 5 dias habiles"},
+    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
+    "fuente": "https://club33.cl/",
+    "notas": "No tienen pagina de politica de envio aparte (da 404) -- el plazo esta en el home/footer del sitio. Despacho a todo Chile via Chilexpress y Starken, envio gratis en pedidos sobre $50.000. No publican direccion fisica ni retiro en tienda."
+  },
   "Doslobos": {
     "envio_rm": {"disponible": true, "dias_habiles": "10 dias habiles"},
     "envio_regiones": {"disponible": true, "dias_habiles": "12 dias habiles"},
     "retiro_tienda": {"disponible": true, "comuna": "Providencia", "es_rm": true},
     "fuente": "https://dosloboschile.cl/policies/shipping-policy",
     "notas": "Tienda fisica 'La Guarida', Av. Providencia 2124 local 03R (Galeria Drugstore / Metro Los Leones). Retiro en tienda: 7 dias habiles de preparacion, plazo de retiro 15 dias antes de devolver a oficina."
-  },
-  "El Pulento Style": {
-    "envio_rm": {"disponible": true, "dias_habiles": "aprox 1 a 5 dias habiles de transito (mas 1 a 7 dias habiles de preparacion previa)"},
-    "envio_regiones": {"disponible": true, "dias_habiles": "aprox 1 a 15 dias habiles de transito (hasta 15 para Punta Arenas; mas preparacion previa)"},
-    "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
-    "fuente": "https://www.elpulentostyle.cl/envios-y-plazos-de-envio/",
-    "notas": "El sitio aclara explicitamente 'NO HACEMOS ENTREGAS PRESENCIALES' -- el 'retiro' que mencionan es de la empresa de despacho (Bluexpress/Correos de Chile) en su tienda, no retiro para el cliente."
   },
   "Floating": {
     "envio_rm": {"disponible": true, "dias_habiles": "1 a 5 dias habiles"},

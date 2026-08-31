@@ -1,25 +1,85 @@
-<!-- Vista previa rapida de un producto: 3 fotos (de momento, ilustrativas/
-     inventadas -- ver generar_imagenes_prendas.py/generar_imagenes_gorro.py,
-     se reemplazan por fotos reales cuando haya catalogo real) + descripcion
-     corta + boton "Ir a la tienda". Parcial compartido por las paginas que
-     muestran tarjetas de producto (resultados, vitrina, favoritos) -- NO en
-     index.html ni perfil.html, que no tienen tarjetas. Logica en comun.js
-     (abrirVistaPrevia/cerrarVistaPrevia), para no duplicarla en cada pagina.
+<!-- Ficha de producto (2026-08-27, reemplaza la "vista previa" angosta):
+     componente GLOBAL reusado por resultados/vitrina/favoritos -- ver
+     abrirVistaPrevia() en comun.js, que llena todo esto dinamicamente desde
+     el objeto `rec` que ya devuelve /api/recommend y /api/vitrina (nunca
+     hardcodea nada especifico de una tienda). NO vive en index.html ni
+     perfil.html, que no tienen tarjetas de producto.
 -->
-<div id="modal-vista-previa" class="oculto modal-overlay">
+<div id="modal-vista-previa" class="oculto modal-overlay modal-overlay-producto">
   <div class="tarjeta-modal tarjeta-vista-previa">
     <button id="btn-cerrar-vista-previa" class="btn-cerrar-tour" type="button" aria-label="Cerrar vista previa">×</button>
 
-    <img id="vp-imagen-principal" class="vp-imagen-principal" src="" alt="">
-    <div id="vp-miniaturas" class="vp-miniaturas"></div>
+    <div class="vp-layout">
+      <div class="vp-galeria">
+        <div class="vp-imagen-principal-wrap">
+          <button type="button" id="vp-flecha-izq" class="vp-flecha vp-flecha-izq oculto" aria-label="Foto anterior">‹</button>
+          <img id="vp-imagen-principal" class="vp-imagen-principal" src="" alt="">
+          <button type="button" id="vp-flecha-der" class="vp-flecha vp-flecha-der oculto" aria-label="Foto siguiente">›</button>
+        </div>
+        <div id="vp-miniaturas" class="vp-miniaturas"></div>
+      </div>
 
-    <div class="tienda" id="vp-tienda"></div>
-    <span class="insignia-marca-autor oculto" id="vp-marca-autor">✦ Marca de autor</span>
-    <h3 id="vp-nombre"></h3>
-    <p class="precio" id="vp-precio"></p>
-    <p class="descripcion" id="vp-descripcion"></p>
-    <p class="descripcion oculto" id="vp-material"></p>
-    <p class="descripcion oculto" id="vp-gramaje"></p>
-    <a id="vp-link" href="#" target="_blank" rel="noopener">Ir a la tienda</a>
+      <div class="vp-info">
+        <div class="tienda" id="vp-tienda"></div>
+        <span class="insignia-marca-autor oculto" id="vp-marca-autor">✦ Marca de autor</span>
+        <span class="insignia-unisex oculto" id="vp-unisex">Unisex</span>
+        <span class="vp-insignia-tendencia oculto" id="vp-tendencia"></span>
+        <h2 id="vp-nombre"></h2>
+        <div class="vp-estrellas-resumen oculto" id="vp-estrellas-resumen"></div>
+        <p class="precio vp-precio-grande" id="vp-precio"></p>
+
+        <div class="vp-selector oculto" id="vp-selector-talla">
+          <span class="vp-selector-label">Talla</span>
+          <div class="vp-chips" id="vp-chips-talla"></div>
+        </div>
+        <div class="vp-selector oculto" id="vp-selector-color">
+          <span class="vp-selector-label">Color</span>
+          <div class="vp-chips" id="vp-chips-color"></div>
+        </div>
+
+        <a id="vp-link" href="#" target="_blank" rel="noopener" class="vp-cta">Ir a la tienda</a>
+        <p class="vp-cta-nota oculto" id="vp-cta-nota"></p>
+
+        <div class="vp-acordeon" id="vp-acordeon">
+          <details open>
+            <summary>Descripción</summary>
+            <p id="vp-descripcion"></p>
+          </details>
+          <details id="vp-det-detalles" class="oculto">
+            <summary>Detalles del producto</summary>
+            <p id="vp-detalles"></p>
+          </details>
+          <details id="vp-det-materiales" class="oculto">
+            <summary>Materiales</summary>
+            <p id="vp-materiales"></p>
+          </details>
+          <details id="vp-det-envio" class="oculto">
+            <summary>Envíos y cambios</summary>
+            <p id="vp-envio-texto"></p>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <div class="vp-resenas">
+      <h3>Reseñas</h3>
+      <div id="vp-resenas-resumen"></div>
+      <div id="vp-resenas-lista"></div>
+    </div>
   </div>
+</div>
+
+<!-- Zoom de foto (2026-08-28, pedido del usuario: las fotos son de un
+     modelo puesto la prenda, hace falta acercarse a la prenda misma).
+     Toca la foto principal para abrirlo -- adentro, tocar la foto de nuevo
+     agranda/achica (ver zoomImagenAbrir/toggle en comun.js), con scroll
+     para desplazarse cuando esta agrandada. Mismas flechitas que la
+     galeria para pasar de foto sin cerrar el zoom. -->
+<div id="modal-zoom-imagen" class="oculto modal-overlay modal-overlay-zoom">
+  <button type="button" id="btn-cerrar-zoom" class="btn-cerrar-tour" aria-label="Cerrar zoom">×</button>
+  <button type="button" id="vp-zoom-flecha-izq" class="vp-flecha vp-flecha-izq oculto" aria-label="Foto anterior">‹</button>
+  <div id="zoom-imagen-wrap" class="zoom-imagen-wrap">
+    <img id="zoom-imagen" src="" alt="">
+  </div>
+  <button type="button" id="vp-zoom-flecha-der" class="vp-flecha vp-flecha-der oculto" aria-label="Foto siguiente">›</button>
 </div>

@@ -71,22 +71,14 @@ Normalmente SÍ vienen explícitos o se ven en fotos (a diferencia de corte/tall
 
 Tipo de prenda independiente, flujo propio: no usa corte/subtipo/largo/manga/capucha/cierre, y no se filtra por talla S/M/L/XL (talla única/ajustable).
 
-1. **¿Colores específicos o combinar con un outfit?**
-   - *Colores específicos*: checkboxes (blanco, negro, rojo, azul, amarillo, beige, morado, verde) → filtra `color_dominante`.
-   - *Combinar con outfit* → pregunta "¿Cómo es tu outfit?":
+1. **¿Qué tipo de gorro?** (única pregunta obligatoria) → filtra `forma`: curvo / plano / lana (beanie, sin visera).
+2. **Color** — ya NO tiene pregunta propia (2026-08-28, pedido del usuario: "elimina la pregunta obligatoria de color en gorros, deja solo la que ya es opcional"). Reusa el mismo checkbox opcional de color que el resto de las prendas (`campo-color`, hasta 3) — para gorro, ese color se compara contra el campo estructurado `color_dominante` (más confiable que buscarlo en la descripción, ver `_color_producto()` en `motor_recomendacion.py`), en vez del texto libre que usan las demás prendas.
 
-     | Outfit | Colores de gorro permitidos |
-     | --- | --- |
-     | Oscuro | Color vivo (rojo/azul/amarillo/morado/verde) como acento, o blanco para contraste limpio |
-     | Claro | Negro para contraste, o color vivo como protagonista |
-     | Colorido | Solo negro o blanco (neutro, para no sobrecargar) |
-     | Otro | No filtra por color — muestra variedad |
-
-2. **¿Qué tipo de gorro?** (siempre se pregunta, sin importar el camino elegido) → filtra `forma`: curvo / plano / lana (beanie, sin visera).
+Se sacó por completo el camino "combinar con outfit" (sugerir color de gorro según si el outfit es oscuro/claro/colorido) que existía antes — era la pregunta obligatoria que se eliminó.
 
 Tagueo: en gorros de dos tonos (tipo trucker), `color_dominante` = color del **panel frontal**, no toda la superficie.
 
-Nota: hubo otra tabla más simple dando vueltas ("outfit neutro"/"colorido"/"buscas armonía") que no llegó a tener opciones de formulario definidas — si esa es la lógica que en verdad se quiere, avisar para reemplazar la de arriba.
+**Fallback de forma sin resultados (2026-08-30, pedido del usuario):** si se pide una forma puntual (ej. plano) y el catalogo no tiene ningun gorro con esa forma, en vez de devolver 0 resultados se avisa ("No encontramos gorro plano, pero te mostramos otras formas de gorro disponibles.") y se muestran igual los gorros de las otras formas -- nunca se deja la busqueda vacia por esto. `filtrar_gorros_por_forma_con_aviso()` en `motor_recomendacion.py`, usada por `/api/recommend` (`app.py`); el aviso viaja en `aviso_gorro_forma` y se guarda/muestra igual que `sin_talla` (`static/comun.js`, `static/resultados.js`). No se toco el flujo de Koko (`servicio_koko.py` sigue usando `filtrar_gorros_por_forma()` sin el aviso).
 
 ## Talla — inferencia automática
 
@@ -101,16 +93,22 @@ Se cruza altura + peso (datos que el formulario ya pide, sin campo nuevo). Se ca
 
 Rangos orientativos (la encuesta original se solapa entre tallas; para el cálculo se usan como topes fijos, no exactos).
 
-## "Mostrar más opciones" — alternativas de corte
+## "Mostrar más opciones" — alternativas de corte y precio
 
-Cuando ya no queda ningún producto que cumpla TODOS los filtros pedidos (incluido el corte específico, ej: "jeans baggy"), el Plan B ya no deja la búsqueda vacía:
-1. Completa primero con más productos del corte exacto pedido (todos los demás filtros intactos).
-2. Si no alcanza a `CANTIDAD_RESULTADOS`, rellena el resto relajando **solo el corte** (mismo tipo de prenda, otro ajuste) — nunca el tipo de prenda ni los demás filtros estrictos.
-3. No se relaja nada más por ahora (el catálogo mock suele alcanzar a llenar con el paso 2).
+Límite: el botón "Mostrar más opciones" se puede presionar como máximo **3 veces por búsqueda** (`static/resultados.js`, pedido del usuario 2026-08-28) — al tercer click, el botón desaparece.
+
+Cuando ya no queda ningún producto que cumpla TODOS los filtros pedidos (incluido el corte específico, ej: "jeans baggy", o el precio máximo), el Plan B ya no deja la búsqueda vacía:
+1. Completa primero con más productos del corte y precio exactos pedidos (todos los demás filtros intactos).
+2. Si no alcanza a `CANTIDAD_RESULTADOS`, rellena el resto relajando **un requisito a la vez** — nunca el tipo de prenda (categoría) ni los demás filtros estrictos: color (a colores parecidos), **precio** (2026-08-28), y corte, en ese orden. Solo si ninguna de esas relajaciones por separado alcanza a llenar los cupos se combinan corte+color juntos, como último recurso.
+3. La prioridad siempre es "misma prenda, otro corte o precio" antes que ofrecer un tipo de prenda distinto (pedido explícito del usuario, 2026-08-28) — por eso el tipo de prenda nunca se relaja en este mecanismo.
 
 Estas alternativas nunca se mezclan en silencio con las que sí cumplen todo: van en un campo aparte (`alternativas` + `aviso_alternativas`), y el frontend (`static/resultados.js`) las pinta con un aviso destacado antes de las tarjetas (ej: `No encontramos más opciones en "boxy fit", pero esto también podría interesarte...`).
 
-Ojo técnico (`buscar_plan_b` en `app.py`): hay que sacar los productos ya mostrados del catálogo **antes** de llamar `elegir_candidatos(permitir_otros_cortes=True)`, no filtrarlos después — si no, la función ve que "todavía existen" productos del corte pedido (los ya mostrados) y nunca relaja nada.
+Ojo técnico (`buscar_plan_b` en `motor_recomendacion.py`): hay que sacar los productos ya mostrados del catálogo **antes** de llamar `elegir_candidatos(permitir_otros_cortes=True)`, no filtrarlos después — si no, la función ve que "todavía existen" productos del corte pedido (los ya mostrados) y nunca relaja nada. Para poder relajar precio, `/api/recommend` (`app.py`) ya NO filtra el catálogo por precio antes de llamar a `buscar_plan_b` (a diferencia de la búsqueda normal, que sigue filtrando estricto) — `buscar_plan_b` recibe el catálogo completo y aplica el precio internamente (`catalog_precio`), guardando también el catálogo sin filtrar para la etapa que lo relaja.
+
+### Corte más ancho por defecto: pantalón/buzo en deporte o junta social (2026-08-28)
+
+Pedido del usuario: para pantalón/buzo, en ocasión "deporte" o "junta social", si la persona no pidió un corte específico, priorizar el corte más ancho/baggy disponible usando el campo `corte` ya tageado (nunca releyendo fotos). Es una prioridad **suave** (mismo mecanismo que `priorizar_material_natural`/`categorias_deprioritizadas`: reordena el `puntaje()` de `elegir_candidatos`, nunca filtra) — si no hay nada baggy en stock, igual se muestra lo que haya, solo más abajo en el orden. `CORTE_ANCHO_PRIORIDAD_PANTALON` en `motor_recomendacion.py`: baggy > straight fit > slim fit > skinny. "Deporte" no es una ocasión del dropdown (fuera de alcance salvo pedido explícito, ver `CLAUDE.md`) — esta regla solo aplica si llega como texto libre ("Otro") o vía Koko.
 
 ## Material del producto y "Priorizar materiales de calidad" (2026-08-19)
 
@@ -212,6 +210,10 @@ Pedido explícito del usuario: sumar una sugerencia POSITIVA para Koko sobre "Gy
 - **Marcas de referencia (Nike/Adidas):** el pedido fue "si el catálogo las tiene" — hoy el catálogo (622 productos, 14 tiendas) es 100% marcas chicas independientes, **cero productos Nike/Adidas** (verificado). El texto del prompt se lo dice explícitamente a Koko: puede nombrarlas como referencia de estética, pero nunca prometer que el catálogo real las tiene si no están.
 - Sigue siendo solo conversacional (Koko), igual que el resto de `REGLAS_HOBBY` desde el rediseño de arriba — no cambia el resultado de una búsqueda por formulario ni por `/api/recommend`.
 - Verificado sin API (carga del módulo + `_reglas_hobby_usuario`/`_bloque_hobbies_para_prompt` con perfil deportes+gym) y con `probar_reglas.py`/`probar_buscador_real.py`. No se corrió `diagnostico_hobbies_estilo.py` completo (API real, con costo) para esto -- solo se validó que sigue cargando y que la regla de rock no se rompió.
+
+## Tags de interes por producto (musica/arte) como señal de ranking (2026-08-30)
+
+Distinto de `REGLAS_HOBBY`/`EXCLUSIONES_HOBBY` (arriba, a nivel categoria): esto es un tag a nivel **producto individual**, `interes_musica`/`interes_arte` (booleano), agregado en `construir_producto()` (`construir_catalogo_real.py`) solo cuando la ficha real de la tienda lo dice explicito -- primer uso real, WAV (ver `docs/catalogo_real.md`). No es una restriccion ni un filtro nuevo: el tag se suma al campo `tags` del producto, que ya entra al texto que `elegir_candidatos()` compara contra el pedido (`texto_producto()`), y `app.py` ya mete los hobbies del perfil (incluida la palabra literal `"musica"`) en ese texto de busqueda -- asi que un usuario con "Música" en sus gustos le da una ventaja de ranking real a esos productos, reusando el mecanismo de coincidencia de palabras ya existente en vez de crear un sistema de prioridad aparte. Reutilizable para cualquier tienda futura sin tocar nada mas.
 
 ## Datos de referencia sin usar
 

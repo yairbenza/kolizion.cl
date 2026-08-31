@@ -31,7 +31,7 @@ function tarjetaVitrina(rec, favoritosSet) {
     </p>
     ${!esOferta ? `<p class="razon">${rec.razon}</p>` : ""}
     ${rec.imagen ? `<button type="button" class="btn-vista-previa">Vista previa rápida</button>` : ""}
-    <a href="${rec.link}" target="_blank" rel="noopener">${esImagenIlustrativa(rec.imagen) ? "Ver producto (ejemplo)" : "Ver producto"}</a>
+    ${botonAccionProductoHtml(rec)}
   `;
   const link = card.querySelector("a");
   if (link) {
@@ -48,37 +48,16 @@ function tarjetaVitrina(rec, favoritosSet) {
   return card;
 }
 
-function renderFilaVitrina(contenedorId, recomendaciones, favoritosSet, infinito) {
+// Carrusel infinito quitado (2026-08-29, bug reportado por el usuario): la
+// duplicacion x3 + el salto de "vuelta" entre copias hacia que arrastrar
+// hasta el extremo izquierdo se sintiera como si el carrusel se recentrara
+// solo. Ahora el scroll es siempre real: principio (scrollLeft=0) y final
+// autenticos, sin saltos ni reposicion automatica.
+function renderFilaVitrina(contenedorId, recomendaciones, favoritosSet) {
   const contenedor = document.getElementById(contenedorId);
-  // Carrusel infinito (2026-08-25): en vez de pedir mas productos al
-  // catalogo (tarea pesada, pendiente), la lista se repite 3 veces seguidas
-  // -- alcanza para dar sensacion de scroll sin fin sin tocar el backend.
-  const lista = infinito && recomendaciones.length ? [...recomendaciones, ...recomendaciones, ...recomendaciones] : recomendaciones;
-  for (const rec of lista) {
+  for (const rec of recomendaciones) {
     contenedor.appendChild(tarjetaVitrina(rec, favoritosSet));
   }
-  if (infinito && recomendaciones.length) {
-    activarScrollInfinito(contenedor);
-  }
-}
-
-// Como las 3 copias son identicas, apenas el usuario se acerca al borde de
-// una copia lo salteamos sin animacion al mismo punto de la copia vecina --
-// el salto no se nota y se puede seguir deslizando en cualquier direccion
-// sin toparse nunca con un final abrupto.
-function activarScrollInfinito(contenedor) {
-  requestAnimationFrame(() => {
-    const anchoSet = contenedor.scrollWidth / 3;
-    if (!anchoSet) return;
-    contenedor.scrollLeft = anchoSet;
-    contenedor.addEventListener("scroll", () => {
-      if (contenedor.scrollLeft < anchoSet * 0.15) {
-        contenedor.scrollLeft += anchoSet;
-      } else if (contenedor.scrollLeft > anchoSet * 1.85) {
-        contenedor.scrollLeft -= anchoSet;
-      }
-    });
-  });
 }
 
 // "Llegan rápido a ti" (2026-08-25): a pedido del usuario, dejo de mostrarse
@@ -151,10 +130,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data = await resp.json();
     estado.textContent = "";
 
-    renderFilaVitrina("vitrina-tendencias", data.tendencias || [], favoritosSet, true);
+    // Marca cada producto de Tendencias con su razon (2026-08-29, pedido del
+    // usuario: al abrir la ficha completa quiere ver el sello de "por que es
+    // tendencia" -- N.1 en clics, recien llegado, etc.) -- abrirVistaPrevia
+    // en comun.js usa este flag para mostrar el sello sin confundirlo con
+    // la "razon" de match que usan los resultados de busqueda normales.
+    (data.tendencias || []).forEach((r) => { r.esTendencia = true; });
+    renderFilaVitrina("vitrina-tendencias", data.tendencias || [], favoritosSet);
+
+    // Solo aparece si el backend mando algo (cuenta con sesion real y al
+    // menos 1 busqueda guardada) -- sin sesion o sin historial, la fila
+    // queda oculta en vez de mostrarse vacia.
+    if ((data.basado_busquedas || []).length) {
+      renderFilaVitrina("vitrina-basado-busquedas", data.basado_busquedas, favoritosSet);
+      document.getElementById("seccion-basado-busquedas").classList.remove("oculto");
+    }
+
     renderFilaVitrina("vitrina-lanzamientos", data.lanzamientos || [], favoritosSet);
-    renderFilaVitrina("vitrina-ofertas", data.ofertas || [], favoritosSet, true);
-    renderFilaVitrina("vitrina-destacados", data.destacados || [], favoritosSet, true);
+    renderFilaVitrina("vitrina-ofertas", data.ofertas || [], favoritosSet);
+    renderFilaVitrina("vitrina-destacados", data.destacados || [], favoritosSet);
   } catch (err) {
     estado.textContent = "Algo salió mal cargando Descubre: " + err.message;
   }

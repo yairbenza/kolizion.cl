@@ -29,21 +29,35 @@
       </div>
     </section>
 
-    <section class="fila-seccion">
-      <h2>Nuevos lanzamientos</h2>
-      <div class="fila-carrusel">
-        <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-lanzamientos" aria-label="Ver anteriores">‹</button>
-        <div id="vitrina-lanzamientos" class="fila-vitrina"></div>
-        <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-lanzamientos" aria-label="Ver siguientes">›</button>
-      </div>
-    </section>
-
+    <!-- Movida justo debajo de Tendencias (2026-08-30, pedido del usuario:
+         es lo mas llamativo del feed). -->
     <section class="fila-seccion">
       <h2>Ofertas</h2>
       <div class="fila-carrusel">
         <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-ofertas" aria-label="Ver anteriores">‹</button>
         <div id="vitrina-ofertas" class="fila-vitrina"></div>
         <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-ofertas" aria-label="Ver siguientes">›</button>
+      </div>
+    </section>
+
+    <!-- Solo para cuentas con sesion real (el historial de busquedas no se
+         guarda para invitados) -- oculta hasta que el JS confirme que hay
+         al menos 1 producto que mostrar. -->
+    <section id="seccion-basado-busquedas" class="fila-seccion oculto">
+      <h2>Basado en tus últimas búsquedas</h2>
+      <div class="fila-carrusel">
+        <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-basado-busquedas" aria-label="Ver anteriores">‹</button>
+        <div id="vitrina-basado-busquedas" class="fila-vitrina"></div>
+        <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-basado-busquedas" aria-label="Ver siguientes">›</button>
+      </div>
+    </section>
+
+    <section class="fila-seccion">
+      <h2>Nuevos lanzamientos</h2>
+      <div class="fila-carrusel">
+        <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-lanzamientos" aria-label="Ver anteriores">‹</button>
+        <div id="vitrina-lanzamientos" class="fila-vitrina"></div>
+        <button type="button" class="fila-flecha fila-flecha-der" data-fila="vitrina-lanzamientos" aria-label="Ver siguientes">›</button>
       </div>
     </section>
 
@@ -77,6 +91,7 @@
   {% include "_guia_bienvenida.html" %}
   {% include "_vista_previa.html" %}
   {% include "_redireccion.html" %}
+  {% include "_barra_cuenta.html" %}
   {% include "_barra_nav.html" %}
 
   <script src="{{ url_for('static', filename='comun.js') }}"></script>

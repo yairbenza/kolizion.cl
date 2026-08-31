@@ -5,7 +5,19 @@ from datetime import timedelta
 from pathlib import Path
 
 import anthropic
+from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, render_template, request, session
+
+# Antes nada cargaba .env cuando se arrancaba con "python app.py" (solo el
+# CLI "flask run" lo hace solo) -- por eso FLASK_SECRET_KEY del .env nunca
+# se leia de verdad, y app.secret_key caia siempre en el fallback aleatorio
+# de mas abajo. Cada reinicio del servidor (cada guardado de archivo con
+# KOLIZION_DEBUG=1, cada vez que se cerraba y volvia a abrir) generaba una
+# clave NUEVA, invalidando la cookie de sesion de todos -- por eso se
+# cerraba la sesion de Google en cada refresh (bug real, 2026-08-27).
+# override=False: si la variable ya existe en el entorno real (ej. la puso
+# el usuario a mano), esa gana -- .env solo rellena lo que falte.
+load_dotenv()
 
 import db_usuarios
 from constantes import (
@@ -18,8 +30,7 @@ from constantes import (
     CHATS_KOKO_PATH,
     CIERRES_CONOCIDOS,
     CLICS_TIENDAS_PATH,
-    COLORES_GORRO_CONOCIDOS,
-    COLORES_VIVOS_GORRO,
+    COLORES_CONOCIDOS,
     CORTES_CONOCIDOS,
     DEPORTES_CONOCIDOS,
     ENVIOS_TIENDAS_PATH,
@@ -86,9 +97,9 @@ from motor_recomendacion import (
     armar_resultados,
     buscar_plan_b,
     buscar_regla,
-    colores_permitidos_por_outfit,
     detectar_capucha_pedido,
     detectar_cierre_pedido,
+    detectar_color_pedido_conversacion,
     detectar_corte_pedido,
     detectar_corte_pedido_conversacion,
     detectar_forma_gorro,
@@ -101,9 +112,11 @@ from motor_recomendacion import (
     detectar_tipo_prenda_conversacion,
     elegir_candidatos,
     estimar_tallas,
-    filtrar_gorros_por_color,
-    filtrar_gorros_por_forma,
+    tiene_stock,
+    filtrar_gorros_por_forma_con_aviso,
+    filtrar_por_exclusiones,
     filtrar_por_marca_autor,
+    filtrar_por_preferencias_negativas,
     filtrar_por_precio,
     filtrar_por_talla,
     formatear_producto,
@@ -149,6 +162,7 @@ from servicio_koko import (
     resumen_historial_para_prompt,
 )
 from servicio_tiendas import (
+    _armar_basado_en_busquedas,
     _armar_tendencias,
     _clics_por_producto,
     _dias_habiles_a_numero,
@@ -169,6 +183,8 @@ from servicio_tiendas import (
     registrar_clic_tienda,
     registrar_interes,
     registrar_reporte_manual,
+    resumen_envio_general,
+    resumen_resenas,
     vaciar_favoritos,
 )
 
@@ -215,6 +231,18 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
 
 
+# El icono de "Mi cuenta" (avatar fijo arriba, ver _barra_cuenta.html) esta
+# en TODAS las paginas, asi que "usuario" tiene que estar disponible en
+# cualquier template sin que cada ruta lo pase a mano -- un solo lookup por
+# request en vez de repetirlo en index()/resultados()/vitrina()/etc.
+@app.context_processor
+def _inyectar_usuario_sesion():
+    usuario = None
+    if session.get("usuario_id"):
+        usuario = db_usuarios.buscar_por_id(session["usuario_id"])
+    return {"usuario": usuario}
+
+
 # --- Vistas HTML -------------------------------------------------------------
 
 @app.route("/")
@@ -232,12 +260,22 @@ def vitrina():
     return render_template("vitrina.html")
 
 
+def _email_sesion_actual():
+    # Email de la cuenta REAL con sesion iniciada (Google OAuth o
+    # email/contraseña, ver docs/cuentas.md) -- a diferencia del "perfil"
+    # de localStorage (un dato que la persona escribe a mano y que
+    # cualquiera podria mandar en el body de una request), esto sale del
+    # lado del servidor (session["usuario_id"]), asi que es confiable para
+    # decidir de quien es un dato guardado. None si no hay sesion.
+    if not session.get("usuario_id"):
+        return None
+    usuario = db_usuarios.buscar_por_id(session["usuario_id"])
+    return usuario["email"] if usuario else None
+
+
 @app.route("/perfil")
 def perfil():
-    usuario = None
-    if session.get("usuario_id"):
-        usuario = db_usuarios.buscar_por_id(session["usuario_id"])
-    return render_template("perfil.html", usuario=usuario)
+    return render_template("perfil.html")
 
 
 @app.route("/favoritos")
@@ -286,7 +324,10 @@ def service_worker():
 
 @app.route("/api/vitrina")
 def api_vitrina():
-    catalog = load_json(CATALOG_PATH)
+    # 2026-08-30, pedido del usuario: Descubre no debe mostrar prendas
+    # agotadas (mismo criterio que decide "Agregar al carrito" vs
+    # "Proximamente" en la ficha, ver tiene_stock()).
+    catalog = [p for p in load_json(CATALOG_PATH) if tiene_stock(p)]
     cantidad = 10
 
     catalogo_ofertas = sorted(
@@ -300,6 +341,18 @@ def api_vitrina():
     tendencias_con_razon = _armar_tendencias(resto, cantidad)
     ids_usados |= {p["id"] for p, _ in tendencias_con_razon}
 
+    # "Basado en tus ultimas busquedas" (2026-08-30, pedido del usuario):
+    # solo para cuentas con sesion real -- el historial de busquedas no se
+    # guarda para invitados (ver _email_sesion_actual), asi que para ellos
+    # esta lista siempre queda vacia y el frontend no muestra la fila.
+    resto = [p for p in resto if p["id"] not in ids_usados]
+    email_sesion = _email_sesion_actual()
+    basado_busquedas = (
+        _armar_basado_en_busquedas(email_sesion, resto, load_json(REGLAS_PATH), cantidad)
+        if email_sesion else []
+    )
+    ids_usados |= {p["id"] for p in basado_busquedas}
+
     resto = [p for p in resto if p["id"] not in ids_usados]
     lanzamientos = random.sample(resto, min(cantidad, len(resto)))
     ids_usados |= {p["id"] for p in lanzamientos}
@@ -309,6 +362,9 @@ def api_vitrina():
 
     return jsonify({
         "tendencias": [formatear_producto(p, razon) for p, razon in tendencias_con_razon],
+        "basado_busquedas": [
+            formatear_producto(p, "Basado en tu búsqueda reciente") for p in basado_busquedas
+        ],
         "lanzamientos": [formatear_producto(p, "Recién llegado a KOLIZION") for p in lanzamientos],
         "ofertas": [
             formatear_producto(p, f'-{p["descuento_pct"]}% sobre el precio normal')
@@ -375,6 +431,18 @@ def api_favoritos_vaciar():
     return jsonify({"ok": True})
 
 
+@app.route("/api/resenas", methods=["GET"])
+def api_resenas():
+    nombre = _texto_seguro(request.args.get("nombre", ""))
+    return jsonify(resumen_resenas(nombre))
+
+
+@app.route("/api/envio_tienda", methods=["GET"])
+def api_envio_tienda():
+    tienda = _texto_seguro(request.args.get("tienda", ""))
+    return jsonify({"texto": resumen_envio_general(tienda)})
+
+
 @app.route("/api/recommend", methods=["POST"])
 @limiter.limit("20 per minute")
 def recommend():
@@ -392,24 +460,76 @@ def recommend():
     capucha = _texto_seguro(data.get("capucha", ""))
     cierre = _texto_seguro(data.get("cierre", ""))
     corte = _texto_seguro(data.get("corte", ""))
+    # El buscador normal manda "colores" (checkboxes, hasta 3). Koko sigue
+    # mandando "color" en singular (un solo campo en su tool) -- se acepta
+    # cualquiera de los 2 y se juntan en una sola lista (pedido del usuario,
+    # 2026-08-27: poder elegir hasta 3 colores en la busqueda).
+    colores = [c.lower() for c in _lista_texto_segura(data.get("colores"), cantidad_max=3)]
+    color_unico = _texto_seguro(data.get("color", "")).lower()
+    if color_unico:
+        colores.append(color_unico)
+    colores = list(dict.fromkeys(c for c in colores if c in COLORES_CONOCIDOS))[:3]
     ocasion = _texto_seguro(data.get("ocasion", ""))
     precio = _texto_seguro(data.get("precio", ""))
-    gorro_camino = _texto_seguro(data.get("gorro_camino", ""))
-    gorro_colores = _lista_texto_segura(data.get("gorro_colores"))
-    gorro_outfit = _texto_seguro(data.get("gorro_outfit", ""))
     gorro_forma = _texto_seguro(data.get("gorro_forma", ""))
-    email = _texto_seguro(data.get("email", ""))
     ignorar_talla = bool(data.get("ignorar_talla"))
     priorizar_material_natural = bool(data.get("priorizar_material_natural"))
     solo_marca_autor = bool(data.get("solo_marca_autor"))
+    excluir = _lista_texto_segura(data.get("excluir"))
+    ids_excluir = set(_lista_texto_segura(data.get("ids_excluir"), largo_max_item=40, cantidad_max=200))
 
-    if modo == "yo" and not plan_b:
-        registrar_busqueda(email, ocasion, categoria, tipo_prenda, corte)
+    # "_historial_replay" (2026-08-28, pedido del usuario): lo manda el
+    # boton "Ver estos resultados de nuevo" del historial en /perfil al
+    # volver a correr una busqueda ya guardada -- si se registrara de nuevo,
+    # cada vez que alguien vuelve a mirar un resultado viejo se le sumaria
+    # una entrada duplicada en su propio historial.
+    if modo == "yo" and not plan_b and not data.get("_historial_replay"):
+        # El historial visible en /perfil (2026-08-26, pedido del usuario)
+        # solo debe contar busquedas hechas con sesion REAL iniciada -- ya
+        # no se usa el email que manda el cliente (perfil de localStorage,
+        # no verificado). Sin sesion, simplemente no se guarda nada.
+        email_sesion = _email_sesion_actual()
+        if email_sesion:
+            payload_reproducible = {
+                "modo": "yo",
+                "perfil": data.get("perfil") or {},
+                "categoria": categoria,
+                "tipo_prenda": tipo_prenda,
+                "subtipo": subtipo,
+                "largo": largo,
+                "manga": manga,
+                "capucha": capucha,
+                "cierre": cierre,
+                "corte": corte,
+                "colores": colores,
+                "ocasion": ocasion,
+                "precio": precio,
+                "gorro_forma": gorro_forma,
+                "ignorar_talla": ignorar_talla,
+                "priorizar_material_natural": priorizar_material_natural,
+                "solo_marca_autor": solo_marca_autor,
+                "excluir": excluir,
+            }
+            registrar_busqueda(email_sesion, ocasion, categoria, tipo_prenda, corte, payload=payload_reproducible)
 
-    catalog = filtrar_por_precio(catalog, precio)
-    catalog = filtrar_gorros_por_color(catalog, gorro_camino, gorro_colores, gorro_outfit)
-    catalog = filtrar_gorros_por_forma(catalog, gorro_forma)
+    catalog, aviso_gorro_forma = filtrar_gorros_por_forma_con_aviso(catalog, gorro_forma)
     catalog = filtrar_por_marca_autor(catalog, solo_marca_autor)
+    catalog = filtrar_por_exclusiones(catalog, excluir)
+
+    # "Relajar por esta vez" (2026-08-30, pedido del usuario): cuando una
+    # busqueda con preferencias negativas activas da 0 resultados, el
+    # frontend pregunta si buscar igual incluyendo esas opciones -- si el
+    # usuario dice que si, reenvia la MISMA busqueda agregando la clave que
+    # quiere relajar en esta lista. Solo afecta esta llamada puntual: nunca
+    # se toca data.preferencias_negativas ni lo guardado en el perfil.
+    preferencias_negativas = (data.get("preferencias_negativas") or {}) if modo == "yo" else {}
+    if not isinstance(preferencias_negativas, dict):
+        preferencias_negativas = {}
+    relajar_ahora = set(_lista_texto_segura(data.get("relajar_preferencias_negativas")))
+    catalog_antes_de_prefs = catalog
+    prefs_efectivas = {k: (bool(v) and k not in relajar_ahora) for k, v in preferencias_negativas.items()}
+    if modo == "yo":
+        catalog = filtrar_por_preferencias_negativas(catalog, prefs_efectivas)
 
     if modo == "yo":
         perfil = data.get("perfil") or {}
@@ -439,13 +559,15 @@ def recommend():
         resultados, alternativas, aviso_alternativas = buscar_plan_b(
             genero, ocasion, categoria, texto_pedido, catalog_con_talla, reglas, tallas_usuario,
             priorizar_material_natural=priorizar_material_natural,
-            categorias_deprioritizadas=categorias_deprioritizadas,
+            categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
+            precio_pedido=precio, ids_excluir=ids_excluir,
         )
     else:
+        catalog_con_precio = filtrar_por_precio(catalog_con_talla, precio)
         resultados = armar_resultados(
-            genero, ocasion, categoria, texto_pedido, catalog_con_talla, reglas, tallas_usuario,
+            genero, ocasion, categoria, texto_pedido, catalog_con_precio, reglas, tallas_usuario,
             priorizar_material_natural=priorizar_material_natural,
-            categorias_deprioritizadas=categorias_deprioritizadas,
+            categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
         )
         alternativas, aviso_alternativas = [], None
 
@@ -455,22 +577,79 @@ def recommend():
             resultados_sin_talla, alternativas_sin_talla, _ = buscar_plan_b(
                 genero, ocasion, categoria, texto_pedido, catalog, reglas,
                 priorizar_material_natural=priorizar_material_natural,
-                categorias_deprioritizadas=categorias_deprioritizadas,
+                categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
+                precio_pedido=precio, ids_excluir=ids_excluir,
             )
             sin_talla = bool(resultados_sin_talla) or bool(alternativas_sin_talla)
         else:
             resultados_sin_talla = armar_resultados(
-                genero, ocasion, categoria, texto_pedido, catalog, reglas,
+                genero, ocasion, categoria, texto_pedido, filtrar_por_precio(catalog, precio), reglas,
                 priorizar_material_natural=priorizar_material_natural,
-                categorias_deprioritizadas=categorias_deprioritizadas,
+                categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
             )
             sin_talla = bool(resultados_sin_talla)
+
+    # Si quedo en 0 resultados y el usuario tiene preferencias negativas
+    # activas, revisamos (reusando la misma logica de filtro, solo que con
+    # cada clave apagada de a una) cual de ellas es realmente la que esta
+    # bloqueando -- para poder preguntarle exactamente por esa, en vez de
+    # ofrecer relajar algo que no tenia nada que ver.
+    preferencias_bloqueantes = []
+    activas = [k for k, v in preferencias_negativas.items() if v and k not in relajar_ahora]
+    if modo == "yo" and activas and not resultados and not alternativas:
+        def _hay_resultados_con(prefs_prueba):
+            catalog_prueba = filtrar_por_preferencias_negativas(catalog_antes_de_prefs, prefs_prueba)
+            catalog_prueba = catalog_prueba if ignorar_talla else filtrar_por_talla(catalog_prueba, tallas_usuario)
+            if plan_b:
+                r, a, _ = buscar_plan_b(
+                    genero, ocasion, categoria, texto_pedido, catalog_prueba, reglas, tallas_usuario,
+                    priorizar_material_natural=priorizar_material_natural,
+                    categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
+                    precio_pedido=precio, ids_excluir=ids_excluir,
+                )
+                return bool(r) or bool(a)
+            r = armar_resultados(
+                genero, ocasion, categoria, texto_pedido, filtrar_por_precio(catalog_prueba, precio), reglas,
+                tallas_usuario, priorizar_material_natural=priorizar_material_natural,
+                categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
+            )
+            return bool(r)
+
+        for clave in activas:
+            prueba = dict(prefs_efectivas)
+            prueba[clave] = False
+            if _hay_resultados_con(prueba):
+                preferencias_bloqueantes.append(clave)
+
+        if not preferencias_bloqueantes and len(activas) > 1:
+            prueba_todas = {k: False for k in prefs_efectivas}
+            if _hay_resultados_con(prueba_todas):
+                preferencias_bloqueantes = list(activas)
 
     return jsonify({
         "recomendaciones": resultados,
         "alternativas": alternativas,
         "aviso_alternativas": aviso_alternativas,
         "sin_talla": sin_talla,
+        "preferencias_bloqueantes": preferencias_bloqueantes,
+        "aviso_gorro_forma": aviso_gorro_forma,
+    })
+
+
+@app.route("/api/historial")
+def api_historial():
+    # "Ver historial" en Mi perfil (2026-08-26, pedido del usuario) -- solo
+    # visible con sesion REAL iniciada (nunca por un email que mande el
+    # cliente en la URL, cualquiera podria pedir el de otra persona). Mas
+    # reciente primero.
+    email_sesion = _email_sesion_actual()
+    if not email_sesion:
+        return jsonify({"logged_in": False, "busquedas": [], "productos_interes": []})
+    entrada = cargar_historial().get(_normalizar_email(email_sesion), {})
+    return jsonify({
+        "logged_in": True,
+        "busquedas": list(reversed(entrada.get("busquedas", []))),
+        "productos_interes": list(reversed(entrada.get("productos_interes", []))),
     })
 
 
@@ -478,7 +657,12 @@ def recommend():
 
 @app.route("/api/koko/historial_chat")
 def koko_historial_chat():
-    email = _texto_seguro(request.args.get("email", ""))
+    # Si hay sesion real, manda ese correo siempre -- nunca el que mande el
+    # navegador en la URL (alguien logueado no puede pedir el chat de otra
+    # persona logueada). Sin sesion (invitado sin cuenta), sigue igual que
+    # antes: usa el correo que mande el cliente (riesgo ya conocido y
+    # aceptado en toda la app, ver docs/cuentas.md).
+    email = _email_sesion_actual() or _texto_seguro(request.args.get("email", ""))
     return jsonify({
         "mensajes": cargar_historial_chat(email),
         "preferencia_idioma": preferencia_idioma_koko(email),
@@ -488,7 +672,9 @@ def koko_historial_chat():
 @app.route("/api/koko/reiniciar", methods=["POST"])
 def koko_reiniciar():
     data = request.get_json() or {}
-    email = _texto_seguro(data.get("email", ""))
+    # Mismo criterio que koko_historial_chat: con sesion real, ese correo
+    # manda siempre; sin sesion, se respeta el correo del invitado.
+    email = _email_sesion_actual() or _texto_seguro(data.get("email", ""))
     reiniciar_chat_koko(email)
     return jsonify({"ok": True})
 
@@ -496,11 +682,14 @@ def koko_reiniciar():
 @app.route("/api/koko/interes", methods=["POST"])
 def koko_interes():
     data = request.get_json() or {}
-    email = _texto_seguro(data.get("email", ""))
     producto = data.get("producto") or {}
     if not isinstance(producto, dict):
         producto = {}
-    registrar_interes(email, producto)
+    # Mismo criterio que registrar_busqueda: solo cuenta para el historial
+    # si hay sesion real iniciada (ver _email_sesion_actual).
+    email_sesion = _email_sesion_actual()
+    if email_sesion:
+        registrar_interes(email_sesion, producto)
     return jsonify({"ok": True})
 
 
@@ -508,7 +697,11 @@ def koko_interes():
 @limiter.limit("10 per minute")
 def koko_chat():
     data = request.get_json() or {}
-    email = _texto_seguro(data.get("email", ""))
+    # Mismo criterio que koko_historial_chat: con sesion real, ese correo
+    # manda siempre (nunca el que mande el navegador en el body); sin
+    # sesion, se respeta el correo del invitado (riesgo ya conocido y
+    # aceptado en toda la app, no exclusivo de Koko -- ver docs/cuentas.md).
+    email = _email_sesion_actual() or _texto_seguro(data.get("email", ""))
     perfil = data.get("perfil") or {}
     if not isinstance(perfil, dict):
         perfil = {}
@@ -561,6 +754,7 @@ def koko_chat():
     reglas = load_json(REGLAS_PATH)
     system_prompt = construir_system_prompt_koko(
         email, reglas, hobbies, generos_musicales, deportes_subtipo, perfil=perfil, tallas_usuario=tallas_usuario,
+        mensaje_usuario=ultimo_mensaje_usuario,
     )
 
     cliente = anthropic.Anthropic(api_key=api_key)
@@ -592,6 +786,7 @@ def koko_chat():
             sugerencia.get("tipo_prenda"), TIPOS_PRENDA_CONOCIDOS, textos_mensajes,
             detectar_tipo_prenda_conversacion,
             mensajes_confirmacion=textos_mensajes[-VENTANA_CONFIRMACION_TIPO_PRENDA_KOKO:],
+            solo_mensaje_mas_reciente=True,
         )
 
         if not tipo_prenda_detectado:
@@ -612,6 +807,12 @@ def koko_chat():
             )
             if corte_detectado:
                 sugerencia["corte"] = corte_detectado
+            color_detectado = _valor_o_deteccion(
+                sugerencia.get("color"), COLORES_CONOCIDOS, textos_mensajes,
+                detectar_color_pedido_conversacion,
+            )
+            if color_detectado:
+                sugerencia["color"] = color_detectado
             if tipo_prenda_detectado == "gorro":
                 forma_detectada = _valor_o_deteccion(
                     sugerencia.get("forma_gorro"), FORMA_GORRO_CONOCIDA, textos_mensajes,

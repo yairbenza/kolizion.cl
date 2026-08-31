@@ -107,10 +107,21 @@ function detenerAnimacionKoko(personaje) {
   personaje.src = framesDisponibles[0];
 }
 
+const SUGERENCIA_PENDIENTE_KEY = "kokoSugerenciaPendiente";
+// Se prende cuando el usuario confirma una busqueda sugerida por Koko (ver
+// mostrarSugerenciaKoko) -- asi, si se va a otra pagina (ej. "Descubre") sin
+// pasar por /resultados de nuevo y vuelve a abrir el chat, se le puede
+// ofrecer un acceso directo de vuelta a esos resultados en vez de perderlos
+// (pedido del usuario, 2026-08-26: "no perder resultados de Koko al
+// navegar"). Vive toda la pestaña (sessionStorage), no hace falta borrarla
+// manualmente -- solo se limpia al reiniciar la conversacion.
+const RESULTADOS_KOKO_PENDIENTES_KEY = "kokoResultadosPendientes";
+
 function ocultarSugerenciaKoko() {
   const cont = document.getElementById("sugerencia-koko");
   cont.classList.add("oculto");
   cont.innerHTML = "";
+  sessionStorage.removeItem(SUGERENCIA_PENDIENTE_KEY);
 }
 
 // Trae la conversacion guardada de este email (si tiene) y la pinta tal
@@ -133,6 +144,9 @@ async function cargarHistorialKoko() {
         for (const m of mensajesKoko) {
           pintarBurbujaKoko(m.rol, m.texto);
         }
+        if (!restaurarSugerenciaPendienteKoko()) {
+          mostrarAvisoResultadosPendientesKoko();
+        }
         return;
       }
     } catch (err) {
@@ -141,6 +155,52 @@ async function cargarHistorialKoko() {
     }
   }
   pintarBurbujaKoko("koko", MENSAJE_BIENVENIDA_KOKO);
+}
+
+// Si Koko ya habia propuesto una busqueda (tarjeta "¿Buscamos X para ti?")
+// y la persona se fue a otra pagina (ej: "Descubre") sin confirmar ni
+// rechazar, esa tarjeta antes se perdia -- el chat guardado en el servidor
+// solo tiene el TEXTO de la respuesta, no el dato estructurado de la
+// sugerencia. Se guarda aparte en sessionStorage (dura toda la pestaña,
+// como "resultados"/"ultimoPayload" en comun.js) y se repinta al volver a
+// abrir el panel, para no tener que volver a pedirle la busqueda a Koko.
+function restaurarSugerenciaPendienteKoko() {
+  const guardada = sessionStorage.getItem(SUGERENCIA_PENDIENTE_KEY);
+  if (!guardada) return false;
+  try {
+    mostrarSugerenciaKoko(JSON.parse(guardada));
+    return true;
+  } catch (err) {
+    sessionStorage.removeItem(SUGERENCIA_PENDIENTE_KEY);
+    return false;
+  }
+}
+
+// Si Koko encontro resultados y el usuario se fue a otra pagina sin
+// verlos/seguir ahi, muestra un aviso chico para volver a esa pantalla de
+// resultados -- reusa el mismo contenedor que la tarjeta "¿Buscamos X?"
+// (nunca se muestran los dos a la vez: si hay una sugerencia pendiente, esa
+// tiene prioridad). No aplica si ya estamos en /resultados (no tiene
+// sentido ofrecer "ver resultados" ahi mismo).
+function mostrarAvisoResultadosPendientesKoko() {
+  if (window.location.pathname === "/resultados") return;
+  if (sessionStorage.getItem(RESULTADOS_KOKO_PENDIENTES_KEY) !== "1") return;
+  // Mismo limite de 15 minutos que el aviso del buscador (ver
+  // hayResultadosRecientes en comun.js) -- pasado ese tiempo, mejor no
+  // seguir insistiendo con resultados viejos.
+  if (!hayResultadosRecientes()) return;
+
+  const cont = document.getElementById("sugerencia-koko");
+  cont.innerHTML = `
+    <p>Encontramos productos para ti hace un momento.</p>
+    <div class="botones-quien">
+      <button id="btn-koko-ver-resultados" type="button">Ver resultados</button>
+    </div>
+  `;
+  cont.classList.remove("oculto");
+  document.getElementById("btn-koko-ver-resultados").addEventListener("click", () => {
+    window.location.href = "/resultados";
+  });
 }
 
 // Boton "Reiniciar conversacion" del header (icono, junto al de cerrar):
@@ -172,6 +232,7 @@ async function reiniciarConversacionKoko() {
   mensajesKoko = [];
   document.getElementById("mensajes-koko").innerHTML = "";
   ocultarSugerenciaKoko();
+  sessionStorage.removeItem(RESULTADOS_KOKO_PENDIENTES_KEY);
   pintarBurbujaKoko("koko", MENSAJE_BIENVENIDA_KOKO);
 }
 
@@ -182,14 +243,16 @@ async function reiniciarConversacionKoko() {
 // hecha a mano.
 function mostrarSugerenciaKoko(sugerencia) {
   const cont = document.getElementById("sugerencia-koko");
-  const detalle = [sugerencia.tipo_prenda, sugerencia.subtipo, sugerencia.forma_gorro, sugerencia.corte]
+  const detalle = [sugerencia.tipo_prenda, sugerencia.subtipo, sugerencia.forma_gorro, sugerencia.color, sugerencia.corte]
     .filter(Boolean)
     .join(" ");
   const conPresupuesto = sugerencia.presupuesto_max
     ? `${detalle || "esto"} hasta $${Number(sugerencia.presupuesto_max).toLocaleString("es-CL")}`
     : detalle || "esto";
+  const excluidos = Array.isArray(sugerencia.excluir) ? sugerencia.excluir.filter(Boolean) : [];
+  const conExclusion = excluidos.length ? `${conPresupuesto} (sin ${excluidos.join(", ")})` : conPresupuesto;
   cont.innerHTML = `
-    <p>¿Buscamos ${conPresupuesto} para ti?</p>
+    <p>¿Buscamos ${conExclusion} para ti?</p>
     <div class="botones-quien">
       <button id="btn-koko-si" type="button">Sí, buscar</button>
       <button id="btn-koko-no" type="button">Seguir hablando</button>
@@ -198,6 +261,16 @@ function mostrarSugerenciaKoko(sugerencia) {
   cont.classList.remove("oculto");
 
   document.getElementById("btn-koko-si").addEventListener("click", () => {
+    // El panel de Koko es un overlay a pantalla completa (position: fixed,
+    // z-index: 100) -- si se queda abierto, tapa por completo el esqueleto
+    // de carga de buscarConAnimacion() (comun.js), que vive en el flujo
+    // normal de la pagina sin z-index propio. Por eso antes "no pasaba
+    // nada" mientras se buscaba: la animacion SI corria, pero quedaba
+    // escondida detras del panel. Cerrarlo antes de buscar la deja visible.
+    document.getElementById("panel-koko").classList.add("oculto");
+    sessionStorage.removeItem(SUGERENCIA_PENDIENTE_KEY);
+    sessionStorage.setItem(RESULTADOS_KOKO_PENDIENTES_KEY, "1");
+
     const perfilCompleto = getPerfil() || {};
     const perfilParaBuscar = {
       genero: perfilCompleto.genero,
@@ -220,13 +293,13 @@ function mostrarSugerenciaKoko(sugerencia) {
       capucha: "",
       cierre: "",
       corte: sugerencia.corte || "",
+      color: sugerencia.color || "",
       ocasion: "",
       precio: sugerencia.presupuesto_max ? String(sugerencia.presupuesto_max) : "",
-      gorro_camino: "",
-      gorro_colores: [],
-      gorro_outfit: "",
       gorro_forma: sugerencia.forma_gorro || "",
       ignorar_talla: Boolean(sugerencia.ignorar_talla),
+      excluir: excluidos,
+      preferencias_negativas: getPreferenciasNegativas(),
     });
   });
 
@@ -271,11 +344,21 @@ async function enviarMensajeKoko(texto) {
         mensajes: mensajesKoko,
       }),
     });
+    // Antes se asumia que la respuesta siempre era JSON valido -- si el
+    // servidor devolvia un error real (500, o un 429 del limitador de
+    // "10 por minuto" en /api/koko/chat), el cuerpo puede no ser JSON y
+    // resp.json() lanza una excepcion DENTRO del try, que el catch de abajo
+    // si atrapa. Pero si la respuesta SI era JSON valido con un status de
+    // error (ej: algun proxy/error handler que devuelva JSON), antes se
+    // seguia de largo como si nada -- ahora se corta antes, mismo patron
+    // que buscarConAnimacion() en comun.js.
+    if (!resp.ok) throw new Error("Error del servidor: " + resp.status);
     const data = await resp.json();
     const textoRespuesta = data.respuesta_texto || "¿Me cuentas un poco más?";
     mensajesKoko.push({ rol: "koko", texto: textoRespuesta });
     pintarBurbujaKoko("koko", textoRespuesta);
     if (data.sugerencia) {
+      sessionStorage.setItem(SUGERENCIA_PENDIENTE_KEY, JSON.stringify(data.sugerencia));
       mostrarSugerenciaKoko(data.sugerencia);
     }
     // Limite diario de mensajes (app.py, LIMITE_MENSAJES_KOKO_DIA) -- deja
@@ -287,7 +370,17 @@ async function enviarMensajeKoko(texto) {
       deshabilitarInputKoko();
     }
   } catch (err) {
-    pintarBurbujaKoko("koko", "Guau, algo salió mal. ¿Intentamos de nuevo?");
+    // Mismo texto que usa el backend cuando la llamada a la IA falla del
+    // lado del servidor (servicio_koko.py) -- Koko esta entrenado para
+    // reconocer ese prefijo como "quedo una busqueda pendiente" y retomarla
+    // sola si la persona responde con un reintento corto ("ahora si", "dale",
+    // etc). Se agrega tambien a mensajesKoko (no solo se pinta) para que la
+    // proxima llamada a /api/koko/chat en esta pestaña incluya la señal de
+    // falla en el historial que se manda -- si aqui no falla nunca llega al
+    // servidor, asi que es la unica forma de que quede registrada.
+    const textoError = "Guau, tuve un problema para responder. Intenta de nuevo.";
+    mensajesKoko.push({ rol: "koko", texto: textoError });
+    pintarBurbujaKoko("koko", textoError);
   } finally {
     detenerAnimacionKoko(personaje);
   }
@@ -322,6 +415,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("btn-reiniciar-koko").addEventListener("click", reiniciarConversacionKoko);
+
+  // Guia "que le puedo preguntar a Koko" -- overlay aparte (#guia-koko, ver
+  // _panel_koko.html), no reinicia ni toca mensajesKoko al abrir/cerrar.
+  const guiaKoko = document.getElementById("guia-koko");
+  document.getElementById("btn-guia-koko").addEventListener("click", () => {
+    guiaKoko.classList.remove("oculto");
+  });
+  document.getElementById("btn-cerrar-guia-koko").addEventListener("click", () => {
+    guiaKoko.classList.add("oculto");
+  });
+  document.querySelectorAll(".pregunta-guia-koko").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      guiaKoko.classList.add("oculto");
+      enviarMensajeKoko(boton.textContent.trim());
+    });
+  });
 
   document.getElementById("form-koko").addEventListener("submit", (e) => {
     e.preventDefault();

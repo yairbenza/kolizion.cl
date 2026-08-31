@@ -27,6 +27,10 @@
     <div class="panel-koko-chat">
       <div class="panel-koko-header">
         <h2>Koko</h2>
+        <button id="btn-guia-koko" class="btn-guia-koko" type="button" aria-label="¿Qué le puedo preguntar a Koko?">
+          <span class="btn-guia-koko-glifo">?</span>
+          <span class="btn-guia-koko-etiqueta">Guía</span>
+        </button>
         <button id="btn-reiniciar-koko" class="btn-cerrar-koko" type="button" aria-label="Reiniciar conversación">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="1 4 1 10 7 10"></polyline>
@@ -42,6 +46,77 @@
         <input type="text" id="input-koko" placeholder="Escríbele a Koko..." autocomplete="off">
         <button type="submit">Enviar</button>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Guia de ejemplos "que le puedo preguntar a Koko" -- reusa .modal-overlay/
+     .tarjeta-modal (mismas clases que el onboarding/tour, ver style.css) en
+     vez de crear un modal nuevo. Categorias con <details> nativo para que no
+     se vea como una lista gigante de una (colapsadas salvo la primera). Cada
+     pregunta es un boton que manda el texto directo (mismo camino que
+     enviarMensajeKoko(), ver koko.js) y cierra la guia. -->
+<div id="guia-koko" class="oculto modal-overlay">
+  <div class="tarjeta-modal tarjeta-guia-koko">
+    <button id="btn-cerrar-guia-koko" class="btn-cerrar-tour" type="button" aria-label="Cerrar guía">×</button>
+    <h2>¿Qué le puedo preguntar a Koko?</h2>
+    <p>Toca cualquier ejemplo para probarlo.</p>
+    <div class="guia-koko-categorias">
+      <details class="guia-koko-categoria" open>
+        <summary>Buscar prendas</summary>
+        <div class="guia-koko-preguntas">
+          <button type="button" class="pregunta-guia-koko">Búscame un polerón negro oversize.</button>
+          <button type="button" class="pregunta-guia-koko">Quiero unos jeans baggy.</button>
+          <button type="button" class="pregunta-guia-koko">Búscame una polera blanca por menos de $30.000.</button>
+          <button type="button" class="pregunta-guia-koko">Búscame un pantalón cargo.</button>
+        </div>
+      </details>
+      <details class="guia-koko-categoria">
+        <summary>Outfits y ocasiones</summary>
+        <div class="guia-koko-preguntas">
+          <button type="button" class="pregunta-guia-koko">Arma un outfit para ir a un concierto o festival.</button>
+          <button type="button" class="pregunta-guia-koko">¿Qué me pongo para juntarme con amigos en el skate park?</button>
+          <button type="button" class="pregunta-guia-koko">Quiero un outfit casual para hoy.</button>
+          <button type="button" class="pregunta-guia-koko">Arma algo streetwear por menos de $100.000.</button>
+        </div>
+      </details>
+      <details class="guia-koko-categoria">
+        <summary>Filtros y preferencias</summary>
+        <div class="guia-koko-preguntas">
+          <button type="button" class="pregunta-guia-koko">Búscame algo rojo.</button>
+          <button type="button" class="pregunta-guia-koko">No me muestres productos de Doslobos.</button>
+          <button type="button" class="pregunta-guia-koko">Quiero algo oversize pero nada negro.</button>
+          <button type="button" class="pregunta-guia-koko">Muéstrame otras opciones parecidas.</button>
+        </div>
+      </details>
+      <details class="guia-koko-categoria">
+        <summary>Descubrir</summary>
+        <div class="guia-koko-preguntas">
+          <button type="button" class="pregunta-guia-koko">¿Qué está en tendencia?</button>
+          <button type="button" class="pregunta-guia-koko">¿Qué hay de nuevo?</button>
+          <button type="button" class="pregunta-guia-koko">¿Hay ofertas?</button>
+          <button type="button" class="pregunta-guia-koko">¿Qué me recomiendas mirar hoy?</button>
+        </div>
+      </details>
+      <details class="guia-koko-categoria">
+        <summary>Inspiración de famosos</summary>
+        <div class="guia-koko-preguntas">
+          <button type="button" class="pregunta-guia-koko">Arma un outfit inspirado en Jude Bellingham.</button>
+          <button type="button" class="pregunta-guia-koko">¿Qué polerón va con el estilo de Billie Eilish?</button>
+          <button type="button" class="pregunta-guia-koko">Arma un look inspirado en A$AP Rocky.</button>
+          <button type="button" class="pregunta-guia-koko">Quiero vestirme con un estilo parecido a Shai Gilgeous-Alexander.</button>
+          <button type="button" class="pregunta-guia-koko">Búscame algo inspirado en Jacob Elordi.</button>
+          <button type="button" class="pregunta-guia-koko">Quiero un outfit estilo Wisdom Kaye.</button>
+        </div>
+      </details>
+      <details class="guia-koko-categoria">
+        <summary>Hablar con Koko</summary>
+        <div class="guia-koko-preguntas">
+          <button type="button" class="pregunta-guia-koko">No sé qué buscar, ¿me ayudas a elegir?</button>
+          <button type="button" class="pregunta-guia-koko">Recomiéndame algo streetwear según lo que me gusta.</button>
+          <button type="button" class="pregunta-guia-koko">¿Qué gorro me queda bien?</button>
+        </div>
+      </details>
     </div>
   </div>
 </div>

@@ -64,11 +64,7 @@ def admin_login():
             session["admin_autenticado"] = True
             return redirect(siguiente)
         else:
-            recibido = request.form.get("password", "")
-            error = (
-                f"Contraseña incorrecta. (debug temporal: recibiste {len(recibido)} "
-                f"caracteres, el servidor espera {len(admin_pass)})"
-            )
+            error = "Contraseña incorrecta."
 
     return render_template("admin_login.html", error=error, siguiente=siguiente)
 

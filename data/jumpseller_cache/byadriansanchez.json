@@ -1,0 +1,404 @@
+[
+  {
+    "nombre": "COURBE BLACK WAFFLE",
+    "slug": "courbe-black-waffle",
+    "precio_clp": 55000,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430203/ByAdrianSachez_C2_AE_20-_20Courbe_20Black_20Waffle_20_2801_29.jpg.jpeg?1785420369",
+    "descripcion_real": "POLERON DOBLE CAPA DE TELA. DESGASTES.FOCALIZADO. CORDONES LARGOS 2MTS.CIERRE YKK CON CIERRE ESCONDIDO.TELA WAFFLE CON LAVANDERIA INDUSTRIAL. REGULAR FIT. PRE ORDER DE APROX 3 SEMANAS PARA SER ENTREGADO.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "XS",
+        "disponible": true
+      },
+      {
+        "talla": "S",
+        "disponible": false
+      },
+      {
+        "talla": "M",
+        "disponible": true
+      },
+      {
+        "talla": "L",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "CROCODILE BLCK (BOOTCUT)",
+    "slug": "crocodile-blck-bootcut",
+    "precio_clp": 59990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79810418/IMG_1336.png?1787095382",
+    "descripcion_real": "CUERINA DISEÑO COCODRILOFORRO DE SARGALINABOOTCUT FIT BROCHE",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "40",
+        "disponible": true
+      },
+      {
+        "talla": "42",
+        "disponible": true
+      },
+      {
+        "talla": "44",
+        "disponible": true
+      },
+      {
+        "talla": "46",
+        "disponible": true
+      }
+    ]
+  },
+  {
+    "nombre": "CROCODILE SMOKE JACKET.",
+    "slug": "crocodile-smoke-jacket",
+    "precio_clp": 55000,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430149/ByAdrianSachez_C2_AE_20-_20Crocodile_20Smoke_20Jacket_20_2801_29.jpg.jpeg?1785419277",
+    "descripcion_real": "DISEÑO DE COCODRILO.TONO GRIS OSCURO BRILLANTE.CUERINA EN EL EXTERIOR.FORRO DE SARGALINA INTERIOR.CIERRE YKK.BOLSILLO ESCONDIDO. PRE ORDER DE APROX 3 SEMANAS PARA SER ENTREGADO.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "XS",
+        "disponible": true
+      },
+      {
+        "talla": "S",
+        "disponible": true
+      },
+      {
+        "talla": "M",
+        "disponible": true
+      },
+      {
+        "talla": "L",
+        "disponible": true
+      }
+    ]
+  },
+  {
+    "nombre": "CROCODILE SMOKE JEANS",
+    "slug": "crocodile-smoke-jeans",
+    "precio_clp": 59990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430138/ByAdrianSachez_C2_AE_20-_20Crocodile_20Smoke_20Pants_20_2801_29.jpg.jpeg?1785419923",
+    "descripcion_real": "DISEÑO DE COCODRILO.TONO GRIS OSCURO BRILLANTE.CUERINA EN EL EXTERIOR.FORRO DE SARGALINA INTERIOR.CIERRE YKK.BROCHE. FLARED. PRE ORDER DE APROX 3 SEMANAS PARA SER ENTREGADO.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "40",
+        "disponible": true
+      },
+      {
+        "talla": "42",
+        "disponible": true
+      },
+      {
+        "talla": "44",
+        "disponible": true
+      },
+      {
+        "talla": "46",
+        "disponible": true
+      }
+    ]
+  },
+  {
+    "nombre": "CROSS DEMON HOODIE",
+    "slug": "cross-demon-hoodie",
+    "precio_clp": 59990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/78873538/Enclave_C2_AE_20x_20Adrian_20Sanchez_C2_AE-_20Web_20Photos_20_28Cross_20Demon_20Hoodie_2001_29.jpg.jpeg?1784257085",
+    "descripcion_real": "SERIGRAFÍA PECHO/MANGAS, TERMINACIÓN CRAKEADA.DESGASTES EN PUÑOS, BOLSILLOS Y CAPUCHA. BOLSILLO ICÓNICO.BOXY FIT. CAPUCHA APLIA SIN COSTURA CENTRAL.ENTREGA INMEDIATA - STOCK LIMITADO MEDIDAS",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "S",
+        "disponible": true
+      },
+      {
+        "talla": "M",
+        "disponible": false
+      },
+      {
+        "talla": "L",
+        "disponible": false
+      },
+      {
+        "talla": "XL",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "DIRTY NIGHT CREASE (JACKET)",
+    "slug": "dirty-night-crease-jacket",
+    "precio_clp": 69990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/70207268/IMG_9658.png?1764254659",
+    "descripcion_real": "DENIM JACKETSLIM FIT FOCALIZADO TYPE TIGRE 9 ONZAS ( TELA DE VERANO) PLIEGUES EN EL ANTEBRAZOOJETILLOS EN LOS BOLSILLOS DEL PECHOLOGO DE LA MARCA BORDADO EN ZONA TRASERAPRE ORDER DE APROX 3 SEMANAS PARA SER ENTREGADO.",
+    "disponible": false,
+    "tallas_variantes": [
+      {
+        "talla": "S",
+        "disponible": false
+      },
+      {
+        "talla": "M",
+        "disponible": false
+      },
+      {
+        "talla": "L",
+        "disponible": false
+      },
+      {
+        "talla": "XL",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "DIRTY NIGHT CREASE ( JEANS )",
+    "slug": "dirty-night-crease-jeans",
+    "precio_clp": 59990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/70207333/IMG_9659.png?1764254853",
+    "descripcion_real": "Textura Focalizada Pliegues Frontales / Inferiores Corte acampanado ( Flared )Ojetillos en los bolsillos Proceso artesanalPre order cyber edition debido al alto interés y para no dejar fuera este lanzamiento, serán confeccionadas bajo demanda ya que este producto se agoto a los pocos días de ser publicado. Tiempo estimado de envió: 2 semanas.",
+    "disponible": false,
+    "tallas_variantes": [
+      {
+        "talla": "40",
+        "disponible": false
+      },
+      {
+        "talla": "42",
+        "disponible": false
+      },
+      {
+        "talla": "44",
+        "disponible": false
+      },
+      {
+        "talla": "46",
+        "disponible": false
+      },
+      {
+        "talla": "48",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "LONG SLEEVE B.B.F ( BEIGE )",
+    "slug": "long-sleeve-bbf-beige",
+    "precio_clp": 28990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/77844467/IMG_8747.png?1781577669",
+    "descripcion_real": "TELA WAFFLE.MANGA RANGLAN.COSTURAS EXPUESTAS EN CUELLO Y MANGAS.ESTAMPADO EN SERIGRAFIA. CUELLO MAS HOLGADO DE LO HABITUAL. COLOR BEIGE MADE IN CHILE. MEDIDAS.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "XS",
+        "disponible": true
+      },
+      {
+        "talla": "S",
+        "disponible": true
+      },
+      {
+        "talla": "M",
+        "disponible": false
+      },
+      {
+        "talla": "L",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "LONG SLEEVE B.B.F MIDDLE.",
+    "slug": "long-sleeve-bbf-middle",
+    "precio_clp": 28990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430192/ByAdrianSachez_C2_AE_20-_20Middle_20BBF_20Longsleeve_20_2801_29.jpg.jpeg?1785420155",
+    "descripcion_real": "TELA WAFFLE.MANGA RANGLAN.COSTURA EXPUESTA EN CUELLO Y MANGAS. ESTAMPADO EN SERIGRAFIA.CUELLO MAS HOLGADO DE LO HABITUAL. LAVANDERIA INDUSTRIAL. EFECTO ACIDWASH. PRE ORDER DE APROX 3 SEMANAS PARA SER ENTREGADO.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "XS",
+        "disponible": true
+      },
+      {
+        "talla": "S",
+        "disponible": true
+      },
+      {
+        "talla": "M",
+        "disponible": true
+      },
+      {
+        "talla": "L",
+        "disponible": true
+      }
+    ]
+  },
+  {
+    "nombre": "LONG SLEEVE B.B.F ( NEGRO )",
+    "slug": "long-sleeve-bbf-negro",
+    "precio_clp": 28990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/77844643/IMG_8746.png?1781578326",
+    "descripcion_real": "TELA WAFFLE.MANGA RANGLAN.COSTURAS EXPUESTAS EN CUELLO Y MANGAS.ESTAMPADO EN SERIGRAFIA. CUELLO MAS HOLGADO DE LO HABITUAL. MADE IN CHILE.envíos aprox en 2 semanas para ser despachado ya que se trabajan con dos talleres y se deja un margen de días para ser entregadas las poleras. MEDIDAS",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "XS",
+        "disponible": false
+      },
+      {
+        "talla": "S",
+        "disponible": false
+      },
+      {
+        "talla": "M",
+        "disponible": false
+      },
+      {
+        "talla": "L",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "LONG SLEEVE STITCHING",
+    "slug": "long-sleeve-stitching",
+    "precio_clp": 25990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430180/ByAdrianSachez_C2_AE_20-_20Longsleeve_20Stitching_20_2801_29.jpg.jpeg?1785419568",
+    "descripcion_real": "TELA WAFFLE.MANGA RANGLAN.COSTURAS ARTESANALESREGULAR FIT CUELLO MAS HOLGADO DE LO HABITUAL. COLOR NEGRO E HILO GRIS. PRE ORDER DE APROX 3 SEMANAS PARA SER ENTREGADO.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "XS",
+        "disponible": false
+      },
+      {
+        "talla": "S",
+        "disponible": true
+      },
+      {
+        "talla": "M",
+        "disponible": false
+      },
+      {
+        "talla": "L",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "NIGHT CREASE",
+    "slug": "night-crease",
+    "precio_clp": 59990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430386/ByAdrianSachez_C2_AE_20-_20Night_20Crease_20_2801_29.jpg.jpeg?1785417613",
+    "descripcion_real": "Debido al alto interés y para no dejar fuera este lanzamiento, serán confeccionadas bajo demanda ya que este producto se agoto a los pocos días de ser publicado. Tiempo estimado de envió: 2 semanas. Textura Waxed Pliegues Frontales / Inferiores Corte acampanado ( Flared )Ojetillos en los bolsillos Proceso artesanal CUIDADO DE LAVADO Limpieza en seco: algunas tintorerías ofrecen limpieza especializada para este tipo de prendas En casa ( si quieres evitar tintorería): No lavarlo entero, haz una limpieza localizada con paño humedo y jabon neutro solo en las manchas puntuales, sin frotar fuerte, recomendable dar mejor pequeños toques con secado al aire libre. No uses planchas, preferible si es necesario plancha a vapor.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "40",
+        "disponible": false
+      },
+      {
+        "talla": "42",
+        "disponible": false
+      },
+      {
+        "talla": "44",
+        "disponible": false
+      },
+      {
+        "talla": "46",
+        "disponible": false
+      },
+      {
+        "talla": "48",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "PINK TIGER ll",
+    "slug": "pink-tiger-ll",
+    "precio_clp": 52990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430358/ByAdrianSachez_C2_AE_20-_20PinkTiger_20II_20_2801_29.jpg.jpeg?1785417486",
+    "descripcion_real": "debido al alto interés y para no dejar fuera este lanzamiento, serán confeccionadas bajo demanda ya que este producto se agoto a los pocos días de ser publicado. Tiempo estimado de envió: 2 semanas. Cierres ykk ( cierre escondido ) Fur Cordones largos a medida Remaches Bolsillos en curva Color fucsia Focalizado Capucha sin costuraComposición: 70% algodón 30% poliéster.Cuidados: lavar con agua fría.",
+    "disponible": false,
+    "tallas_variantes": [
+      {
+        "talla": "S",
+        "disponible": false
+      },
+      {
+        "talla": "M",
+        "disponible": false
+      },
+      {
+        "talla": "L",
+        "disponible": false
+      },
+      {
+        "talla": "XL",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "SILVER NIGHT CREASE",
+    "slug": "silver-night-crease",
+    "precio_clp": 64990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/79430241/ByAdrianSachez_C2_AE_20-_20Silver_20Night_20Crease_20_2801_29.jpg_20_281_29.jpeg?1785416941",
+    "descripcion_real": "Debido al alto interés y para no dejar fuera este lanzamiento, serán confeccionadas bajo demanda ya que este producto se agoto a los pocos días de ser publicado. Tiempo estimado de envió: 2 semanas. Textura Metalizada Pliegues Frontales / InferioresCorte acampanado ( Flared )Ojetillos en los bolsillosProceso artesanalCUIDADO DE LAVADOLimpieza en seco: algunas tintorerías ofrecen limpieza especializada para este tipo de prendas En casa ( si quieres evitar tintorería): No lavarlo entero, haz una limpieza localizada con paño humedo y jabon neutro solo en las manchas puntuales, sin frotar fuerte, recomendable dar mejor pequeños toques con secado al aire libre. No uses planchas, preferible si es necesario plancha a vapor.",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "40",
+        "disponible": false
+      },
+      {
+        "talla": "42",
+        "disponible": false
+      },
+      {
+        "talla": "44",
+        "disponible": false
+      },
+      {
+        "talla": "46",
+        "disponible": false
+      },
+      {
+        "talla": "48",
+        "disponible": false
+      }
+    ]
+  },
+  {
+    "nombre": "SKULL STRIPES LONGSLEEVE",
+    "slug": "skull-stripes-longsleeve",
+    "precio_clp": 29990,
+    "imagen": "https://cdnx.jumpseller.com/adrian-sanchez/image/78873650/Enclave_C2_AE_20x_20Adrian_20Sanchez_C2_AE-_20Web_20Photos_20_28Skull_20Stripes_20Longsleeve_2001_29.jpg.jpeg?1784257672",
+    "descripcion_real": "TORSO TELA WAFFLE NEGRA.MANGAS JERSEY RAYADO. SERIGRAFÍA CON TERMINACIÓN CRACKEADA. MANGA RANGLÁN. REGULAR FIT. CUELLO AMPLIO.SE AGOTO ESTA PRENDA EN SU LANZAMIENTO Y NO QUEREMOS QUE SE QUEDEN SIN SU PRENDA ASI QUE TENEMOS:PRE- ORDER DE APROX 3 SEMANAS PARA SER ENTREGADO.MEDIDAS",
+    "disponible": true,
+    "tallas_variantes": [
+      {
+        "talla": "XS",
+        "disponible": true
+      },
+      {
+        "talla": "S",
+        "disponible": true
+      },
+      {
+        "talla": "M",
+        "disponible": true
+      },
+      {
+        "talla": "L",
+        "disponible": true
+      }
+    ]
+  }
+]

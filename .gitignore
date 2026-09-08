@@ -21,6 +21,7 @@ tunel_temporal_out.log
 tunel_temporal_url.txt
 scratch_chat.txt
 kolizion.db
-data/shopify_cache/
-data/woocommerce_cache/
-data/jumpseller_cache/
+# shopify_cache/woocommerce_cache/jumpseller_cache: antes no se subian
+# (solo se usaban para construir el catalogo a mano), pero ahora
+# construir_catalogo_real.py se importa en tiempo de ejecucion desde
+# servicio_stock_live.py y los necesita para arrancar -- ver docs/buscador.md.

@@ -1,0 +1,778 @@
+[
+ {
+  "slug": "chaaqueta-bud-negra",
+  "nombre": "Chaaqueta Bud Negra",
+  "precio": "100000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/A1D38336-1965-499F-8C0D-BECDE337A862-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/DEECE335-94A9-4DA8-88DC-96BA1DB5C842-1-1.jpeg"
+  ],
+  "descripcion": "Chaaqueta Bud Negra"
+ },
+ {
+  "slug": "chaqueta-bmw",
+  "nombre": "Chaqueta BMW",
+  "precio": "100000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/C35E62F8-B53A-487B-8834-3048F22D7E4F-1-1-1-1-1-1.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/8E20C429-BDAA-435B-B53D-D597E5A78B21-1-1-1-1-1-1.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/F6F494B2-7A24-474D-9067-FED68E7762DC-1-1-1-1-1-1.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/78978C89-25A7-44FD-8870-AC541E09E191-2-1-1-1-1-1-1.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/059CD24F-8F61-484B-848E-B6E7E234465C-2-1-1-1-1-1-1.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/5121885C-1010-45FF-AF8C-36836EEDF020-1-1-1-1-1.jpg"
+  ],
+  "descripcion": "Chaqueta BMW"
+ },
+ {
+  "slug": "chaqueta-ferrari-cuero-franja-blanca",
+  "nombre": "Chaqueta Ferrari cuero franja blanca",
+  "precio": "100000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/395AA328-FB04-45BD-86BC-456552F0F255.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/1211F855-25BE-43BE-951F-7C900FFFD5EC-1.jpeg"
+  ],
+  "descripcion": "Chaqueta Ferrari cuero franja blanca"
+ },
+ {
+  "slug": "chaqueta-ferrari-cuero",
+  "nombre": "Chaqueta Ferrari cuero",
+  "precio": "100000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/361490CD-E7DA-4108-9B31-5D6D221976C2.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/1211F855-25BE-43BE-951F-7C900FFFD5EC.jpeg"
+  ],
+  "descripcion": "Chaqueta Ferrari cuero"
+ },
+ {
+  "slug": "chaqueta-ferrari-negra",
+  "nombre": "Chaqueta Ferrari negra",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/0788A10A-2E9F-45B5-9319-D881852ED34C.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/9FBF436F-A170-48DA-82FE-8CAC9397084D.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/827F8746-8957-40E3-BC00-25CC7762B9B4.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/5A0A0168-933D-4A4B-AD50-3FBA2E980F72.jpeg"
+  ],
+  "descripcion": "Chaqueta Ferrari negra"
+ },
+ {
+  "slug": "chaqueta-ferrari-roja",
+  "nombre": "Chaqueta Ferrari Roja",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/71A5F4EC-4E39-47EF-957A-6D3EA9547EDE.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/B5D6F9B4-98C3-4E04-8F12-5D93434D3B76.jpeg"
+  ],
+  "descripcion": "Chaqueta Ferrari Roja"
+ },
+ {
+  "slug": "chaqueta-ferrari-rosa",
+  "nombre": "Chaqueta Ferrari Rosa",
+  "precio": "140000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/B11F62C0-7B28-41D9-924C-15270518B38A.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/4B77B9E6-2B71-46E7-A072-FDF9AE69AE89.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/63F178D3-8B5E-4AD8-828F-E2EC2801F37F.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/D88CF4EE-782E-4BB8-A841-BAFEAB02CB88.jpeg"
+  ],
+  "descripcion": "Chaqueta Ferrari Rosa"
+ },
+ {
+  "slug": "chaqueta-ferrari-rosado-cuero",
+  "nombre": "Chaqueta Ferrari Rosado Cuero",
+  "precio": "100000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/0663FEE9-8998-4C36-B8D3-168A80759869.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/C485185E-22CA-4D9A-ABE4-0CAE9F1C5537.jpeg"
+  ],
+  "descripcion": "Chaqueta Ferrari Rosado Cuero"
+ },
+ {
+  "slug": "chaqueta-ferrari-tricolor",
+  "nombre": "Chaqueta Ferrari  Tricolor",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/A7BFFE50-F14D-4351-A520-BF0EBFAAA35A.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/3401157F-0F16-432A-8C9D-3F2C39789CC7.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/4909C1E1-A468-42F4-BB0E-2D31CA640698.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/5D3AA29E-F164-4A79-9F61-97413AD55912.jpeg"
+  ],
+  "descripcion": "Chaqueta Ferrari  Tricolor"
+ },
+ {
+  "slug": "chaqueta-ford-azul",
+  "nombre": "Chaqueta Ford azul",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/84FB00AE-7D02-4A73-BAF8-5279B95A20CD-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/BD8BA616-42F1-482A-8553-2767EB15E5D2-1.jpeg"
+  ],
+  "descripcion": "Chaqueta Ford azul"
+ },
+ {
+  "slug": "chaqueta-mclaren",
+  "nombre": "Chaqueta Mclaren",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/F13D4B40-51DC-4979-8BA3-B1FF13C62097.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/8140960C-6E51-4302-A650-5BCE92D98241.jpeg"
+  ],
+  "descripcion": "Chaqueta Mclaren"
+ },
+ {
+  "slug": "chaqueta-nascar-bud",
+  "nombre": "Chaqueta Nascar Bud",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/34DC23EE-4147-4B01-9736-3A98B002E663.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/EDED6E7C-FF51-43A5-B449-198C2FA30E1A.jpeg"
+  ],
+  "descripcion": "Chaqueta Nascar Bud"
+ },
+ {
+  "slug": "chaqueta-nascar-ford-negra",
+  "nombre": "Chaqueta  Nascar Ford negra",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/473FBF5F-96C6-4435-AA77-7919DCE971CD.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/C15DFDEF-8F55-4821-8214-BB367B181A69.jpeg"
+  ],
+  "descripcion": "Chaqueta  Nascar Ford negra"
+ },
+ {
+  "slug": "chaqueta-nascar-jack-daniels",
+  "nombre": "Chaqueta  Nascar Jack Daniels",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/356ACD41-D92F-41EE-9413-853CC27A8081.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/384C3A22-1E56-401D-A7DA-55FE65C650A4.jpeg"
+  ],
+  "descripcion": "Chaqueta  Nascar Jack Daniels"
+ },
+ {
+  "slug": "chaqueta-nascar-subaru-negra",
+  "nombre": "Chaqueta Nascar Subaru negra",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/D3E2A8D8-85D2-4E18-A1B7-78F88D85A66A.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/63297A25-2B83-430E-8358-265967C0797A.jpeg"
+  ],
+  "descripcion": "Chaqueta Nascar Subaru negra"
+ },
+ {
+  "slug": "chaqueta-red-bull",
+  "nombre": "Chaqueta Red Bull",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/BF81ECB9-3C4C-49C6-A46D-950F589EF92A.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/063D07C6-9E42-4A8E-85AD-96EE06C55735.jpeg"
+  ],
+  "descripcion": "Chaqueta Red Bull"
+ },
+ {
+  "slug": "chaqueta-subaru-azul",
+  "nombre": "Chaqueta Subaru Azul",
+  "precio": "90000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/BA0067AF-4A43-44E3-BADD-C7605BAE5014.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/AEE71930-54B3-4695-B480-CC7A0CD2EBE4.jpeg"
+  ],
+  "descripcion": "Chaqueta Subaru Azul"
+ },
+ {
+  "slug": "poleon-full-zip-mortis",
+  "nombre": "Poleón full zip Mortis",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/16934A9E-26C8-4FF6-80AB-673B22A86894.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/257A5B8B-A672-4F09-B452-A020B495B587.jpeg"
+  ],
+  "descripcion": "Poleón full zip Mortis"
+ },
+ {
+  "slug": "polera-acid-wash-bestia",
+  "nombre": "Polera Acid Wash Bestia",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/4550D068-6460-48C1-B175-E07996CCE877.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/3B7F5767-1FE5-45A5-A656-2DDE3EB1A0AB.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Bestia"
+ },
+ {
+  "slug": "polera-acid-wash-exanimis",
+  "nombre": "Polera Acid Wash Exanimis",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/F10FDFDD-AD2E-47F2-85ED-45800BE0EF87.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/09F65076-5803-4903-B761-7DE0D567597D.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Exanimis"
+ },
+ {
+  "slug": "polera-acid-wash-flagitium",
+  "nombre": "Polera Acid Wash Flagitium",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/B87B2EE8-B98D-4613-8614-6B0D5FA5AC31.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/4DD4081E-F67E-4CDA-BBC7-A68396CE5C90.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Flagitium"
+ },
+ {
+  "slug": "polera-acid-wash-oblivio",
+  "nombre": "Polera Acid Wash Oblivio",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/12572918-5656-4C3F-BBC6-5609BA563E8D.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/D0A80CF9-38D9-4D76-B0A7-2CF23B231382.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Oblivio"
+ },
+ {
+  "slug": "polera-acid-wash-ruinae",
+  "nombre": "Polera Acid Wash Ruinæ",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/24D3FEC6-FCBD-4885-809D-93CF977C5201.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/E178BCD8-1349-40C9-8DF9-EA77AE77779E.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Ruinæ"
+ },
+ {
+  "slug": "polera-acid-wash-sanguis",
+  "nombre": "Polera Acid Wash Sanguis",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/5D8FFA98-5C2D-4D8D-901C-47201CE7BDA0.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/473176B9-4BEF-443B-8ECD-36D20CF424E8.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Sanguis"
+ },
+ {
+  "slug": "polera-acid-wash-spiritus",
+  "nombre": "Polera Acid Wash Spiritus",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/1117EC41-F40C-4C9B-A466-3E7C403A4E42.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/3DF19099-B107-4F04-A166-A3D292D4F40F.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Spiritus"
+ },
+ {
+  "slug": "polera-acid-wash-supplicium",
+  "nombre": "Polera Acid Wash Supplicium",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/497B52CD-1D21-4D4E-9ECD-D875EDD96177.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/466BE875-A1D9-4360-8E36-2CC5EB72DF36.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Supplicium"
+ },
+ {
+  "slug": "polera-acid-wash-tartarus",
+  "nombre": "Polera Acid Wash Tartarus",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/DB220C33-C5B3-4D10-9E36-394751AF67CC.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/0A328462-A94B-4576-93A4-C3F954B36875.jpeg"
+  ],
+  "descripcion": "Polera Acid Wash Tartarus"
+ },
+ {
+  "slug": "polera-baby-tee-brasil-iprex",
+  "nombre": "Polera Baby Tee Brasil iprex",
+  "precio": "17990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/dni-2.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/polera-dani-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/dani-5.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/dani-7.png"
+  ],
+  "descripcion": "Polera Baby Tee Brasil iprex"
+ },
+ {
+  "slug": "polera-gris-oversize-al-por-mayor-12-unidades",
+  "nombre": "Polera gris oversize al por mayor ( 12 unidades)",
+  "precio": "132000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/5462DB14-A900-474B-9448-E17395044345-1-1-1.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/211F3AEB-3D26-46C9-81D6-3C86F316EC6E-1-1-1.png"
+  ],
+  "descripcion": "Polera gris oversize al por mayor ( 12 unidades)"
+ },
+ {
+  "slug": "polera-minimal-m2-saddabae",
+  "nombre": "Polera Minimal m2 Saddabae",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260419_013949.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_234326.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_233330.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_230550-1.jpg"
+  ],
+  "descripcion": "Polera Minimal m2 Saddabae"
+ },
+ {
+  "slug": "polera-minimal-saddabae",
+  "nombre": "polera minimal saddabae",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/IMG_6979-scaled.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_234326.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/IMG_6985.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_230550.jpg"
+  ],
+  "descripcion": "polera minimal saddabae"
+ },
+ {
+  "slug": "polera-negra-oversize-al-por-mayor-12-unidades",
+  "nombre": "Pedido Fade Away ( paralizado )",
+  "precio": "233000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/IMG_0658-1-1-1-1.jpg"
+  ],
+  "descripcion": "Pedido Fade Away ( paralizado )"
+ },
+ {
+  "slug": "polera-sad-rulay-saddabae",
+  "nombre": "Polera Sad Rulay Saddabae",
+  "precio": "29900",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/AED612C7-5351-4BD8-B54A-0309C5ED078B-scaled.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/IMG_6977-scaled.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/IMG_6980.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/IMG_6984.jpg"
+  ],
+  "descripcion": "Polera Sad Rulay Saddabae"
+ },
+ {
+  "slug": "polera-trivial-saddabae",
+  "nombre": "Polera Trivial Saddabae",
+  "precio": "27990",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/A286959C-E809-4676-89FF-84AB162A192F.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/41F5072A-0A7C-480C-ACA8-0A8EEAEEA9AC-scaled.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/27994B6A-0BE2-41F9-BCFB-755F41E66923.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/D35E2703-D4A4-4200-B5AF-139BE9473625.jpeg"
+  ],
+  "descripcion": "Polera Trivial Saddabae"
+ },
+ {
+  "slug": "polera-waifu-saddabae",
+  "nombre": "Polera Waifu Saddabae",
+  "precio": "29900",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/AED612C7-5351-4BD8-B54A-0309C5ED078B-scaled.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/41F5072A-0A7C-480C-ACA8-0A8EEAEEA9AC-scaled.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/IMG_6980.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/D35E2703-D4A4-4200-B5AF-139BE9473625.jpeg"
+  ],
+  "descripcion": "Polera Waifu Saddabae"
+ },
+ {
+  "slug": "polera-waifu-triviales-saddabae",
+  "nombre": "Polera Waifu triviales Saddabae",
+  "precio": "29900",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/75119DAC-FAFC-464B-940B-F85B6ED237E8-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/190B26E0-4616-4393-B2D0-C086A6461D5E.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260428_010321.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/IMG_6982.png"
+  ],
+  "descripcion": "Polera Waifu triviales Saddabae"
+ },
+ {
+  "slug": "poleron-acid-wash-gris-nocturnus",
+  "nombre": "Polerón Acid Wash gris Nocturnus",
+  "precio": "62500",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/CB484379-40A2-45F6-9709-962CBF428798-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/AA5958A7-8A89-461A-8DC6-465CEFBEDFE5-1.jpeg"
+  ],
+  "descripcion": "Polerón Acid Wash gris Nocturnus"
+ },
+ {
+  "slug": "poleron-acid-wash-ignis",
+  "nombre": "Polerón Acid Wash Ignis",
+  "precio": "60000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/FC94678E-A16E-416C-8645-98EF5D21A10B-1-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/3FB7E942-1276-4E23-8879-BCD7F00A996F-1-1.jpeg"
+  ],
+  "descripcion": "Polerón Acid Wash Ignis"
+ },
+ {
+  "slug": "poleron-acid-wash-rosado-timor",
+  "nombre": "Polerón Acid Wash Rosado Timor",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/C8C58A4C-C8B2-41E9-A336-3EA4EF7DBADD.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/F1D43064-DE4A-47FA-BBE8-68BF8BD5A112.jpeg"
+  ],
+  "descripcion": "Polerón Acid Wash Rosado Timor"
+ },
+ {
+  "slug": "poleron-cafe-acid-wash-profanus",
+  "nombre": "Polerón cafe Acid Wash Profanus",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/716EBC16-3B53-42F9-8563-007EBD2C1BB8.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/497E8FBB-3074-4D8B-8109-8D057B327434.jpeg"
+  ],
+  "descripcion": "Polerón cafe Acid Wash Profanus"
+ },
+ {
+  "slug": "poleron-full-zip-scelus",
+  "nombre": "Polerón full zip Scelus",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/021F245C-1384-462E-A558-B99D3B4265ED.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/469A3621-6EEC-4003-BE84-74A383D252CB.jpeg"
+  ],
+  "descripcion": "Polerón full zip Scelus"
+ },
+ {
+  "slug": "poleron-full-zip-solitudo",
+  "nombre": "Polerón full zip Solitudo",
+  "precio": "62500",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/EF001465-810F-4486-824B-AF4AEE5867D4-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/E3DBE831-70FE-4D31-98EB-28BE319218A7-1.jpeg"
+  ],
+  "descripcion": "Polerón full zip Solitudo"
+ },
+ {
+  "slug": "poleron-full-zip-timor",
+  "nombre": "Polerón full zip Timor",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/25C2F9EB-1539-409D-A5D7-91302688BF28.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/98919F3C-BBED-4B85-9627-50B58F97EBED.jpeg"
+  ],
+  "descripcion": "Polerón full zip Timor"
+ },
+ {
+  "slug": "poleron-full-zip-tristitia",
+  "nombre": "Polerón Full zip Tristitia",
+  "precio": "62500",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/D1DC2A2D-C20C-43DB-A6C3-F38A4D4C0150-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/6289315D-865B-4373-BFF8-DEE4F77F853F-1.jpeg"
+  ],
+  "descripcion": "Polerón Full zip Tristitia"
+ },
+ {
+  "slug": "poleron-full-zip-trivial-m2-saddabae",
+  "nombre": "Polerón full zip trivial M2 Saddabae",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/509F6DF8-6FF2-4B95-AC49-39F6E146EE28.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/52C9F5F2-2CAF-4015-BE7E-CED6E04DEAB2.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/6E4FFDDB-68D5-48C2-9023-01895EB106CD.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/C5F74646-BCE3-47D0-8AA6-52AEDBD978EF.jpeg"
+  ],
+  "descripcion": "Polerón full zip trivial M2 Saddabae"
+ },
+ {
+  "slug": "poleron-full-zip-trivial-m3-saddabae",
+  "nombre": "Polerón full zip Trivial m3 Saddabae",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/1653704B-568E-421A-8EB8-682F073375A4.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260423_200523.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/440645FC-BDF3-462A-9F19-5492E1C3D691.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/257626D3-C4CA-4441-9FB6-CC69921EB3BF.jpeg"
+  ],
+  "descripcion": "Polerón full zip Trivial m3 Saddabae"
+ },
+ {
+  "slug": "poleron-full-zip-trivial-saddabae",
+  "nombre": "Polerón full zip trivial Saddabae",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260423_141947.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260423_195005.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/3DD32AFE-28C1-44A8-8FD0-BD4ED1B46BA8.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/95E5625B-7D14-4689-B58A-E44B3EF5B6B7.jpeg"
+  ],
+  "descripcion": "Polerón full zip trivial Saddabae"
+ },
+ {
+  "slug": "poleron-gris-acid-wash-umbrae",
+  "nombre": "Polerón gris Acid Wash Umbrae",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/529E1E54-8C4F-40C2-BE40-C5910869C2E7.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/8CB784A7-E568-4E37-921D-AEFBF1CAD5C1.jpeg"
+  ],
+  "descripcion": "Polerón gris Acid Wash Umbrae"
+ },
+ {
+  "slug": "poleron-gris-oversize-al-por-mayor-12-unidades",
+  "nombre": "Polerón gris oversize al por mayor ( 12 unidades)",
+  "precio": "240000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/B804EDEE-8806-454B-9ACE-3EB57DEFA5A3.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/9B8D60BE-3ACF-48FE-B8EE-B8A90C83CA91.png"
+  ],
+  "descripcion": "Polerón gris oversize al por mayor ( 12 unidades)"
+ },
+ {
+  "slug": "poleron-minimal-m2-saddabae",
+  "nombre": "Polerón Minimal m2 Saddabae",
+  "precio": "55000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/911F9EFD-5610-4839-847C-56F75FF83985.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260428_181416.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/5C0BC314-1CBC-460D-9D0A-782D52A96A45.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/9D998D6E-9E25-46B6-854E-7C9241E5CD25.png"
+  ],
+  "descripcion": "Polerón Minimal m2 Saddabae"
+ },
+ {
+  "slug": "poleron-minimal-saddabae",
+  "nombre": "Polerón minimal Saddabae",
+  "precio": "55000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/3EC168AA-AF6D-49FA-A964-EA29CCB50BE8.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260428_181416.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/ED844E7E-48E6-4792-B637-810C4F227CEF.png",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/9D998D6E-9E25-46B6-854E-7C9241E5CD25.png"
+  ],
+  "descripcion": "Polerón minimal Saddabae"
+ },
+ {
+  "slug": "poleron-negro-oversize-a-por-mayor-12-unidades",
+  "nombre": "Polerón negro oversize a por mayor ( 12 unidades)",
+  "precio": "240000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/9896212C-F7F8-4804-B86B-9802A8D22231.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/6461EC5B-130B-4776-843C-019D9EDA579C.jpeg"
+  ],
+  "descripcion": "Polerón negro oversize a por mayor ( 12 unidades)"
+ },
+ {
+  "slug": "poleron-ninja-daemon",
+  "nombre": "Polerón ninja Daemon",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/49C229ED-AF11-4CCB-9048-7D632317655A.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/622F3AEC-A4B2-47C1-8685-1521DF3906BA.jpeg"
+  ],
+  "descripcion": "Polerón ninja Daemon"
+ },
+ {
+  "slug": "poleron-ninja-desperatio",
+  "nombre": "Polerón ninja Desperatio",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/67727159-9927-4AEB-811D-B7FB415DAE91.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/35F5C0B7-D457-41B1-BE86-2E17C35841D4.jpeg"
+  ],
+  "descripcion": "Polerón ninja Desperatio"
+ },
+ {
+  "slug": "poleron-ninja-flagitium-2",
+  "nombre": "Polerón ninja Flagitium",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/7369B9A0-A702-45A0-B46A-3EF373A1F463.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/A61B27C3-7B8C-44AB-9CFF-5153A65218F6.jpeg"
+  ],
+  "descripcion": "Polerón ninja Flagitium"
+ },
+ {
+  "slug": "poleron-ninja-flagitium",
+  "nombre": "Polerón ninja Flagitium",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/9AD8A636-B848-40AA-B55D-29FF25ECD13A.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/98B1B514-F723-45EB-8A8A-E89A6F0DA144.jpeg"
+  ],
+  "descripcion": "Polerón ninja Flagitium"
+ },
+ {
+  "slug": "poleron-ninja-gehenna",
+  "nombre": "Poleron ninja Gehenna",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/2C9D29B9-9830-422D-961A-78812C29B923.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/761C5954-FD96-4D97-9612-9F9922C4E77B.jpeg"
+  ],
+  "descripcion": "Poleron ninja Gehenna"
+ },
+ {
+  "slug": "poleron-ninja-kuromi",
+  "nombre": "Polerón ninja Kuromi",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/EAD56756-FEDA-450D-A0C0-5C649EF5B6E2.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/1A0F4EFC-7FFC-497A-BC47-572DC130F189.jpeg"
+  ],
+  "descripcion": "Polerón ninja Kuromi"
+ },
+ {
+  "slug": "poleron-ninja-maledictio",
+  "nombre": "Polerón Ninja Maledictio",
+  "precio": "62500",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/F2B9DE86-FC16-4A18-A389-5AFD2D219193-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/EF9912BC-6C54-463D-9EE7-F1003646D056-1.jpeg"
+  ],
+  "descripcion": "Polerón Ninja Maledictio"
+ },
+ {
+  "slug": "poleron-ninja-manes",
+  "nombre": "Polerón ninja Manes",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/A9E86AD9-4E93-4643-8B4A-F793922018A5.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/85A506E9-4703-413D-AA91-3C639CBA3F7A.jpeg"
+  ],
+  "descripcion": "Polerón ninja Manes"
+ },
+ {
+  "slug": "poleron-ninja-mysteria",
+  "nombre": "Polerón ninja Venom",
+  "precio": "62500",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/E7D3F11A-368D-4562-B631-CE9565A25426-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/BC827B51-76C9-436F-9A24-3EC2DD68A5E0-1.jpeg"
+  ],
+  "descripcion": "Polerón ninja Venom"
+ },
+ {
+  "slug": "poleron-ninja-vampyrus",
+  "nombre": "Polerón Ninja Vampyrus",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/8D6419FD-367B-43BD-B8AE-45F1E7E7AFAC.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/B01375FB-46B4-4134-BAB2-8EA4D0CF7B12.jpeg"
+  ],
+  "descripcion": "Polerón Ninja Vampyrus"
+ },
+ {
+  "slug": "poleron-ninja-vastitas",
+  "nombre": "Polerón Ninja Vastitas",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/E17C6990-30A3-4EEE-8589-4A1256E62A22.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/4A8F599B-1934-4D25-ACAA-5AAA72764647.jpeg"
+  ],
+  "descripcion": "Polerón Ninja Vastitas"
+ },
+ {
+  "slug": "poleron-personajes-saddabae",
+  "nombre": "Polerón personajes Saddabae",
+  "precio": "55000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/4838DA3A-0FC4-4366-946C-8BE2832EA188.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_192218.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/CC655B9B-05A9-4083-A276-60B6D6855DEF.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260428_190601.jpg"
+  ],
+  "descripcion": "Polerón personajes Saddabae"
+ },
+ {
+  "slug": "poleron-sad-rulay-m2-saddabae",
+  "nombre": "Polerón Sad Rulay M2 Saddabae TEST",
+  "precio": "55000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/F74ADD98-9CAE-4843-B284-CDFCD530D5FE.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_192218.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/2905A5E7-CEC1-4E58-ACE8-7E6E294AF900.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260428_190601.jpg"
+  ],
+  "descripcion": "Polerón Sad Rulay M2 Saddabae TEST"
+ },
+ {
+  "slug": "poleron-sad-rulay-saddabae",
+  "nombre": "Polerón Sad Rulay Saddabae",
+  "precio": "55000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_180430.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/Photoroom_20260427_191118.jpg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/B6BC0C5D-8E16-4DE3-A9AA-36AC04222460.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/05/8E0FE8A3-E3BE-48F7-904C-260056BF5291.jpeg"
+  ],
+  "descripcion": "Polerón Sad Rulay Saddabae"
+ },
+ {
+  "slug": "poleroon-ninja-draco",
+  "nombre": "Poleroón ninja Draco",
+  "precio": "57000",
+  "disponible": true,
+  "imagenes": [
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/971A4863-1C3D-4A24-A524-E22624CBA036-1-2-1-1-1-1-1-1-1-1-1.jpeg",
+   "https://tienda.iprex.cl/wp-content/uploads/2026/08/AEF91338-74CC-443D-845D-D540A244E213-1-2-1-1-1-1-1-1-1-1-1.jpeg"
+  ],
+  "descripcion": "Poleroón ninja Draco"
+ }
+]

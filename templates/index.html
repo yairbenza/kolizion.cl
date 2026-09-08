@@ -182,9 +182,13 @@
         <label id="campo-gorro-forma-yo" class="oculto">
           ¿Qué tipo de gorro?
           <select id="gorro-forma-yo">
+            <option value="">Cualquiera</option>
             <option value="curvo">Gorro curvo</option>
             <option value="plano">Gorro plano</option>
             <option value="lana">Gorro de lana</option>
+            <option value="trucker">Trucker</option>
+            <option value="dad hat">Dad Hat</option>
+            <option value="bucket hat">Bucket Hat</option>
           </select>
         </label>
 
@@ -276,6 +280,37 @@
     <section id="seccion-busqueda-regalo" class="oculto">
       <h2>Cuéntanos sobre la persona</h2>
       <form id="form-busqueda-regalo">
+        {% if usuario %}
+        <label>
+          ¿Para quién es? (opcional)
+          <select id="subperfil-select">
+            <option value="">No especificar / persona nueva</option>
+          </select>
+        </label>
+        <div id="campos-nueva-persona-regalo">
+          <p class="ayuda">Esto es opcional -- puedes buscar sin guardar a nadie.</p>
+          <label>
+            Nombre (opcional)
+            <input type="text" id="subperfil-nombre" placeholder="ej: Camila">
+          </label>
+          <label>
+            Apellido (opcional)
+            <input type="text" id="subperfil-apellido" placeholder="ej: Pérez">
+          </label>
+          <label>
+            Edad (opcional)
+            <input type="number" id="subperfil-edad" min="1" max="120" placeholder="ej: 24">
+          </label>
+          <label class="checkbox-inline campo-priorizar-material">
+            <input type="checkbox" id="subperfil-guardar">
+            Guardar esta persona para la próxima vez
+          </label>
+        </div>
+        <p id="subperfil-guardado-info" class="oculto ayuda">
+          Buscando para <strong id="subperfil-guardado-nombre"></strong> ·
+          <a href="#" id="btn-eliminar-subperfil">eliminar esta persona</a>
+        </p>
+        {% endif %}
         <label>
           Altura
           <input type="text" name="altura" placeholder="ej: 1.65m" required>
@@ -335,9 +370,13 @@
         <label id="campo-gorro-forma-regalo" class="oculto">
           ¿Qué tipo de gorro?
           <select id="gorro-forma-regalo">
+            <option value="">Cualquiera</option>
             <option value="curvo">Gorro curvo</option>
             <option value="plano">Gorro plano</option>
             <option value="lana">Gorro de lana</option>
+            <option value="trucker">Trucker</option>
+            <option value="dad hat">Dad Hat</option>
+            <option value="bucket hat">Bucket Hat</option>
           </select>
         </label>
 

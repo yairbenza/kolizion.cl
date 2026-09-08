@@ -12,6 +12,84 @@ function esImagenIlustrativa(imagen) {
   return typeof imagen === "string" && imagen.startsWith("/static/img/");
 }
 
+// "Confianza KOLIZION" (2026-09-02): sello con el nivel (0-5) calculado en
+// construir_catalogo_real.py a partir de 5 criterios objetivos (marca de
+// autor, material informado, despacho declarado, trayectoria en KOLIZION,
+// fotos reales) -- ver docs/catalogo_real.md. Reusado en tarjetas mini
+// (comun.js), tarjetas de vitrina (vitrina.js) y la ficha completa
+// (_vista_previa.html).
+const CONFIANZA_ETIQUETAS = {
+  marca_autor: "Marca de autor",
+  material_calidad: "Material informado/de calidad",
+  despacho_declarado: "Despacho declarado",
+  trayectoria_kolizion: "Trayectoria sin problemas en KOLIZION",
+  fotos_reales: "Fotos reales",
+};
+
+function insigniaConfianzaTitulo(confianza) {
+  // 2026-09-07 (spec "Nivel de Confianza KOLIZION"): ahora se listan los 5
+  // criterios siempre -- lenguaje neutral ("no verificado todavia") para
+  // los que faltan, nunca "no cumple" (ausencia de evidencia no es una
+  // acusacion). Reemplaza el criterio anterior (2026-09-02) de listar solo
+  // los cumplidos.
+  return Object.entries(CONFIANZA_ETIQUETAS)
+    .map(([clave, texto]) => (confianza[clave] ? `✓ ${texto}` : `○ ${texto} (no verificado todavía)`))
+    .join("\n");
+}
+
+// data-confianza (no title): 2026-09-03, pedido del usuario -- en mobile un
+// tap no muestra el title (tooltip), asi que el detalle se abre con un
+// popup real al tocar/clickear el sello (ver _abrirPopupConfianza abajo).
+function insigniaConfianzaHtml(rec) {
+  const confianza = rec.confianza;
+  if (!confianza || typeof confianza.nivel !== "number") return "";
+  return `<span class="insignia-confianza" data-confianza='${JSON.stringify(confianza)}'>Nivel ${confianza.nivel}</span>`;
+}
+
+let _popupConfianzaEl = null;
+
+function _cerrarPopupConfianza() {
+  if (_popupConfianzaEl) {
+    _popupConfianzaEl.remove();
+    _popupConfianzaEl = null;
+  }
+}
+
+function _abrirPopupConfianza(badge, confianza) {
+  _cerrarPopupConfianza();
+  const pop = document.createElement("div");
+  pop.className = "popup-confianza";
+  pop.style.visibility = "hidden";
+  pop.innerHTML = `
+    <strong>Confianza KOLIZION · Nivel ${confianza.nivel}/5</strong>
+    <p>${insigniaConfianzaTitulo(confianza).replace(/\n/g, "<br>")}</p>
+  `;
+  document.body.appendChild(pop);
+  const r = badge.getBoundingClientRect();
+  const arriba = r.bottom + pop.offsetHeight + 8 > window.innerHeight;
+  pop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - pop.offsetWidth - 8)) + "px";
+  pop.style.top = (arriba ? r.top - pop.offsetHeight - 8 : r.bottom + 8) + "px";
+  pop.style.visibility = "visible";
+  _popupConfianzaEl = pop;
+}
+
+// Captura (no burbuja): las tarjetas (resultado-card-mini, tarjeta-vitrina)
+// tienen su propio listener de click que abre la ficha completa -- en fase
+// de burbuja ese listener ya se disparo antes de llegar aca. En captura,
+// este handler corre primero y stopPropagation() frena TODO lo demas
+// (incluido abrir la ficha) cuando el click fue sobre el sello.
+document.addEventListener("click", (e) => {
+  const badge = e.target.closest(".insignia-confianza");
+  if (badge && badge.dataset.confianza) {
+    e.stopPropagation();
+    const yaAbierto = _popupConfianzaEl !== null;
+    _cerrarPopupConfianza();
+    if (!yaAbierto) _abrirPopupConfianza(badge, JSON.parse(badge.dataset.confianza));
+    return;
+  }
+  if (_popupConfianzaEl && !e.target.closest(".popup-confianza")) _cerrarPopupConfianza();
+}, true);
+
 // Producto "oficial" (2026-08-27): tienda con consentimiento explicito para
 // vender de verdad (ver TIENDAS_OFICIALES en construir_catalogo_real.py),
 // no solo foto real -- eso ya lo tienen varias tiendas mas sin ser
@@ -84,6 +162,22 @@ function getPreferenciasNegativas() {
 
 function guardarPreferenciasNegativas(prefs) {
   localStorage.setItem(PREFERENCIAS_NEGATIVAS_KEY, JSON.stringify(prefs));
+}
+
+// Preferencia de calce/ajuste (2026-09-07, pedido del usuario): "Como
+// prefieres que te quede la ropa" -- Ajustado/Normal/Holgado. Mismo patron
+// que preferencias negativas (se guarda aparte del perfil, se manda tal cual
+// al servidor en cada busqueda "yo", se edita en /perfil -- ver
+// configurarAjusteTalla en perfil.js). "normal" es el default: no cambia el
+// calculo de talla de siempre.
+const AJUSTE_TALLA_KEY = "ajusteTallaKolizion";
+
+function getAjusteTalla() {
+  return localStorage.getItem(AJUSTE_TALLA_KEY) || "normal";
+}
+
+function guardarAjusteTalla(ajuste) {
+  localStorage.setItem(AJUSTE_TALLA_KEY, ajuste);
 }
 
 // Texto humano de cada clave de preferencia negativa (usado por
@@ -377,15 +471,35 @@ function _renderChipsTalla(rec) {
   const cont = document.getElementById("vp-chips-talla");
   const opciones = _opcionesTalla(rec);
 
-  if (!rec.oficial || !opciones.length) {
+  // Talla unica (ej. gorros de lana, ver construir_producto en
+  // construir_catalogo_real.py) -- con 1 sola opcion no hay nada que
+  // "elegir", mostrar el selector solo confundia (2026-08-30, bug
+  // reportado: decia "Elige una talla" pero no se podia tocar nada).
+  if (!rec.oficial || !opciones.length || (opciones.length === 1 && opciones[0].disponible)) {
     bloque.classList.add("oculto");
+    if (opciones.length === 1 && opciones[0].disponible) vpTallaElegida = opciones[0].talla;
     return;
   }
 
   bloque.classList.remove("oculto");
+  // Talla destacada (2026-09-07, pedido del usuario): la que estimar_tallas()
+  // calcula como "principal" segun tu cuerpo, ya desplazada por tu
+  // preferencia de ajuste/calce si la configuraste en /perfil (Ajustado/
+  // Holgado). Solo se resalta y se preselecciona si esa talla existe Y esta
+  // disponible en ESTE producto real -- nunca se inventa ni se oculta
+  // ninguna otra opcion, el usuario igual puede elegir cualquier chip.
+  const destacada = opciones.find((o) => o.disponible && o.talla === rec.talla_destacada);
   cont.innerHTML = opciones
-    .map((o) => `<button type="button" class="vp-chip${o.disponible ? "" : " agotada"}" data-talla="${o.talla}" ${o.disponible ? "" : "disabled"}>${o.talla}</button>`)
+    .map((o) => {
+      const esDestacada = destacada && o.talla === destacada.talla;
+      const clases = ["vp-chip", o.disponible ? "" : "agotada", esDestacada ? "activa sugerida" : ""]
+        .filter(Boolean)
+        .join(" ");
+      const etiqueta = esDestacada ? `${o.talla} · recomendada` : o.talla;
+      return `<button type="button" class="${clases}" data-talla="${o.talla}" ${o.disponible ? "" : "disabled"}>${etiqueta}</button>`;
+    })
     .join("");
+  if (destacada) vpTallaElegida = destacada.talla;
   cont.querySelectorAll(".vp-chip:not(.agotada)").forEach((btn) => {
     btn.addEventListener("click", () => {
       cont.querySelectorAll(".vp-chip").forEach((b) => b.classList.remove("activa"));
@@ -499,6 +613,25 @@ function abrirVistaPrevia(rec) {
   // cargar cada tienda piloto (ver CLAUDE.md).
   document.getElementById("vp-marca-autor").classList.toggle("oculto", !rec.marca_autor);
   document.getElementById("vp-unisex").classList.toggle("oculto", rec.genero !== "unisex");
+  const confianza = rec.confianza;
+  const tieneConfianza = confianza && typeof confianza.nivel === "number";
+  const badgeConfianza = document.getElementById("vp-confianza");
+  badgeConfianza.textContent = tieneConfianza ? `Nivel ${confianza.nivel}` : "";
+  badgeConfianza.title = tieneConfianza ? `Confianza KOLIZION\n${insigniaConfianzaTitulo(confianza)}` : "";
+  badgeConfianza.classList.toggle("oculto", !tieneConfianza);
+  document.getElementById("vp-det-confianza").classList.toggle("oculto", !tieneConfianza);
+  if (tieneConfianza) {
+    // 2026-09-07: se listan los 5 criterios siempre, cumplidos y no
+    // verificados (mismo criterio que insigniaConfianzaTitulo -- ver
+    // comentario ahi).
+    document.getElementById("vp-confianza-lista").innerHTML = Object.entries(CONFIANZA_ETIQUETAS)
+      .map(([clave, texto]) => (
+        confianza[clave]
+          ? `<li class="vp-confianza-si">✓ ${texto}</li>`
+          : `<li class="vp-confianza-no">○ ${texto} (no verificado todavía)</li>`
+      ))
+      .join("");
+  }
   // Sello "por que es tendencia" (2026-08-29): solo para productos que
   // vienen de la fila Tendencias (rec.esTendencia, ver vitrina.js) -- no se
   // confunde con la "razon" de match de una busqueda normal, que sigue
@@ -650,7 +783,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const linkVP = document.getElementById("vp-link");
   if (linkVP) {
-    linkVP.addEventListener("click", (e) => {
+    linkVP.addEventListener("click", async (e) => {
       e.preventDefault();
       const rec = vpRecActual;
       if (!rec) return;
@@ -673,6 +806,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      const tallaAlMomento = vpTallaElegida;
+      const puedeSeguir = await _revalidarStockAntesDeAgregar(rec, tallaAlMomento, linkVP);
+      if (!puedeSeguir || vpRecActual !== rec) return;
+
       agregarAlCarrito({
         nombre: rec.nombre,
         tienda: rec.tienda,
@@ -683,7 +820,7 @@ document.addEventListener("DOMContentLoaded", () => {
         imagen: rec.imagen,
         fecha: new Date().toISOString(),
       });
-      const textoOriginal = linkVP.textContent;
+      const textoOriginal = "Agregar al carrito";
       linkVP.textContent = "✓ Agregado al carrito";
       setTimeout(() => {
         if (vpRecActual === rec) linkVP.textContent = textoOriginal;
@@ -691,6 +828,72 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// Revalidacion en vivo al momento de comprar (2026-09-07, pedido del
+// usuario): antes de guardar en el carrito, se le pregunta a la tienda real
+// si esa talla puntual sigue disponible -- "estamos verificando..." mientras
+// dura la consulta real (no un timer inventado). Si la plataforma de esa
+// tienda no tiene forma de verificar en vivo hoy (ver servicio_stock_live.py
+// -- ej. RAPT, que esta con la tienda desactivada), la respuesta llega con
+// verificado:false y se sigue igual que antes (fail-open: nunca bloquea una
+// compra solo porque no se pudo reconfirmar).
+async function _revalidarStockAntesDeAgregar(rec, tallaPedida, linkVP) {
+  const necesitaTalla = !document.getElementById("vp-selector-talla").classList.contains("oculto");
+  if (!necesitaTalla) return true; // talla unica -- nada que revalidar por talla
+
+  const textoOriginal = linkVP.textContent;
+  linkVP.textContent = "Verificando disponibilidad...";
+  linkVP.setAttribute("aria-disabled", "true");
+
+  const controlador = new AbortController();
+  const timeoutId = setTimeout(() => controlador.abort(), 12000);
+  let resultado = null;
+  try {
+    const resp = await fetch("/api/verificar_stock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ producto_id: rec.id, talla: tallaPedida || "" }),
+      signal: controlador.signal,
+    });
+    resultado = await resp.json();
+  } catch (err) {
+    // Timeout o falla de red al verificar: no bloquea la compra, sigue con
+    // el dato que ya se tenia (mismo criterio best-effort que resenas/envio).
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
+  if (vpRecActual !== rec) return false; // el usuario cerro/cambio de ficha mientras se verificaba
+
+  if (!resultado || !resultado.verificado) {
+    linkVP.removeAttribute("aria-disabled");
+    linkVP.textContent = textoOriginal;
+    return true; // no se pudo confirmar nada nuevo -- se sigue como antes
+  }
+
+  if (resultado.tallas_variantes) {
+    rec.tallas_variantes = resultado.tallas_variantes;
+    rec.tallas_disponibles = resultado.tallas_disponibles;
+  } else if (resultado.talla_confirmada === false && resultado.disponible === false) {
+    // Solo se supo que el producto ENTERO se agoto (ej. IPREX, sin stock
+    // separado por talla) -- se refleja en todas las tallas reales.
+    rec.tallas_disponibles = [];
+    if (rec.tallas_variantes) {
+      rec.tallas_variantes = rec.tallas_variantes.map((v) => ({ ...v, disponible: false }));
+    }
+  }
+
+  linkVP.removeAttribute("aria-disabled");
+  if (!resultado.disponible) {
+    vpTallaElegida = null;
+    _renderChipsTalla(rec);
+    _actualizarCta();
+    alert(`La talla "${tallaPedida}" se agotó recién en la tienda -- elige otra opción disponible.`);
+    return false;
+  }
+  linkVP.textContent = textoOriginal;
+  return true;
+}
 
 // Grilla estilo Pinterest/Mercado Libre (2026-08-28, reemplaza las tarjetas
 // grandes apiladas): cada cuadradito solo muestra foto + nombre + precio --
@@ -712,6 +915,7 @@ function renderResultados(contenedorId, recomendaciones, opciones = {}) {
       <div class="resultado-card-mini-info">
         <h3>${rec.nombre}</h3>
         ${rec.precio ? `<p class="precio">${rec.precio}</p>` : ""}
+        ${insigniaConfianzaHtml(rec)}
       </div>
     `;
     card.addEventListener("click", () => abrirVistaPrevia(rec));
@@ -779,14 +983,16 @@ async function buscarConAnimacion(payload, minMs = 3000) {
   }
 }
 
-// --- Guia de bienvenida: tour de 3 pantallas (Buscador/Koko/Descubre) -----
-// Vive aca (no en script.js) para funcionar en las 4 paginas -- se abre de
-// 2 formas: automatica la primera vez que se crea el perfil (script.js
-// muestra antes #modal-onboarding-pregunta y, si el usuario dice que si,
-// llama a abrirTourOnboarding) y manual en cualquier momento con el icono
-// fijo "#btn-abrir-guia" (_guia_bienvenida.html, en las 4 paginas).
+// --- Guia de bienvenida: tour de 8 pantallas (2026-09-02, actualizado con
+// las funciones nuevas -- se saco la pantalla de Koko a pedido del
+// usuario). Vive aca (no en script.js) para funcionar en las 4 paginas --
+// se abre de 2 formas: automatica la primera vez que se crea el perfil
+// (script.js muestra antes #modal-onboarding-pregunta y, si el usuario
+// dice que si, llama a abrirTourOnboarding) y manual en cualquier momento
+// con el icono fijo "#btn-abrir-guia" (_guia_bienvenida.html, en las 4
+// paginas).
 const ONBOARDING_KEY = "kolizionOnboardingVisto";
-const TOUR_SLIDES_TOTAL = 3;
+const TOUR_SLIDES_TOTAL = 8;
 let indiceTour = 0;
 // Solo queda true si el tour se abrio desde la pregunta de bienvenida (no
 // desde una reapertura manual con el icono fijo) -- controla si al cerrar
@@ -800,6 +1006,12 @@ function mostrarSlideTour(indice) {
   });
   document.querySelectorAll(".tour-punto").forEach((el) => {
     el.classList.toggle("activo", Number(el.dataset.punto) === indice);
+  });
+  // Al cambiar de pantalla se pausa y esconde cualquier ejemplo en video
+  // que haya quedado abierto (boton "No entendi", ver mas abajo).
+  document.querySelectorAll(".video-ejemplo-tour").forEach((video) => {
+    video.pause();
+    video.classList.add("oculto");
   });
   document.getElementById("btn-tour-anterior").classList.toggle("oculto", indice === 0);
   document.getElementById("btn-tour-siguiente").textContent =
@@ -843,6 +1055,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btn-cerrar-tour").addEventListener("click", cerrarTourOnboarding);
   document.getElementById("btn-abrir-guia").addEventListener("click", abrirTourOnboarding);
+
+  // Boton "No entendi" de cada pantalla del tour: carga el video de
+  // ejemplo (grabacion real de la app, no animacion inventada) recien al
+  // tocarlo, para no descargarlo si nadie lo pide.
+  document.querySelectorAll(".btn-no-entendi").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const video = boton.nextElementSibling;
+      if (!video || !video.classList.contains("video-ejemplo-tour")) return;
+      if (!video.src) video.src = boton.dataset.video;
+      video.classList.remove("oculto");
+      video.play();
+    });
+  });
 });
 
 // Corre la busqueda (con la animacion de carga de arriba) y, cuando

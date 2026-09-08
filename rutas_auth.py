@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import secrets
@@ -8,6 +9,7 @@ from functools import wraps
 from pathlib import Path
 
 from flask import Blueprint, jsonify, redirect, render_template, request, session, url_for
+from PIL import Image, UnidentifiedImageError
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -20,6 +22,7 @@ from constantes import (
     _texto_seguro,
 )
 from extensions import limiter
+from motor_recomendacion import _parsear_altura_m, _parsear_numero
 
 auth_bp = Blueprint("auth_bp", __name__)
 
@@ -27,6 +30,7 @@ GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 
 _EXTENSIONES_FOTO_PERMITIDAS = {"jpg", "jpeg", "png", "webp"}
+_FORMATOS_FOTO = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
 FOTOS_USUARIOS_DIR = BASE_DIR / "static" / "img" / "usuarios"
 
 
@@ -242,14 +246,69 @@ def subir_foto_perfil():
     if extension not in _EXTENSIONES_FOTO_PERMITIDAS:
         return jsonify({"error": "Formato no permitido -- usa JPG, PNG o WEBP."}), 400
 
+    datos = archivo.read()
+    try:
+        Image.open(io.BytesIO(datos)).verify()
+        imagen = Image.open(io.BytesIO(datos))
+        imagen.load()
+    except (UnidentifiedImageError, OSError):
+        return jsonify({"error": "El archivo no es una imagen válida."}), 400
+
+    formato = _FORMATOS_FOTO[extension]
+    if formato == "JPEG" and imagen.mode in ("RGBA", "P", "LA"):
+        imagen = imagen.convert("RGB")
+
     usuario_id = session["usuario_id"]
     FOTOS_USUARIOS_DIR.mkdir(parents=True, exist_ok=True)
     nombre_archivo = f"{usuario_id}.{extension}"
-    archivo.save(FOTOS_USUARIOS_DIR / nombre_archivo)
+    imagen.save(FOTOS_USUARIOS_DIR / nombre_archivo, format=formato)
 
     ruta_relativa = f"img/usuarios/{nombre_archivo}"
     db_usuarios.actualizar_foto_perfil(usuario_id, ruta_relativa)
     return jsonify({"foto_perfil": url_for("static", filename=ruta_relativa)})
+
+
+@auth_bp.route("/api/subperfiles", methods=["GET"])
+@requiere_cuenta
+def listar_subperfiles_ruta():
+    """Personas guardadas bajo esta cuenta para la busqueda 'regalo' (ver
+    seccion-busqueda-regalo en index.html) -- reutilizables entre
+    busquedas, igual que el perfil 'yo'."""
+    return jsonify({"subperfiles": db_usuarios.listar_subperfiles(session["usuario_id"])})
+
+
+@auth_bp.route("/api/subperfiles", methods=["POST"])
+@requiere_cuenta
+@limiter.limit("20 per minute, 100 per hour")
+def crear_subperfil_ruta():
+    datos = request.get_json(silent=True) or {}
+    nombre = _texto_seguro(datos.get("nombre", ""), 100)
+    if not nombre:
+        return jsonify({"error": "El nombre es obligatorio."}), 400
+    # altura/peso llegan como texto libre (el formulario de "regalo" acepta
+    # "1.65m"/"60kg", igual que estimar_tallas()) -- se reusan los mismos
+    # parsers tolerantes en vez de guardar el texto crudo, para que quede
+    # un numero limpio (motor_recomendacion.py).
+    subperfil = {
+        "nombre": nombre,
+        "apellido": _texto_seguro(datos.get("apellido", ""), 100),
+        "genero": _texto_seguro(datos.get("genero", ""), 50),
+        "edad": _parsear_numero(str(datos.get("edad") or "")),
+        "altura": _parsear_altura_m(str(datos.get("altura") or "")),
+        "peso": _parsear_numero(str(datos.get("peso") or "")),
+        "hobbie": _lista_texto_segura(datos.get("hobbie")),
+        "hobbie_musica_genero": _lista_texto_segura(datos.get("hobbie_musica_genero")),
+        "hobbie_deportes_subtipo": _lista_texto_segura(datos.get("hobbie_deportes_subtipo")),
+    }
+    creado = db_usuarios.crear_subperfil(session["usuario_id"], subperfil)
+    return jsonify({"subperfil": creado})
+
+
+@auth_bp.route("/api/subperfiles/<int:subperfil_id>", methods=["DELETE"])
+@requiere_cuenta
+def eliminar_subperfil_ruta(subperfil_id):
+    db_usuarios.eliminar_subperfil(subperfil_id, session["usuario_id"])
+    return jsonify({"ok": True})
 
 
 @auth_bp.route("/perfil/actualizar", methods=["POST"])

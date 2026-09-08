@@ -22,6 +22,19 @@
       </form>
     </nav>
 
+    <h1>Productos en Tendencias -- clics reales de hoy</h1>
+    <p class="subtitulo">Asi se arma "Tendencias" en Vitrina: se ordena por estos clics reales de las ultimas 24h (si un producto no tiene clics, se rellena con uno al azar marcado "Nuevo en la tienda", eso no sale en esta lista).</p>
+
+    {% if tendencias_clics %}
+    <ul class="lista-reportes">
+      {% for t in tendencias_clics %}
+      <li>{{ t.nombre }}{% if t.tienda %} ({{ t.tienda }}){% endif %} — {{ t.clics_hoy }} clic{{ "s" if t.clics_hoy != 1 else "" }} hoy</li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="descripcion">Todavía no hay clics reales hoy -- Tendencias se está mostrando con productos de relleno.</p>
+    {% endif %}
+
     <h1>Clics por tienda</h1>
     <p class="subtitulo">Registro de clics reales en links de tiendas con sitio web (ver "Tiendas").</p>
 

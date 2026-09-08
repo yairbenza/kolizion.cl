@@ -23,6 +23,7 @@ function tarjetaVitrina(rec, favoritosSet) {
     ${rec.imagen && esImagenIlustrativa(rec.imagen) ? `<p class="aviso-imagen">Imagen ilustrativa de referencia, no es el producto real.</p>` : ""}
     <div class="tienda">${rec.tienda}</div>
     ${rec.marca_autor ? `<span class="insignia-marca-autor">✦ Marca de autor</span>` : ""}
+    ${insigniaConfianzaHtml(rec)}
     <h3>${rec.nombre}</h3>
     ${rec.marca ? `<p class="marca">${rec.marca}</p>` : ""}
     <p class="precio-vitrina">
@@ -125,7 +126,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   try {
-    const [resp, favoritosSet] = await Promise.all([fetch("/api/vitrina"), cargarFavoritosSet()]);
+    // Preferencias negativas (2026-08-31, pedido del usuario): Descubre
+    // mostraba prendas con texto/grafico/cara-logo grande igual, ya que
+    // esta seccion no sabe nada del perfil -- se manda lo guardado en
+    // localStorage (mismo mecanismo que usa el buscador "por mi") como
+    // query param para que el backend filtre igual que en /api/recommend.
+    const prefsVitrina = encodeURIComponent(JSON.stringify(getPreferenciasNegativas()));
+    const [resp, favoritosSet] = await Promise.all([
+      fetch(`/api/vitrina?prefs=${prefsVitrina}`),
+      cargarFavoritosSet(),
+    ]);
     if (!resp.ok) throw new Error("Error del servidor: " + resp.status);
     const data = await resp.json();
     estado.textContent = "";

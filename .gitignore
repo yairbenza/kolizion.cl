@@ -12,6 +12,7 @@ data/reportes_manuales.json
 data/favoritos.json
 data/resenas.json
 data/limite_koko.json
+data/stock_live.json
 data/kolizion.db
 static/img/usuarios/
 cloudflared.exe
@@ -22,3 +23,4 @@ scratch_chat.txt
 kolizion.db
 data/shopify_cache/
 data/woocommerce_cache/
+data/jumpseller_cache/

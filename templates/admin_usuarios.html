@@ -24,6 +24,7 @@
 
     <h1>Cuentas de usuario</h1>
     <p class="subtitulo">{{ usuarios|length }} cuenta{{ "s" if usuarios|length != 1 else "" }} registrada{{ "s" if usuarios|length != 1 else "" }}.</p>
+    <p><a href="/admin/usuarios/respaldo" download>Descargar respaldo de todas las cuentas (JSON)</a></p>
 
     {% for u in usuarios %}
     <div class="resultado-card">

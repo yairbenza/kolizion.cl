@@ -60,7 +60,7 @@
     <h2>¿Quieres excluir algo de tus búsquedas?</h2>
     <div class="selector-exclusiones" id="selector-exclusiones">
       <button type="button" id="btn-selector-exclusiones" class="selector-exclusiones-boton" aria-haspopup="listbox" aria-expanded="false">
-        <span id="selector-exclusiones-texto">Seleccionar preferencias</span>
+        <span id="selector-exclusiones-texto">Excluir características</span>
         <span class="selector-exclusiones-flecha">▾</span>
       </button>
       <div id="selector-exclusiones-panel" class="selector-exclusiones-panel oculto">
@@ -70,6 +70,29 @@
         <label class="selector-exclusiones-opcion"><input type="checkbox" id="pref-cara-logo"> Caras o logos gigantes</label>
       </div>
       <div id="selector-exclusiones-chips" class="selector-exclusiones-chips"></div>
+    </div>
+
+    <!-- Preferencia de calce/ajuste (2026-09-07, pedido del usuario): igual
+         patron que preferencias negativas -- se guarda aparte en
+         localStorage (ajusteTallaKolizion, ver comun.js), se auto-guarda al
+         tocar cada opcion, sin boton "Guardar". Ajusta cual talla aparece
+         destacada/preseleccionada en la ficha de cada producto (ver
+         configurarAjusteTalla en perfil.js) -- nunca oculta ninguna talla
+         real del producto, el usuario siempre puede elegir otra. -->
+    <h2>¿Cómo prefieres que te quede la ropa?</h2>
+    <div class="ajuste-talla-opciones" id="ajuste-talla-opciones">
+      <label class="ajuste-talla-opcion">
+        <input type="radio" name="ajuste-talla" id="ajuste-talla-ajustado" value="ajustado">
+        Ajustado
+      </label>
+      <label class="ajuste-talla-opcion">
+        <input type="radio" name="ajuste-talla" id="ajuste-talla-normal" value="normal" checked>
+        Normal (según altura y peso)
+      </label>
+      <label class="ajuste-talla-opcion">
+        <input type="radio" name="ajuste-talla" id="ajuste-talla-holgado" value="holgado">
+        Holgado
+      </label>
     </div>
 
     <!-- El historial solo se muestra con sesion REAL iniciada (Google/

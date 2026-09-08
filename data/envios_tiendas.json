@@ -233,5 +233,61 @@
     "retiro_tienda": {"disponible": false, "comuna": null, "es_rm": null},
     "fuente": "https://stuffiesconcept.com/policies/shipping-policy",
     "notas": "Envio via Starken y/o BlueExpress a todo Chile. Un banner dice 'Envios rapidos: 2-3 dias habiles', pero la politica de envio aclara que 'el plazo de entrega varia segun la region y el metodo de envio' sin dar numeros -- mismo caso que ForceBlack (banner de marketing vs. politica real sin plazo verificable), asi que no se toma el '2-3 dias' como dato confiable."
+  },
+  "ZAMU": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://www.zamu.cl/ (sin pagina de politicas de envio publicada -- /politicas-de-envio/, /envios/, /despachos/, /faq/ y otros slugs comunes devuelven 404, homepage sin link a envios en el menu/footer)",
+    "notas": "No hay dato publico de envio que registrar sin inventarlo."
+  },
+  "La Maria Dolores": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado, costo $2.990 via Delivery Paket"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "2 a 10 dias habiles desde el envio, via Starken (por pagar a sucursal; gratis a domicilio sobre $80.000). El cliente tiene 5 dias habiles para retirar el pedido en la sucursal indicada"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://lamariadolores.cl/policies/shipping-policy",
+    "notas": "La politica no menciona tienda fisica ni opcion de retiro en local -- queda 'no especificado' en vez de asumir que no existe."
+  },
+  "Brissa": {
+    "envio_rm": {"disponible": true, "dias_habiles": "4 a 7 dias habiles, costo $3.990"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "5 a 6 dias habiles, costo $7.990 a $13.990 segun zona"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://brissa-chile.cl/policies/shipping-policy",
+    "notas": "Politica de envio publicada con plazo en dias habiles para RM y regiones. No menciona retiro en tienda fisica -- queda 'no especificado'."
+  },
+  "Hush": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://hush.cl/",
+    "notas": "No se encontro pagina de politicas de envio (/policies/shipping-policy y /pages/contact no traen plazos). Sin dato publico que registrar sin inventarlo."
+  },
+  "By Adrián Sánchez": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://www.byadriansanchez.com/contact",
+    "notas": "El sitio solo menciona 'despacho gratis sobre $89.990' (costo, no plazo). Varias fichas declaran tiempos de PRE-ORDER puntuales (ej. 'aprox 3 semanas', '2 semanas') pero son plazos de confeccion por producto, no una politica general de despacho de la tienda -- no se usan para este campo por pedido explicito del usuario (no confundir pre-order con politica de despacho)."
+  },
+  "Endless": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://endlesscl.com/",
+    "notas": "No existe /policies/shipping-policy ni pagina de Nosotros (ambas devuelven 404). Home/contacto/cambios-y-devoluciones no mencionan plazos de despacho. Sin dato publico que registrar sin inventarlo."
+  },
+  "Bang Concept": {
+    "envio_rm": {"disponible": true, "dias_habiles": "3 a 7 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "3 a 7 dias habiles"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://bangconcept.cl/policies/shipping-policy",
+    "notas": "Politica unica 'Despachamos a todo Chile' sin diferenciar RM/regiones (domicilio o sucursal Starken/Correos de Chile). No menciona retiro en tienda fisica -- queda 'no especificado'."
+  },
+  "The Wolf": {
+    "envio_rm": {"disponible": true, "dias_habiles": "3 a 6 dias habiles, $4.200 (Santiago urbano) o $5.600 (fuera del radio urbano)"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "3 a 6 dias habiles, $5.600 (III-IV-V-VI-VII-VIII-IX-XIV-X region) o $9.500 (otras regiones)"},
+    "retiro_tienda": {"disponible": true, "comuna": "Las Condes", "es_rm": true},
+    "fuente": "https://thewolfchile.com/pages/envios",
+    "notas": "Envios via Blue Express, mismo plazo declarado para RM y regiones. Retiro gratuito en Las Condes con confirmacion previa por WhatsApp/correo (horarios publicados en la pagina)."
   }
 }

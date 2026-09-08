@@ -43,10 +43,15 @@ import unicodedata
 from pathlib import Path
 
 from data.catalogo_manual_viloria import VILORIA_PRODUCTOS
+from constantes import ENVIOS_TIENDAS_PATH
 
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / "data" / "catalog.json"
 BACKUP_PATH = BASE_DIR / "data" / "catalog_mock_backup.json"
+
+# Cargado una sola vez para el criterio 3 de Confianza KOLIZION (despacho
+# declarado) -- mismo archivo que usa "Llegan rapido a ti" (servicio_tiendas.py).
+ENVIOS_TIENDAS = json.loads(ENVIOS_TIENDAS_PATH.read_text(encoding="utf-8")) if ENVIOS_TIENDAS_PATH.exists() else {}
 
 OCASIONES_DEFAULT = ["carrete", "universidad", "junta social", "junta de amigos/skate park", "concierto/festival"]
 
@@ -178,6 +183,227 @@ VERIFICADO_A_MANO = {
     'Gorra Project Expansión': {'colores': ['Azul']},
     'HOODIE MULTIZIPER (FÉNIX)': {'colores': ['Negro']},
     'HOODIE DOUBLE CAP (FULL ZIP)': {'colores': ['Negro']},
+    # Bug real (2026-08-31, reportado por el usuario): el detector automatico
+    # de color por nombre (_COLOR_PALABRAS_NOMBRE) leyo "WHITE" de "(WHITE
+    # SEAMS)" como si fuera el color de la prenda -- pero "seams" es la
+    # costura/detalle de contraste, la prenda es negra (confirmado con la
+    # foto real). Mismo patron que el bug de la chaqueta DANGEROUS / BANE de
+    # Viloria: un dato de foto real siempre pisa la deteccion automatica.
+    'HOODIE DOUBLE CAP (WHITE SEAMS)': {'colores': ['Negro']},
+    # ZAMU (2026-09-03, mismo bug reportado por el usuario que Kagi arriba):
+    # este producto real SI tiene 9 colores/variantes en Shopify (jersey
+    # acid wash 100% algodon), pero KOLIZION solo muestra UNA foto fija por
+    # tarjeta (la primera, "imagen") -- esa foto real es la variante negra
+    # desgastada. Con colores_disponibles = las 9 variantes, buscar "polera
+    # blanca"/"burdeo"/"pistacho"/etc. mostraba esta tarjeta con la foto
+    # negra, sin relacion con lo buscado. Se deja solo el color que la foto
+    # mostrada realmente confirma -- mismo criterio que "TEE REGALA FLORES"
+    # arriba (foto real > lista completa de variantes de la tienda).
+    'Polera Oversize Acid Wash': {'colores': ['Negro desgastado']},
+    # ZAMU/La Maria Dolores (2026-08-31): clasificar_prenda() detecta
+    # 'gorro' apenas ve esa palabra en el nombre, incluso cuando en
+    # realidad describe la capucha/gorro INCLUIDO de un poleron ("con
+    # gorro cuadrille a tono", "con gorro desgastado") -- la prenda real
+    # es el poleron, no un gorro suelto. 'camisa' tampoco tiene ninguna
+    # regla automatica en clasificar_prenda() (nunca se habia cargado una
+    # antes, ver docs/catalogo_real.md), asi que sin esto cae al default
+    # 'polera', que es falso para una camisa de botones real.
+    'Camisa de Algodón 90% – Corte Regular': {'categoria': 'camisa'},
+    'Polerón Hoodie Acid Wash con Gorro Cuadrillé a Tono': {'categoria': 'poleron'},
+    'Poleron chocolate con gorro desgastado estrella en espalda': {'categoria': 'poleron'},
+    # ZAMU (2026-09-03, bug real reportado por el usuario: aparecian como
+    # "polera azul" en el buscador) -- "sweater" no tiene ninguna regla en
+    # clasificar_prenda() (nunca se habia cargado uno antes), asi que caia
+    # al default "polera", que es falso: un sweater es un poleron sin
+    # capucha (ninguna de las 2 fichas reales menciona capucha/gorro).
+    # Capucha/cierre real van en CAPUCHA_CIERRE_VERIFICADO, no aca.
+    'Sweater con Cierre Metálico Tejido en Chile | Punto Inglés Barnizado': {'categoria': 'poleron'},
+    'Sweater tejido oversize punto inglés barnizado': {'categoria': 'poleron'},
+    # La Maria Dolores (2026-08-31): "falda" es categoria valida en el
+    # sistema (CATEGORIA_GRUPOS/TIPOS_PRENDA_CONOCIDOS en constantes.py)
+    # pero clasificar_prenda() no tiene ninguna regla que la detecte (nunca
+    # se habia cargado una falda real antes) -- sin este override quedarian
+    # mal clasificadas como "polera" por default, que es falso.
+    'Sobrefalda tartan #1': {'categoria': 'falda'},
+    'Sobrefalda tartan #2': {'categoria': 'falda'},
+    'Sobrefalda tartan #3': {'categoria': 'falda'},
+    'Sobrefalda tartan #4': {'categoria': 'falda'},
+    # Brissa (2026-09-02): "top" es categoria valida (CATEGORIA_GRUPOS/
+    # SUBTIPOS_CONOCIDOS en constantes.py, ya usada por 11 productos de
+    # otras tiendas) pero clasificar_prenda() nunca la detecta de un "top"
+    # generico en el nombre -- solo detecta subtipos especificos (croptop/
+    # tanktop/halter/corset). Sin esto, "TOP 05"/"Top Molle"/etc caerian al
+    # default "polera", que es falso. Material real de cada ficha (nunca
+    # "premium" generico): TOP 05 y TOP 01 declaran algodon/viscosa; Top
+    # Molle declara "el cuero" como material del diseño; Top Tepa y Top
+    # Maiten declaran "lino"/"Lino con Algodon".
+    'TOP 05 - BLANCO': {'categoria': 'top', 'material': 'algodon_100'},
+    'TOP 01 TERRACOTA': {'categoria': 'top', 'material': 'viscosa'},
+    'Top Molle': {'categoria': 'top', 'material': 'cuero'},
+    'Top Tepa': {'categoria': 'top', 'material': 'lino'},
+    'Top Maitén Mantequilla': {'categoria': 'top', 'material': 'lino'},
+    # Brissa (2026-09-03, pedido explicito del usuario tras preguntar "no
+    # tenian hartas camisas" las ultimas tiendas): estos 3 habian quedado
+    # excluidos en la curacion original de Brissa (2026-09-02) porque
+    # "camisas/blusas" no era una familia de la lista aprobada -- se
+    # revisaron las 3 fichas reales y las 3 son en realidad BLUSAS (la
+    # propia ficha de "SHIRT 02" dice literal "Nuestra blusa..." pese al
+    # nombre en ingles), asi que van a la misma categoria "top"+subtipo
+    # "blusa" que ya usa el sistema (SUBTIPOS_CONOCIDOS en constantes.py),
+    # no a "camisa" (esa categoria es para camisa de botones tipo
+    # Doslobos/ZAMU). "SHIRT 02" declara "cupro" y "mangas largas"
+    # explicito en su ficha. Las 2 "Blusa Mañío" declaran "Lino con
+    # Algodón" (nueva entrada mezcla_lino_algodon en MATERIALES_CONOCIDOS)
+    # y manga larga confirmada por foto real (no declarada en texto, pero
+    # inequivoca: manga larga con puño). Color: la opcion Shopify de SHIRT
+    # 02 es "Clara" (no es un color real de COLORES_CONOCIDOS) -- foto real
+    # confirma blanco/crudo. "Blusa Mañío Rojo Frambuesa": el tag de la
+    # propia tienda dice "Burdeo" pero el NOMBRE dice "Rojo Frambuesa" y la
+    # foto real es un rojo vivo/fucsia, no burdeo (vino/marron) -- se
+    # prioriza nombre+foto por sobre un tag generico de la tienda que
+    # tambien repite "Polera"/"Top" sueltos sin sentido en los 2 productos.
+    'SHIRT 02': {
+        'categoria': 'top', 'subtipo': 'blusa', 'material': 'cupro',
+        'manga': 'larga', 'colores': ['Blanco'],
+    },
+    'Blusa Mañío Amarillo Mantequilla': {
+        'categoria': 'top', 'subtipo': 'blusa', 'material': 'mezcla_lino_algodon',
+        'manga': 'larga', 'colores': ['Amarillo'],
+    },
+    'Blusa Mañío Rojo Frambuesa': {
+        'categoria': 'top', 'subtipo': 'blusa', 'material': 'mezcla_lino_algodon',
+        'manga': 'larga', 'colores': ['Rojo'],
+    },
+    # BANG CONCEPT (bangconcept.cl, 2026-09-07): Shopify. La tienda es una
+    # tienda de skate completa (572 productos reales, decks/trucks/ruedas/
+    # grip de marcas externas: HUF, Thrasher, Vans, Independent, etc.) --
+    # solo se cargan los productos con vendor real "Bang concept"/
+    # "bangconcept" en su propio Shopify (evidencia de marca propia, no
+    # asumido), y de esos se excluyen ademas los que no son ropa (rodamientos,
+    # grip en blanco, una bandera) y 2 poleras cuyo NOMBRE nombra otra marca
+    # de skate (Shake Junt/Deathwish) pese al vendor "bangconcept" -- diseño
+    # no claramente propio, se descartan en vez de asumir. Quedan 24
+    # productos reales (2 poleras, 4 dad hat, 10 gorros de lana, 8 polerones)
+    # en data/shopify_cache/bangconcept.json (subconjunto real filtrado, no
+    # el dump completo del sitio).
+    # "con Gorro" en el nombre significa "con capucha" (poleron con capucha),
+    # no un gorro suelto -- pero clasificar_prenda() dispara con la palabra
+    # "gorro" en cualquier parte del nombre (mismo chequeo que gorro/beanie/
+    # gorra/jockey de mas arriba), asi que sin este override quedaba mal
+    # categorizado como "gorro" en vez de "poleron".
+    'Poleron con Gorro Bang concept Chocolate': {'categoria': 'poleron'},
+    'Polera Bang Concept Chistera Aracnic Negra': {'corte': 'relax fit'},
+    'Polera Bang Frongo Black': {'material': 'mezcla_algodon_poliester'},
+    'Poleron Bang concept Logo Negro': {'material': 'mezcla_algodon_poliester'},
+    'Poleron Bang concepto WITZI Negro': {'material': 'mezcla_algodon_poliester'},
+    # Ficha real dice "Mas Cafe" (nombre de la linea/diseño) + "Negro" (color
+    # real, confirmado por la foto "mascafeporfavornegro.png") -- sin esto
+    # el buscador de color detectaba "cafe" Y "negro" a la vez en el mismo
+    # texto y podia mostrar este gorro negro buscando "cafe".
+    'Dad Hat bang "Mas Cafe " Negro': {'colores': ['Negro']},
+    # THE WOLF (thewolfchile.com, 2026-09-07): Shopify, vendor unico "The
+    # Wolf" en los 39 productos reales -- sin resellers, se carga completo.
+    # Corte/gramaje abajo: SOLO donde la ficha real de ESE producto puntual
+    # lo declara (nombre o descripcion) y clasificar_prenda()/detectar_corte
+    # (que solo miran el NOMBRE) no lo agarraban solos -- no se aplica a
+    # toda la coleccion pareja.
+    'Hoodie Not San Valentin': {'corte': 'boxy fit', 'gramaje_gsm': 330},
+    'Polera Not San Valentin Negra': {'corte': 'boxy fit'},
+    'Polera Not San Valentin Blanca': {'corte': 'boxy fit'},
+    'Hoodie Psycho': {'corte': 'boxy fit'},
+    'Hoodie elemental turquesa oscuro': {'corte': 'oversize'},
+    'Hoodie elemental negro': {'corte': 'regular fit'},
+    'Hoodie Elemental Rosado Pálido': {'corte': 'regular fit'},
+    'Hoodie Elemental Azul Marino': {'corte': 'regular fit'},
+    'Polera elemental gris': {'corte': 'oversize'},
+    "Hoodie Don't Look Back Negro": {'corte': 'boxy fit'},
+    "Polera Don't Look Back Azul Marino Heavy Weight 280 gr": {'corte': 'regular fit', 'gramaje_gsm': 280},
+    "Polera Don't Look Back Blanca Heavy Weight 280 gr": {'corte': 'regular fit', 'gramaje_gsm': 280},
+    "Polera Don't Look Back Beige Oversize Heavy Weight 280 gr": {'gramaje_gsm': 280},
+    "Polera Don't Look Back Café Oversize Heavy Weight 280 gr": {'gramaje_gsm': 280},
+    "Polera Don't Look Back Negra Oversize Heavy Weight 280 gr": {'gramaje_gsm': 280},
+    'Hoodie Style Café': {'corte': 'regular fit'},
+    'Hoodie style beige': {'corte': 'regular fit'},
+    'Hoodie style rosado': {'corte': 'regular fit'},
+    'Hoodie style turquesa': {'corte': 'regular fit'},
+    'Hoodie Style Negro': {'corte': 'regular fit'},
+    'Polera básica beige': {'material': 'algodon_100'},
+    'Polera básica gris azulado': {'material': 'algodon_100'},
+    'Polera básica negra': {'material': 'algodon_100'},
+    'Polera básica blanca': {'material': 'algodon_100'},
+    # "mirror verde"/"mirror fucsia" nombran el color del ESTAMPADO, no de
+    # la polera -- la foto real confirma que las 2 son una polera NEGRA con
+    # estampado grafiti verde/rosado respectivamente (archivo real
+    # "polera-grafiti-negra.verde-espalda.jpg"/".rosa-espalda.jpg", mismo
+    # patron ya corregido hoy en Kagi/ZAMU: se tagea el color de la prenda
+    # que la foto muestra, no el color del texto/estampado).
+    'Polera mirror verde': {'material': 'algodon_100', 'colores': ['Negro']},
+    'Polera mirror fucsia': {'material': 'algodon_100', 'colores': ['Negro']},
+    # Los 3 "Jockey" reales de The Wolf son el mismo modelo de gorro sin
+    # estructura ni malla (confirmado por foto + nombre de archivo real
+    # "Gorro_nino_dad_cap_prelavado") -- forma real "dad hat", no "curvo"
+    # (default generico que hubiera aplicado sin esto).
+    'Jockey fucsia acidwash': {'forma_gorro': 'dad hat'},
+    'Jockey negro acid wash': {'forma_gorro': 'dad hat'},
+    'Jockey liso negro': {'forma_gorro': 'dad hat'},
+    # Brissa (2026-09-02): mismo caso que "falda" de La Maria Dolores mas
+    # arriba -- "SKIRT 01" (nombre real en ingles) y "Falda Raulí" no
+    # traen ninguna palabra que clasificar_prenda() reconozca.
+    'SKIRT 01 NEGRO': {'categoria': 'falda', 'material': 'cupro'},
+    'Falda Raulí Mantequilla (Incluye lazo)': {'categoria': 'falda'},
+    'Falda Raulí Roja (Incluye lazo)': {'categoria': 'falda'},
+    # Brissa (2026-09-02): "PANTS" (nombre en ingles) tampoco lo reconoce
+    # clasificar_prenda() -- solo mira "pantalon"/"jean"/"denim"/"trouser"
+    # -- sin esto caian en el default "polera", que es falso (son
+    # pantalones reales, ver descripcion de cada ficha). Short/chaleco SI
+    # clasifican bien solos via "short"/"chaleco" en el nombre.
+    'PANTS 03 VERDE': {'categoria': 'pantalon', 'material': 'lana'},
+    'PANTS 03 CIRUELA OSCURO': {'categoria': 'pantalon', 'material': 'lana'},
+    'PANTS 02. NEGRO': {'categoria': 'pantalon', 'material': 'cupro'},
+    'PANTS 01 NEGRO': {'categoria': 'pantalon', 'material': 'viscosa'},
+    'Pantalón Ulmo Vuelos': {'material': 'lino'},
+    'Pantalón Canelo Crudo': {'material': 'lino'},
+    'Pantalón Canelo Burdeo': {'material': 'lino'},
+    'Chaleco Cuero Rastro': {'material': 'cuero'},
+    'Chaleco Luma Café Ladrillo': {'material': 'lana'},
+    'Chaleco Luma Rojo': {'material': 'lana'},
+    # By Adrian Sanchez (2026-09-02): plataforma Jumpseller, ver
+    # cargar_jumpseller_cache(). 5 de los 15 productos aprobados no traen
+    # ninguna palabra que clasificar_prenda() reconozca en el NOMBRE (el
+    # dato real esta en la descripcion: "POLERON..."/"Capucha..." para las
+    # 2 de poleron, "Corte acampanado (Flared)" tipo pantalon para las 3
+    # sin "jean"/"pantalon" en el nombre) -- confirmado leyendo la ficha
+    # real de cada una, no adivinado por el nombre. Corte: se agrega solo
+    # donde la DESCRIPCION dice literal una de las palabras que reconoce
+    # detectar_corte() (boxy/regular/slim fit) -- "bootcut" no esta en ese
+    # vocabulario, no se inventa un valor nuevo para no falsear el filtro.
+    'CROCODILE BLCK (BOOTCUT)': {'categoria': 'pantalon'},
+    'SILVER NIGHT CREASE': {'categoria': 'pantalon'},
+    'NIGHT CREASE': {'categoria': 'pantalon'},
+    'PINK TIGER ll': {'categoria': 'poleron'},
+    'COURBE BLACK WAFFLE': {'categoria': 'poleron', 'corte': 'regular fit'},
+    # Endless (2026-09-03): "Crop-top" no es una categoria/subtipo que
+    # clasificar_prenda() detecte para "polera" (categoria correcta que ya
+    # sale sola por default) -- el pedido explicito es "Poleras + atributo
+    # Crop-top", y "largo": "crop" ya es un valor real y existente en el
+    # sistema (usado para baby tee), asi que se reusa en vez de inventar un
+    # campo nuevo. No se toca "categoria" -- ya cae en "polera" sola.
+    'Polera Crop-top "Engagement Concept"': {'largo': 'crop'},
+    'Polera Crop-top "Basic"': {'largo': 'crop'},
+    'CROSS DEMON HOODIE': {'corte': 'boxy fit'},
+    'DIRTY NIGHT CREASE (JACKET)': {'corte': 'slim fit'},
+    'LONG SLEEVE STITCHING': {'corte': 'regular fit'},
+    # Hush (2026-09-02): material real declarado en la ficha (body_html de
+    # Shopify) -- "Polerón Básico Crewneck" NO trae ficha/descripcion (la
+    # unica de las 6 sin nada declarado), asi que se deja sin material a
+    # proposito: es el ejemplo real de "2 productos de la misma tienda con
+    # distinto Nivel de Confianza" que pide el pedido original (Criterio 2
+    # varia por producto, no por tienda).
+    'Hush Classic': {'material': 'algodon_100'},
+    'Origen de Hush': {'material': 'algodon_100'},
+    'Hush. Reach The Sky': {'material': 'algodon_100', 'gramaje_gsm': 300},
+    'Polera Estrella': {'material': 'algodon_100', 'gramaje_gsm': 300},
+    'Polera basica Hush': {'material': 'algodon_100', 'gramaje_gsm': 300},
     'JOCKEY CAMO (OSCURO)': {'colores': ['Verde']},
     'HOODIE RESILIENCIE (FOCALIZADO)': {'colores': ['Negro']},
     'SHORT METALLIC': {'colores': ['Negro']},
@@ -296,11 +522,12 @@ VERIFICADO_A_MANO = {
     "Blazze 04 - Indigo": {"categoria": "pantalon", "subtipo": "jeans"},
     "Blazze 04 - Raw": {"categoria": "pantalon", "subtipo": "jeans"},
     "Blazze 04 - Black": {"categoria": "pantalon", "subtipo": "jeans"},
-    "Blazze 04 - Light blue": {"categoria": "pantalon", "subtipo": "jeans"},
+    # Color "Celeste" confirmado por foto real (2026-09-03, pedido usuario).
+    "Blazze 04 - Light blue": {"categoria": "pantalon", "subtipo": "jeans", "colores": ["Celeste"]},
     "Blazze 04 - Zip jacket indigo": {"categoria": "chaqueta", "subtipo": "mezclilla"},
     "Blazze 04 - Button jacket raw": {"categoria": "chaqueta", "subtipo": "mezclilla"},
     "Blazze 03 - Bare Waist Black": {"categoria": "pantalon", "subtipo": "jeans"},
-    "Blazze 03 - Bare Waist Blue": {"categoria": "pantalon", "subtipo": "jeans"},
+    "Blazze 03 - Bare Waist Blue": {"categoria": "pantalon", "subtipo": "jeans", "colores": ["Celeste"]},
     # "pierna recta" literal en la ficha real de los 4 "Blazze 01".
     "Blazze 01 - Blue": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
     "Blazze 01 - Gray": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
@@ -319,6 +546,17 @@ VERIFICADO_A_MANO = {
     # clasificar_prenda() solo, necesita override ("Jort" si se detecta
     # solo desde 2026-08-28, ver clasificar_prenda()).
     "CÁRDIGAN KAGI": {"categoria": "chaleco"},
+    # 2026-09-03, bug real reportado por el usuario: "TEE REGALA FLORES" (foto
+    # real = polera NEGRA con letras blancas) aparecia buscando "polera
+    # blanca", porque sin color_dominante propio el buscador cae al texto
+    # completo de la ficha, y la descripcion real dice "disponible en negro,
+    # y blanco" (ambos colores existen en la tienda, pero solo se scrapeo UNA
+    # foto por producto). Se tagea cada producto con el color que muestra SU
+    # propia foto real (no ambos), para que busqueda y foto mostrada calcen:
+    # "TEE REGALA FLORES" = negro (confirmado por foto), "TEE FLORES, COMO
+    # LLAVES" = blanco (confirmado por foto, distinto producto/foto).
+    "TEE REGALA FLORES": {"colores": ["Negro"]},
+    "TEE FLORES, COMO LLAVES": {"colores": ["Blanco"]},
 
     # --- OVA Chile ---
     # "Basics Heavyweight": 100% algodon, 280g, regular fit (ficha propia).
@@ -566,7 +804,7 @@ VERIFICADO_A_MANO = {
     "Iron Ice jeans": {"corte": "baggy"},
     "Light Ripped jeans": {"corte": "baggy"},
     "Short blackrugged": {"corte": "baggy", "subtipo": "cargo"},
-    "Sky blue cargo jeans": {"corte": "baggy"},
+    "Sky blue cargo jeans": {"corte": "baggy", "colores": ["Celeste"]},
     "Sky frost jeans": {"corte": "baggy"},
     "Thunder Black": {"corte": "baggy", "categoria": "pantalon", "subtipo": "jeans"},
     "Thunder VVS jeans": {"corte": "baggy"},
@@ -1080,6 +1318,73 @@ VERIFICADO_A_MANO = {
     # --- Stuffies Concept (2026-08-24, ficha real via products.json) ---
     "DICE HOODIE \"Third Edition\" Black": {"corte": "boxy fit"},
     "DICE HOODIE \"Third Edition\" Blue Navy": {"corte": "boxy fit"},
+
+    # --- Genero por foto de modelo (2026-09-07): revision visual manual de
+    # productos que quedaban "unisex" por defecto (genero_de() solo detecta
+    # "hombre"/"mujer" literal en el NOMBRE) pero cuya foto principal muestra
+    # un modelo de un genero claro. Aplicado SOLO donde la foto lo confirma,
+    # nunca por tienda completa (ver docs/buscador.md, seccion de intereses/
+    # genero). Confianza "media" = cuerpo/torso visible sin rostro.
+    "BUZO BAGGY OVA APPAREL NEGRO (PREVENTA)": {"genero": "hombre"},  # torso a zapatillas, confianza media
+    "RAW DENIM JACKET": {"genero": "hombre"},
+    "COMMON HOODIE MOSS": {"genero": "hombre"},
+    "COMMON LONG SLEEVE MORO": {"genero": "mujer"},
+    "Polera Oranwutang Micro Blanca": {"genero": "mujer"},
+    "Polera Oranwutang Logo Negra": {"genero": "hombre"},
+    "Polera Pixa-Throwup Negra": {"genero": "hombre"},
+    "Polera SheoxTatto Negra": {"genero": "mujer"},
+    "Polera TagxGiro Burdeo": {"genero": "hombre"},
+    "Polera TagxGiro Negra": {"genero": "hombre"},
+    "Polera Pixa-Throwup Mora": {"genero": "hombre"},
+    "Polera Flubber": {"genero": "hombre"},
+    "Polera Mono Hiphop 50 Años Blanca": {"genero": "hombre"},
+    "Polera SheoxTatto": {"genero": "hombre"},
+    "Polera Logo Clásica": {"genero": "hombre"},
+    "Polera Logo Verde": {"genero": "mujer"},
+    "Canguro Calaka Letras Verdes": {"genero": "hombre"},
+    "PANTALON MARINO (HEAVYWEIGHT)": {"genero": "hombre"},  # confianza media, sin rostro
+    "POLERA REGULAR FIT (HEAVYWEIGHT) ROSADO": {"genero": "mujer"},
+    "POLERA REGULAR FIT (HEAVYWEIGHT) CAFE": {"genero": "mujer"},  # misma foto que la version rosado
+    # ForceBlack: toda la tienda usa el mismo modelo hombre en cada foto
+    # (selfie al espejo) -- se aplica por producto igual, no por tienda,
+    # porque cada nombre es unico y la evidencia es la foto real de ESE
+    # producto puntual, no una regla generica de la tienda.
+    "Black acid wash jeans": {"genero": "hombre"},
+    "Black bur jeans": {"genero": "hombre"},
+    "Black diamond flare jeans": {"genero": "hombre"},
+    "Black Ripped jeans": {"genero": "hombre"},
+    "Blessing VVS jeans": {"genero": "hombre"},
+    "Blue Glow VVS jeans": {"genero": "hombre"},
+    "Blue motion cargo flare jeans": {"genero": "hombre"},
+    "Cloud denim cargo jeans": {"genero": "hombre"},
+    "Denim diamond flare jeans": {"genero": "hombre"},
+    "Denim Essentials jeans": {"genero": "hombre"},
+    "Essentials Black jeans": {"genero": "hombre"},
+    "Essentials Blue jeans": {"genero": "hombre"},
+    "Iron Black jeans": {"genero": "hombre"},
+    "Iron Blue Cargo jeans": {"genero": "hombre"},
+    "Iron grey jeans": {"genero": "hombre"},
+    "Iron Ice jeans": {"genero": "hombre"},
+    "Light Ripped jeans": {"genero": "hombre"},
+    "Short blackrugged": {"genero": "hombre"},
+    "Sky blue cargo jeans": {"genero": "hombre"},
+    "Sky frost jeans": {"genero": "hombre"},
+    "Thunder Black": {"genero": "hombre"},
+    "Thunder VVS jeans": {"genero": "hombre"},
+    "Aero pants": {"genero": "hombre"},  # confianza media, sin rostro
+    "Baby tee": {"genero": "mujer"},  # top cropped, corte femenino visible en foto
+    "FLTNG Zip Hoodie": {"genero": "hombre"},
+    "FLTNG ZIP V2": {"genero": "mujer"},
+    "Noir Pulse": {"genero": "hombre"},  # confianza media, de espaldas
+    "Noir Pulse - Aureum": {"genero": "mujer"},
+    "Noir Pulse - Emerald": {"genero": "hombre"},
+    "Noir Pulse - Morganite": {"genero": "mujer"},
+    "Nuit Volt": {"genero": "mujer"},
+    "Nuit Volt - Heaven": {"genero": "mujer"},
+    "Nuit Volt - Void": {"genero": "hombre"},  # confianza media, solo mandibula visible
+    "Polera Esencial - Blanca": {"genero": "hombre"},  # confianza media, solo mandibula visible
+    "Polera Esencial - Verde botella": {"genero": "hombre"},  # confianza media, solo mandibula visible
+    "Stealth Jorts": {"genero": "hombre"},  # confianza media, piernas/zapatillas
 }
 
 # 2026-08-20 -- capucha/cierre de los 28 polerones reales (ninguno lo tenia
@@ -1345,6 +1650,17 @@ CAPUCHA_CIERRE_VERIFICADO = {
     "Pink Motion Hoodie": {"capucha": "con capucha"},
     "DICE HOODIE \"Third Edition\" Black": {"capucha": "con capucha"},
     "DICE HOODIE \"Third Edition\" Blue Navy": {"capucha": "con capucha"},
+    # ZAMU (2026-09-03): ninguna de las 2 fichas reales menciona capucha, asi
+    # que "sin capucha" (un sweater/sueter es cuello redondo o similar por
+    # definicion, no lleva capucha -- mismo criterio ya usado para crewneck).
+    # El primero SI declara "cierre metalico de aluminio N10" literal en su
+    # nombre y descripcion real -- "con cierre". El segundo no menciona
+    # ningun cierre, queda "no especificado" (default de cc.get(), no se
+    # asume pullover sin dato).
+    "Sweater con Cierre Metálico Tejido en Chile | Punto Inglés Barnizado": {
+        "capucha": "sin capucha", "cierre": "con cierre",
+    },
+    "Sweater tejido oversize punto inglés barnizado": {"capucha": "sin capucha"},
 }
 
 # Fuente de cada dato de capucha/cierre de arriba (texto de la ficha o foto
@@ -1498,6 +1814,10 @@ FUENTE_CAPUCHA_CIERRE = {
     "CATS BLACK HOODIE": {"capucha": "texto", "cierre": "texto"},
     "3D CHROME LOGO HOODIE": {"capucha": "texto", "cierre": "texto"},
     "POLERÓN INFINITO 08": {"capucha": "texto", "cierre": "texto"},
+    "Sweater con Cierre Metálico Tejido en Chile | Punto Inglés Barnizado": {
+        "capucha": "texto", "cierre": "texto",
+    },
+    "Sweater tejido oversize punto inglés barnizado": {"capucha": "texto"},
 }
 
 # Nombres de producto que en realidad son "baby tee" (categoria "top",
@@ -1603,7 +1923,15 @@ def clasificar_prenda(nombre):
     # real del catalogo dependia solo de "cap" para detectarse (todos
     # tienen "gorro"/"gorra"/"jockey"/"beanie" tambien), asi que sacarlo
     # no pierde nada y evita ese falso positivo real.
-    if "gorro" in n or "beanie" in n or "gorra" in n or "jockey" in n:
+    # 2026-09-07 (Custom Caps/Bang Concept/The Wolf): mismo criterio que el
+    # fix de BEEWAY de arriba -- "dad hat"/"trucker"/"bucket hat" son formas
+    # de gorro reales que el nombre real de la tienda ya declara, sin
+    # ninguna palabra "gorro"/"gorra"/"jockey"/"beanie" -- sin esto caian al
+    # default "polera".
+    if (
+        "gorro" in n or "beanie" in n or "gorra" in n or "jockey" in n
+        or "dad hat" in n or "dad-hat" in n or "trucker" in n or "bucket hat" in n
+    ):
         return "gorro", None, None, None
 
     if "tracksuit" in n or "conjunto" in n:
@@ -1726,7 +2054,7 @@ _COLOR_PALABRAS_NOMBRE = {
     "blanco": "blanco", "blanca": "blanco", "white": "blanco",
     "gris": "gris", "grey": "gris", "gray": "gris", "cemento": "gris", "concreto": "gris",
     "cafe": "cafe", "marron": "cafe", "brown": "cafe", "chocolate": "cafe",
-    "amarillo": "amarillo", "amarilla": "amarillo", "yellow": "amarillo",
+    "amarillo": "amarillo", "amarilla": "amarillo", "yellow": "amarillo", "mantequilla": "amarillo",
     "naranja": "naranja", "naranjo": "naranja", "orange": "naranja",
     "morado": "morado", "morada": "morado", "purple": "morado", "purpura": "morado",
     "rosado": "rosado", "rosada": "rosado", "rosa": "rosado", "pink": "rosado", "fucsia": "rosado",
@@ -1897,14 +2225,34 @@ def datos_woocommerce_por_slug(ruta_json):
     WooCommerce (Store API publica, GET .../wp-json/wc/store/v1/products,
     bajado con curl real). Mismo formato de salida indexado por el ultimo
     segmento del path ("slug" aca) -- _handle_de_path() ya soporta la
-    barra final de "/producto/{slug}/"."""
+    barra final de "/producto/{slug}/".
+
+    Tallas reales (2026-09-07, Selvanegrawear): mismo criterio que
+    cargar_zamu_cache() -- si el producto es "variable" con atributo Talla,
+    se usa el stock agregado del producto completo (is_in_stock/
+    is_purchasable; esta API no separa stock por variante individual sin
+    golpear cada una aparte) aplicado a las tallas S/M/L/XL declaradas (2XL/
+    3XL no se guardan -- la app no modela esas tallas, mismo criterio que
+    _traducir_tallas_numericas). Productos "simple" (gorros de lana, sin
+    atributo Talla) quedan con tallas_reales=None -- cae al rango generico
+    de siempre, no se inventa una talla que la ficha no declara."""
     productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
     resultado = {}
     for p in productos:
+        tallas = []
+        for attr in p.get("attributes", []):
+            if attr.get("name", "").strip().lower() == "talla":
+                tallas = [
+                    t["name"] for t in attr.get("terms", [])
+                    if t.get("name") in ("S", "M", "L", "XL")
+                ]
+        disponible = bool(p.get("is_in_stock") and p.get("is_purchasable"))
+        descripcion = _limpiar_html(p.get("description")) or _limpiar_html(p.get("short_description"))
         resultado[p["slug"]] = {
             "fotos": [img["src"] for img in p.get("images", [])],
-            "descripcion_real": _limpiar_html(p.get("description")),
-            "tallas_reales": None,
+            "descripcion_real": descripcion,
+            "tallas_reales": (tallas if disponible else []) if tallas else None,
+            "tallas_variantes": [{"talla": t, "disponible": disponible} for t in tallas] or None,
         }
     return resultado
 
@@ -1935,6 +2283,90 @@ def cargar_iprex_cache(ruta_json, excluir_slugs=()):
             "descripcion_real": p.get("descripcion"),
             "tallas_reales": [] if not p.get("disponible") else None,
             "tallas_variantes": None,
+        })
+    return resultado
+
+
+def cargar_zamu_cache(ruta_json, excluir_ids=()):
+    """ZAMU (zamu.cl) es WordPress/WooCommerce con la API Store REST
+    PUBLICA Y ACCESIBLE (wp-json/wc/store/products, 2026-08-31) -- a
+    diferencia de IPREX (misma plataforma pero con la REST bloqueada, tuvo
+    que resolverse con JSON-LD por pagina). Esta API ya trae colores/tallas
+    declarados como atributos reales de variante (mas confiable que
+    adivinar por nombre) y stock (is_in_stock/is_purchasable) listos para
+    usar, bajado con curl real a data/woocommerce_cache/zamu.json.
+    Limitacion real: WooCommerce no separa la galeria de fotos por color
+    (las fotos de los 9 colores de un mismo producto quedan todas juntas
+    en una sola lista) -- misma limitacion ya aceptada para RRREUSED/WAV/
+    BEEWAY cuando declaran varios colores en un producto. Tampoco expone
+    stock por talla individual sin golpear cada variacion aparte (11
+    productos en total, no compensa el costo extra); se usa el stock del
+    producto completo para todas sus tallas declaradas."""
+    productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in productos:
+        if p["id"] in excluir_ids:
+            continue
+        precio_clp = int(float(p["prices"]["price"]))
+        regular = p["prices"].get("regular_price")
+        precio_original_clp = int(float(regular)) if regular else None
+        colores = []
+        tallas = []
+        for attr in p.get("attributes", []):
+            etiqueta = attr.get("name", "").strip().lower()
+            if etiqueta == "color":
+                for term in attr.get("terms", []):
+                    nombre_color = term.get("name", "").strip()
+                    if nombre_color:
+                        colores.append(nombre_color[0].upper() + nombre_color[1:])
+            elif etiqueta == "talla":
+                tallas = [t["name"] for t in attr.get("terms", []) if t.get("name")]
+        disponible = bool(p.get("is_in_stock") and p.get("is_purchasable"))
+        resultado.append({
+            "nombre": p["name"],
+            "precio": precio_clp,
+            "precio_original_clp": precio_original_clp if precio_original_clp and precio_original_clp > precio_clp else None,
+            "path": p["permalink"],
+            "handle": p["slug"],
+            "fotos": [img["src"] for img in p.get("images", [])],
+            "descripcion_real": _limpiar_html(p.get("description") or p.get("short_description")),
+            "tallas_reales": tallas if disponible else [],
+            "tallas_variantes": [{"talla": t, "disponible": disponible} for t in tallas] or None,
+            "colores": colores or None,
+        })
+    return resultado
+
+
+def cargar_jumpseller_cache(ruta_json, excluir_slugs=()):
+    """Jumpseller (By Adrian Sanchez, 2026-09-02) no expone products.json
+    ni Store API publica (a diferencia de Shopify/WooCommerce) -- pero cada
+    pagina de producto SI trae un <script class="product-json"> con precio/
+    stock/talla reales por variante, mas un bloque JSON-LD con nombre/
+    descripcion/imagen/disponibilidad agregada. Se bajo con curl real
+    pagina por pagina (15 productos, sin API que liste todo el catalogo de
+    una vez) y se armo data/jumpseller_cache/<tienda>.json con ese
+    contrato ya parseado -- mismo patron de "cache real en disco, nunca
+    inventado" que cargar_shopify_cache()/cargar_zamu_cache(). Misma
+    plataforma que Kotonaru Store/Rapt (ver KOTONARU mas abajo), pero esas
+    2 son de antes de que se armara este parseo mas rico (solo tenian og:
+    tags) -- no se les migra retroactivamente para no tocar tiendas ya
+    verificadas sin necesidad real."""
+    productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in productos:
+        if p["slug"] in excluir_slugs:
+            continue
+        disponible = bool(p.get("disponible"))
+        tallas_variantes = p.get("tallas_variantes") or []
+        resultado.append({
+            "nombre": p["nombre"],
+            "precio": p["precio_clp"],
+            "path": "/" + p["slug"],
+            "handle": p["slug"],
+            "fotos": [p["imagen"]] if p.get("imagen") else [],
+            "descripcion_real": p.get("descripcion_real"),
+            "tallas_reales": [t["talla"] for t in tallas_variantes if t["disponible"]] if disponible else [],
+            "tallas_variantes": tallas_variantes or None,
         })
     return resultado
 
@@ -1978,6 +2410,14 @@ TIENDAS_OFICIALES = {
     "IPREX",
     "BEEWAY",
     "WAV",
+    "ZAMU",
+    "La Maria Dolores",
+    "Brissa",
+    "By Adrián Sánchez",
+    "Hush",
+    "Endless",
+    "Bang Concept",
+    "The Wolf",
 }
 
 # Excepciones dentro de una tienda oficial: categorias que NO quedan
@@ -1991,6 +2431,55 @@ TIENDAS_OFICIALES = {
 # sacamos todos". Ya no hay excepcion.
 TIENDAS_OFICIALES_EXCEPCIONES = {}
 
+# --- Confianza KOLIZION (2026-09-02) --- 5 criterios verificables por
+# producto, ver docs/catalogo_real.md. Criterio 4 (antiguedad/buen
+# comportamiento en KOLIZION) es +1 DE BASE para toda tienda piloto -- para
+# quitarselo a una tienda puntual (si presenta problemas) basta con agregar
+# su nombre aca, sin tocar producto por producto.
+TIENDAS_CONFIANZA_SIN_TRAYECTORIA = set()
+
+# Criterio 5 (fotos reales): pares (tienda, categoria) con fotos NO reales
+# conocidas (generadas por IA u otro motivo verificado a mano) aunque la
+# propia tienda las use como foto principal. Selvanegrawear: los 8 gorros
+# usan "Gemini_Generated_Image..." (ver TIENDAS_OFICIALES_EXCEPCIONES arriba).
+CONFIANZA_FOTOS_NO_REALES = {
+    ("Selvanegrawear", "gorro"),
+}
+
+
+def _calcular_confianza_kolizion(tienda, categoria, marca_autor, material, gramaje_gsm, imagen):
+    """Nivel 1-5, suma de criterios objetivos -- nunca una opinion/valoracion."""
+    envio = ENVIOS_TIENDAS.get(tienda, {})
+    despacho_declarado = any(
+        (envio.get(clave) or {}).get("dias_habiles") not in (None, "no especificado")
+        for clave in ("envio_rm", "envio_regiones")
+    )
+    # 2026-09-03 (Endless): un nombre de archivo con "mockup"/"mock_up" es
+    # evidencia REAL de que la imagen es un render/maqueta, no una foto del
+    # producto fisico -- mismo criterio ya usado para excluir productos de
+    # Kotonaru Store con esa misma senal en el nombre de archivo, ahora
+    # generalizado a cualquier tienda/producto en vez de repetirlo a mano.
+    # Se revisa por PRODUCTO (no por tienda/categoria como CONFIANZA_FOTOS_
+    # NO_REALES) porque una misma categoria puede mezclar fotos reales y
+    # mockups en la misma tienda (ej. Endless: "Quarter Zip Pullover" tiene
+    # foto real, pero "Hoodie Basic" -- misma categoria "poleron" -- solo
+    # tiene mockups).
+    _imagen_es_mockup = bool(imagen) and ("mockup" in imagen.lower() or "mock_up" in imagen.lower())
+    fotos_reales = (
+        bool(imagen)
+        and not imagen.startswith("/static/img/")
+        and not _imagen_es_mockup
+        and (tienda, categoria) not in CONFIANZA_FOTOS_NO_REALES
+    )
+    criterios = {
+        "marca_autor": bool(marca_autor),
+        "material_calidad": bool(material) or bool(gramaje_gsm),
+        "despacho_declarado": despacho_declarado,
+        "trayectoria_kolizion": tienda not in TIENDAS_CONFIANZA_SIN_TRAYECTORIA,
+        "fotos_reales": fotos_reales,
+    }
+    return {"nivel": sum(criterios.values()), **criterios}
+
 # Tiendas cuyo catalogo COMPLETO se asocia a un interes/hobby (2026-08-30,
 # IPREX): a diferencia de interes_musica/interes_arte por producto (que
 # exige evidencia real en nombre/descripcion de ESE producto puntual),
@@ -2002,6 +2491,17 @@ TIENDAS_OFICIALES_EXCEPCIONES = {}
 # producto por producto ni tocar Koko.
 TIENDAS_INTERES_COMPLETO = {
     "IPREX": "musica",
+}
+
+# Genero declarado A NIVEL TIENDA (2026-09-02, Brissa): pedido explicito
+# del usuario -- "tratar la seleccion integrada como MUJER salvo que una
+# ficha especifica declare de forma fiable otra cosa/unisex". Ninguna de
+# las 20 fichas cargadas dice "hombre"/"unisex" explicito, asi que se
+# aplica la regla de tienda completa. Distinto de TIENDAS_INTERES_COMPLETO
+# en que esto SI puede pisar lo que genero_de() detecto del nombre -- pero
+# solo para esta tienda puntual, nunca "adivinado" para otra.
+TIENDAS_GENERO_COMPLETO = {
+    "Brissa": "mujer",
 }
 
 
@@ -2107,6 +2607,8 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
     categoria, subtipo, manga, largo = ("gorro", None, None, None) if es_gorro else clasificar_prenda(nombre)
     corte = detectar_corte(nombre)
     genero = genero_de(nombre)
+    if tienda in TIENDAS_GENERO_COMPLETO:
+        genero = TIENDAS_GENERO_COMPLETO[tienda]
 
     extra = VERIFICADO_A_MANO.get(nombre, {})
     if extra.get("corte"):
@@ -2131,6 +2633,15 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         # explicitamente lo contrario -- no se asume el largo por el
         # nombre solo si la ficha lo contradice.
         largo = extra["largo"]
+    if "manga" in extra:
+        # Override manual (2026-09-03, Brissa): mismo mecanismo que
+        # "largo" arriba -- clasificar_prenda() solo pone manga="larga"
+        # si el NOMBRE dice "longsleeve"/"long sleeve"; para una blusa
+        # (categoria "top", sin regla propia en clasificar_prenda) el
+        # default cae a "corta", que es falso cuando la ficha real
+        # ("mangas largas") o la foto real (manga larga con puno,
+        # inequivoca) dicen lo contrario.
+        manga = extra["manga"]
     if extra.get("genero"):
         # Override manual (2026-08-28): para prendas de genero exclusivo
         # que el nombre no deja claro por si solo (ej. "Cardigan Cebra" de
@@ -2311,10 +2822,21 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         _forma_detectada = extra.get("forma_gorro")
         if not _forma_detectada:
             _n_gorro = _sin_tildes(nombre.lower())
-            if "beanie" in _n_gorro:
+            # 2026-09-07 (Custom Caps/Bang Concept/The Wolf): mismo criterio
+            # que beanie/snapback de siempre, ahora tambien para las 3 formas
+            # nuevas -- asi que un futuro drop compatible ("... Trucker ...",
+            # "Dad Hat ...", "... Bucket Hat") se clasifica solo, sin
+            # depender de agregarlo a mano en VERIFICADO_A_MANO cada vez.
+            if "beanie" in _n_gorro or "gorro de lana" in _n_gorro or "gorro lana" in _n_gorro or "gorro tejido" in _n_gorro:
                 _forma_detectada = "lana"
             elif "snapback" in _n_gorro:
                 _forma_detectada = "plano"
+            elif "dad hat" in _n_gorro or "dad-hat" in _n_gorro:
+                _forma_detectada = "dad hat"
+            elif "trucker" in _n_gorro:
+                _forma_detectada = "trucker"
+            elif "bucket" in _n_gorro:
+                _forma_detectada = "bucket hat"
             else:
                 _forma_detectada = "curvo"
         producto["forma"] = _forma_detectada
@@ -2325,6 +2847,11 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         producto["material"] = extra["material"]
     if extra.get("gramaje_gsm"):
         producto["gramaje_gsm"] = extra["gramaje_gsm"]
+
+    producto["confianza"] = _calcular_confianza_kolizion(
+        tienda, categoria, producto.get("marca_autor"),
+        producto.get("material"), producto.get("gramaje_gsm"), producto.get("imagen"),
+    )
 
     return producto
 
@@ -3679,6 +4206,137 @@ for _p in WAV:
         _p["colores"] = _WAV_COLORES[_p["handle"]]
     _p.update(_WAV_INTERESES.get(_p["handle"], {}))
 
+# ZAMU (zamu.cl, 2026-08-31): WordPress/WooCommerce, ver cargar_zamu_cache().
+# Se excluye la giftcard (no es una prenda). "Polera Sin Mangas Destroyer"
+# sacada (2026-09-07, pedido explicito del usuario: no es streetwear y no
+# le gusta el diseño).
+_ZAMU_EXCLUIR = {35816, 38134}
+ZAMU = cargar_zamu_cache(BASE_DIR / "data" / "woocommerce_cache" / "zamu.json", excluir_ids=_ZAMU_EXCLUIR)
+
+# LA MARIA DOLORES (lamariadolores.cl, 2026-08-31): Shopify, ver cargar_
+# shopify_cache(). Se excluyen 13 productos que no son prendas de vestir:
+# 9 bolsos/carteras/crossbody/tote bags, 2 llaveros ("upcycled-keychain")
+# y 2 bufandas ("maxi bufanda") -- ninguna de esas categorias existe en el
+# clasificador/formulario de KOLIZION (accesorio solo cubre mochila/
+# cinturon), mismo criterio ya aplicado a los bolsos/pañoletas de WAV y
+# Traperas/Viloria (no se inventa una categoria nueva solo por esta tienda).
+_LMD_EXCLUIR = {
+    "bolso-denim-con-vuelos", "tote-bag-5-estrellas-garden-oscuro",
+    "tote-bag-5-estrellas-garden-claro", "upcycled-keychain-gabardina-verde-musgo",
+    "upcycled-keychain-gabardina-negra", "crossbody-cargo-cafe-gabardina",
+    "tote-bag-5-estrellas-camo", "bolso-ribbon-gabardina-negra-copia",
+    "crossbody-cargo-bag-reciclado-negro", "bolso-ribbon-cuerina-con-tachas",
+    "bolso-con-amarres-tipo-saco-celeste",
+    "pre-order-maxi-bufanda-reversible-negro-beige", "maxi-bufanda-reversible-verde-beige",
+}
+LMD = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "lamariadolores.json", excluir_handles=_LMD_EXCLUIR)
+
+# BRISSA (brissa-chile.cl, 2026-09-02): Shopify, ver cargar_shopify_cache().
+# Seleccion curada por el usuario (familias de TOPS/PANTALONES/SHORTS/
+# FALDAS/chalecos/kimono aprobadas) -- de los 34 productos reales del
+# sitio, se excluyen por handle los que NO pertenecen a esas familias:
+# TOP 02/03/04 y WOOL JACKET (no estaban en la lista aprobada -- solo TOP
+# 01/05 y los tops con nombre propio si) y 2 Cinturones (excluidos
+# explicitamente por el usuario, no son ropa). "Kimono Alerce" y "Top
+# Halter Ñirre Cuero"/"Top Boldo" de la lista original del usuario NO
+# existen hoy en el sitio real -- no se inventan, se dejan afuera.
+# SHIRT 02 y las 2 Blusas Mañío SI habian quedado excluidas aca (2026-09-02,
+# camisas/blusas no era familia aprobada), pero el usuario pidio sumarlas
+# despues (2026-09-03, ver VERIFICADO_A_MANO arriba) -- ya no se excluyen.
+_BRISSA_EXCLUIR = {
+    "top-04-cuero-burdeo", "top-02", "top-03-burdeo-edicion-limitada",
+    "top-03-edicion-limitada-copia", "wool-jacket-02-verde-1",
+    "wool-jacket-02-burdeo", "wool-jacket-02-negra", "wool-jacket-01-negra",
+    "wool-jacket-01", "cinturon-rosado", "pantalon-ulmo-vuelo",
+}
+BRISSA = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "brissa.json", excluir_handles=_BRISSA_EXCLUIR)
+
+# HUSH (hush.cl, 2026-09-02): Shopify, ver cargar_shopify_cache(). Los 6
+# productos reales del sitio son exactamente los 6 aprobados por el
+# usuario -- no hace falta excluir nada.
+HUSH = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "hush.json")
+
+# BANG CONCEPT (bangconcept.cl, 2026-09-07): Shopify, ver cargar_shopify_
+# cache(). El cache en disco YA es el subconjunto real filtrado a productos
+# propios/apparel (ver VERIFICADO_A_MANO arriba para el detalle completo de
+# que se excluyo y por que) -- no un dump completo de los 572 productos
+# reales de la tienda (skate shop con muchas marcas externas revendidas).
+BANGCONCEPT = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "bangconcept.json")
+
+# THE WOLF (thewolfchile.com, 2026-09-07): Shopify, ver cargar_shopify_
+# cache(). Vendor unico "The Wolf" en los 39 productos reales del sitio --
+# no hay reventa de otras marcas, se carga completo sin exclusiones.
+THEWOLF = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "thewolf.json")
+
+# BY ADRIAN SANCHEZ (byadriansanchez.com, 2026-09-02): Jumpseller, ver
+# cargar_jumpseller_cache(). marca_autor=False para toda la tienda: a
+# diferencia de Brissa/Hush, no se encontro pagina "Nosotros"/about ni
+# ninguna declaracion oficial de diseño propio (se revisaron /pages/
+# nosotros, /contact y la home -- ninguna la menciona), asi que Criterio 1
+# de Nivel de Confianza queda en 0 para esta tienda hasta tener evidencia
+# real (ver docs/catalogo_real.md).
+BYADRIAN = cargar_jumpseller_cache(BASE_DIR / "data" / "jumpseller_cache" / "byadriansanchez.json")
+for _p in BYADRIAN:
+    _p["marca_autor"] = False
+_BYADRIAN_COLORES = {
+    "crocodile-blck-bootcut": ["Negro"],
+    "crocodile-smoke-jeans": ["Gris"],
+    "crocodile-smoke-jacket": ["Gris"],
+    "long-sleeve-stitching": ["Negro"],
+    "long-sleeve-bbf-negro": ["Negro"],
+    "long-sleeve-bbf-beige": ["Beige"],
+    "skull-stripes-longsleeve": ["Negro"],
+    "pink-tiger-ll": ["Rosado"],
+    "courbe-black-waffle": ["Negro"],
+}
+for _p in BYADRIAN:
+    if _p["handle"] in _BYADRIAN_COLORES:
+        _p["colores"] = _BYADRIAN_COLORES[_p["handle"]]
+
+# ENDLESS (endlesscl.com, 2026-09-03): Shopify, ver cargar_shopify_cache().
+# Catalogo completo (17/17 productos) integrado sin exclusiones -- todo es
+# ropa compatible (hoodies/poleras boxy/poleras crop-top), no hay
+# accesorios que sacar. Futuros drops entran solos via este mismo loader,
+# sin whitelist por nombre.
+ENDLESS = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "endless.json")
+# marca_autor=False (Criterio 1, 2026-09-03): se reviso home/contacto/
+# cambios-y-devoluciones y no existe pagina "Nosotros" (404) ni ninguna
+# declaracion oficial de diseño propio -- sin evidencia, no se regala el
+# punto solo porque la tienda es chica.
+for _p in ENDLESS:
+    _p["marca_autor"] = False
+# Colores reales declarados como variante "Color" en Shopify (no
+# adivinados) -- mismo patron manual que WAV/ZAMU, no existe un extractor
+# generico de la opcion "Color" reutilizable sin tocar cargar_shopify_
+# cache() para las ~15 tiendas que ya lo usan.
+_ENDLESS_COLORES = {
+    "zip-hoodie-basic": ["Negro", "Full Black"],
+    "polera-crop-top-engagement-concept": ["Negro", "Rosado", "Rosa y Blanco"],
+    "hoodie-engagement-concept": ["Azul", "Rojo", "Navy", "Café", "Rosado", "Negro"],
+    "hoodie-ndlss-club": ["Navy", "Azul", "Negro", "Rosado", "Rojo", "Café"],
+    "polera-boxy-fit-basic-copia": ["Rosa y Blanco", "Café", "Negro", "Verde y Crema", "Rosado"],
+    "polera-boxy-fit-angelss": ["Negro", "Café"],
+    "polera-boxy-fit-basic": ["Café", "Full Black", "Blanco", "Negro"],
+    "polera-boxy-fit-pgle": ["Negro", "Blanco", "Café"],
+    "hoodie-dept🍓-copia": ["Blanco", "Negro"],
+    "hoodie-dept🍓": ["Negro", "Rosado"],
+    "hoodie-pgle": ["Verde", "Negro", "Rosado", "Crema", "Café"],
+    "hoodie-basic": ["Full Black", "Rosado", "Negro", "Verde", "Café", "Crema"],
+    "hoodie-flowerss-copia": ["Café", "Negro"],
+    "zip-hoodie-negro-basic": [
+        "Negro & Amarillo", "Negro & Rosa", "Negro & Blanco", "Cafe & Blanco",
+        "Cafe & Rosa", "Rosa & Blanco", "Navy & Amarillo", "Navy & Blanco", "Gris & Blanco",
+    ],
+    "zip-hoodie-negro-dept": ["Negro", "Rosado"],
+    "zip-hoodie-negro-pgle": ["Negro", "Rosado", "Verde"],
+    "hoodie-negro-pink-flowerss-copia": [
+        'Rosado "Red Flower"', 'Negro "Blue Flower"', 'Crema "Red Flower"', 'Negro "Pink Flower"',
+    ],
+}
+for _p in ENDLESS:
+    if _p["handle"] in _ENDLESS_COLORES:
+        _p["colores"] = _ENDLESS_COLORES[_p["handle"]]
+
 # Kotonaru Store (kotonaru-store.cl, 2026-08-27): plataforma Jumpseller,
 # igual que Rapt -- sin products.json/Store API publico, armado a mano por
 # producto sacando og:title/og:description/og:image/product:price:amount
@@ -4172,6 +4830,20 @@ def main():
         ("IPREX", "iprex.cl", "IPREX", IPREX),
         ("BEEWAY", "beeway.cl", "BEEWAY", BEEWAY),
         ("WAV", "wearewav.cl", "WAV", WAV),
+        ("ZAMU", "www.zamu.cl", "ZAMU", ZAMU),
+        ("La Maria Dolores", "lamariadolores.cl", "La Maria Dolores", LMD),
+        # Brissa sacada del catalogo (2026-09-07, pedido explicito del usuario):
+        # tras revisar las 23 fichas reales, es ropa femenina contemporanea/
+        # boho-elegante (cut-outs, hombreras, lazos, cortes gaucho/bombacho,
+        # flecos a telar, lino/cupro/viscosa/lana) sin ninguna pieza streetwear
+        # -- no calza con el nicho de KOLIZION. Se deja BRISSA (variable) sin
+        # usar en vez de borrar todo el bloque de carga/VERIFICADO_A_MANO, por
+        # si se quiere reactivar despues.
+        ("Hush", "hush.cl", "Hush", HUSH),
+        ("By Adrián Sánchez", "www.byadriansanchez.com", "By Adrián Sánchez", BYADRIAN),
+        ("Endless", "endlesscl.com", "Endless", ENDLESS),
+        ("Bang Concept", "bangconcept.cl", "Bang Concept", BANGCONCEPT),
+        ("The Wolf", "thewolfchile.com", "The Wolf", THEWOLF),
     ]
     for tienda, dominio, marca, productos in nuevas_tiendas_shopify:
         for i, p in enumerate(productos, start=1):

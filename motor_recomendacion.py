@@ -12,17 +12,18 @@ from constantes import (
     COLORES_SIMILARES,
     CORTES_CONOCIDOS,
     EXCLUSIONES_HOBBY,
-    EXCLUSIONES_OCASION_MUJER,
+    EXCLUSIONES_OCASION_GENERO,
     FORMA_GORRO_CONOCIDA,
     FORMAS_GORRO_CONOCIDAS,
     GRAMAJE_MINIMO_CALIDAD_GSM,
-    GRUPOS_OCASION_MUJER,
+    GRUPOS_OCASION,
     LARGOS_CONOCIDOS,
     LIMITES_ALTURA_M,
     LIMITES_PESO_KG,
     MANGAS_CONOCIDAS,
     MATERIALES_CONOCIDOS,
     ORDEN_TALLAS,
+    PRIORIDAD_SUBTIPO_OCASION,
     REGLAS_HOBBY,
     SUBTIPOS_CONOCIDOS,
     SUBTIPOS_POR_TIPO_PRENDA,
@@ -147,6 +148,13 @@ def formatear_producto(producto, razon, tallas_usuario=None):
     if tallas_usuario:
         disponibles = set(producto.get("tallas_disponibles", []))
         tallas_coincidentes = [t for t in ORDEN_TALLAS if t in tallas_usuario and t in disponibles]
+    # tallas_usuario[0] es siempre "la" talla destacada (ver estimar_tallas):
+    # la calculada normalmente, o desplazada por la preferencia de ajuste/
+    # calce del perfil si el usuario eligio "Ajustado"/"Holgado". Se manda
+    # aparte de tallas_coincidentes para que la ficha de producto (comun.js)
+    # pueda resaltarla/preseleccionarla en el selector de talla real del
+    # producto -- nunca oculta ni saca ninguna otra talla real.
+    talla_destacada = tallas_usuario[0] if tallas_usuario else ""
     return {
         "id": producto["id"],
         "nombre": producto["nombre"],
@@ -157,6 +165,7 @@ def formatear_producto(producto, razon, tallas_usuario=None):
         "material": MATERIALES_CONOCIDOS.get(producto.get("material", ""), {}).get("etiqueta", ""),
         "gramaje_texto": _texto_gramaje(producto),
         "marca_autor": bool(producto.get("marca_autor", False)),
+        "confianza": producto.get("confianza") or {"nivel": 0},
         "genero": producto.get("genero", ""),
         "interes_musica": bool(producto.get("interes_musica", False)),
         "interes_arte": bool(producto.get("interes_arte", False)),
@@ -167,6 +176,7 @@ def formatear_producto(producto, razon, tallas_usuario=None):
         "link": producto["link"],
         "razon": razon,
         "tallas_coincidentes": tallas_coincidentes,
+        "talla_destacada": talla_destacada,
         "imagen": producto.get("imagen", ""),
         "fotos": producto.get("fotos", []),
         "oficial": bool(producto.get("oficial", False)),
@@ -384,7 +394,24 @@ def _parsear_altura_m(texto):
     return valor / 100 if valor > 10 else valor
 
 
-def estimar_tallas(genero, peso_texto, altura_texto):
+def _ajustar_talla_por_preferencia(talla, ajuste):
+    """Preferencia de calce del perfil (2026-09-07, pedido del usuario):
+    "Como prefieres que te quede la ropa" -- desplaza la talla UN escalon
+    (ORDEN_TALLAS) segun "ajustado" (baja uno) u "holgado" (sube uno);
+    "normal" o cualquier valor desconocido no cambia nada. Si ya esta en el
+    extremo (S para ajustado, XL para holgado) se queda igual -- no hay para
+    donde mas ir, no se inventa una talla que no existe en ORDEN_TALLAS."""
+    if ajuste not in ("ajustado", "holgado") or talla not in ORDEN_TALLAS:
+        return talla
+    idx = ORDEN_TALLAS.index(talla)
+    if ajuste == "holgado" and idx < len(ORDEN_TALLAS) - 1:
+        return ORDEN_TALLAS[idx + 1]
+    if ajuste == "ajustado" and idx > 0:
+        return ORDEN_TALLAS[idx - 1]
+    return talla
+
+
+def estimar_tallas(genero, peso_texto, altura_texto, ajuste=None):
     peso = _parsear_numero(peso_texto)
     altura = _parsear_altura_m(altura_texto)
     if peso is None and altura is None:
@@ -397,21 +424,63 @@ def estimar_tallas(genero, peso_texto, altura_texto):
         principal, otra = sorted([talla_peso, talla_altura], key=ORDEN_TALLAS.index)
         if principal == otra:
             vecina = _talla_vecina(principal)
-            return [principal, vecina] if vecina else [principal]
-        return [principal, otra]
+            tallas = [principal, vecina] if vecina else [principal]
+        else:
+            tallas = [principal, otra]
+    else:
+        talla_unica = talla_peso or talla_altura
+        vecina = _talla_vecina(talla_unica)
+        tallas = [talla_unica, vecina] if vecina else [talla_unica]
 
-    talla_unica = talla_peso or talla_altura
-    vecina = _talla_vecina(talla_unica)
-    return [talla_unica, vecina] if vecina else [talla_unica]
+    # tallas[0] es la que perfil.js y la ficha de producto (talla_destacada,
+    # ver formatear_producto) muestran resaltada como "la" recomendada -- si
+    # hay preferencia de ajuste, se desplaza esa Y SOLO esa, y si el
+    # resultado no estaba ya en la lista se AGREGA (nunca se saca ninguna de
+    # las tallas ya calculadas: pedido explicito del usuario, "todas las
+    # tallas deben seguir estando disponibles para que el usuario elija").
+    if ajuste in ("ajustado", "holgado") and tallas:
+        destacada = _ajustar_talla_por_preferencia(tallas[0], ajuste)
+        tallas = [destacada] + [t for t in tallas if t != destacada]
+
+    return tallas
+
+
+# Bug real (2026-09-07, reportado por el usuario): La Maria Dolores vende
+# con tallas combinadas de a dos ("XS-S", "M-L", "XL-XXL") en vez de sueltas
+# -- la talla estimada del usuario (ORDEN_TALLAS: S/M/L/XL) nunca calzaba
+# con ese texto compuesto ("M" no es igual a "M-L"), asi que sus 16 hoodies/
+# poleras quedaban invisibles en CUALQUIER busqueda con altura/peso, sin
+# importar el cuerpo de la persona. El usuario confirmo que el concepto de
+# "rango de 2 tallas" es justamente la gracia del buscador (ya propone
+# talla principal + vecina), asi que se mapea cada talla suelta a su rango
+# equivalente para que cuenten como el mismo calce.
+_RANGO_TALLA_EQUIVALENTE = {
+    "S": "XS-S",
+    "M": "M-L",
+    "L": "M-L",
+    "XL": "XL-XXL",
+}
 
 
 def filtrar_por_talla(catalog, tallas_usuario):
     if not tallas_usuario:
         return catalog
+    rangos_equivalentes = {
+        _RANGO_TALLA_EQUIVALENTE[t] for t in tallas_usuario if t in _RANGO_TALLA_EQUIVALENTE
+    }
     return [
         p for p in catalog
         if p.get("categoria", "").lower() == "gorro"
+        # Bug real (2026-08-31, reportado por el usuario): "Default Title"
+        # es como Shopify marca un producto que NO tiene variantes de talla
+        # (talla unica) -- nunca va a coincidir con S/M/L/XL, asi que sin
+        # esto un producto asi desaparecia de CUALQUIER busqueda con talla,
+        # sin importar el cuerpo de la persona (103 productos ya afectados
+        # en el catalogo antes de esto, no es exclusivo de las faldas
+        # nuevas de La Maria Dolores que lo hicieron notorio).
+        or "Default Title" in p.get("tallas_disponibles", [])
         or any(t in p.get("tallas_disponibles", []) for t in tallas_usuario)
+        or any(t in p.get("tallas_disponibles", []) for t in rangos_equivalentes)
     ]
 
 
@@ -462,40 +531,73 @@ def _orden_neutral(texto_pedido, producto_id):
     return int(hashlib.md5(texto).hexdigest(), 16)
 
 
-def _diversificar_por_tienda(ordenados, cantidad):
-    """Recorre la lista YA ordenada por relevancia y arma los "cantidad"
-    resultados finales evitando 2 seguidos de la misma tienda -- pedido del
-    usuario (2026-08-27): que los resultados no queden monopolizados
-    visualmente por una sola tienda grande (ej. Doslobos/UNK Chile, que
-    tienen muchisimos mas productos cargados que el resto).
+def _diversificar_por_tienda(niveles, cantidad):
+    """Recorre los grupos de productos YA ordenados por nivel de relevancia
+    (mas alto primero) y arma los "cantidad" resultados finales evitando 2
+    seguidos de la misma tienda -- pedido del usuario (2026-08-27): que los
+    resultados no queden monopolizados visualmente por una sola tienda
+    grande (ej. Doslobos/UNK Chile, que tienen muchisimos mas productos
+    cargados que el resto).
 
-    En cada paso toma SIEMPRE el mas relevante disponible; si ese calza con
-    la tienda del resultado anterior, busca el siguiente mas relevante de
-    OTRA tienda mas abajo en la lista (nunca baja la relevancia a proposito,
-    solo cambia CUAL de los empates/cercanos elige). Si no hay ninguna
-    alternativa de otra tienda entre lo que queda, repite la tienda -- no
-    se sacrifica calidad solo por diversidad (pedido explicito del
-    usuario)."""
-    restantes = list(ordenados)
+    "niveles" es una lista de grupos, cada grupo con productos GENUINAMENTE
+    empatados en relevancia (mismo nivel_hobby/nivel_corte_ancho/
+    nivel_subtipo_ocasion/puntaje_palabras/nivel_forma_gorro -- ver
+    puntaje() en elegir_candidatos). La diversificacion por tienda SOLO
+    reordena DENTRO de un mismo grupo -- nunca hace pasar un producto de un
+    grupo de menor nivel por delante de uno que todavia queda sin mostrar en
+    un grupo de mayor nivel (bug real reportado por el usuario, 2026-09-07:
+    con "REGLA, si hay muchas prendas disponibles para tal opcion, tienen
+    que aparecer primero si o si las con mas alto nivel", verificado que
+    antes SI pasaba: una tienda con muchos productos en el nivel top
+    "saturaba" la alternancia y una prenda de nivel mas bajo de otra tienda
+    se colaba antes que prendas de nivel mas alto de la primera)."""
     elegidos = []
-    while restantes and len(elegidos) < cantidad:
-        tienda_anterior = elegidos[-1]["tienda"] if elegidos else None
-        idx = next((i for i, p in enumerate(restantes) if p["tienda"] != tienda_anterior), 0)
-        elegidos.append(restantes.pop(idx))
+    for grupo in niveles:
+        if len(elegidos) >= cantidad:
+            break
+        restantes = list(grupo)
+        while restantes and len(elegidos) < cantidad:
+            tienda_anterior = elegidos[-1]["tienda"] if elegidos else None
+            idx = next((i for i, p in enumerate(restantes) if p["tienda"] != tienda_anterior), 0)
+            elegidos.append(restantes.pop(idx))
     return elegidos
 
 
 CORTE_ANCHO_PRIORIDAD_PANTALON = {"baggy": 3, "straight fit": 2, "slim fit": 1, "skinny": 0}
 
 
-def _excluidos_por_ocasion_mujer(ocasion):
-    """Reglas duras (2026-08-30, pedido del usuario): para MUJER, ciertas
-    combinaciones prenda+ocasion se sacan del pool de candidatos, no solo
-    se reordenan (a diferencia de EXCLUSIONES_HOBBY / nivel_hobby). Solo
-    aplica a hombre = no tocar (el usuario lo pidio asi de forma explicita)."""
+def _excluidos_por_ocasion(ocasion):
+    """Reglas duras (2026-08-30, pedido del usuario, mujer; 2026-08-31,
+    extendido a hombre): ciertas combinaciones prenda+ocasion se sacan del
+    pool de candidatos, no solo se reordenan (a diferencia de
+    EXCLUSIONES_HOBBY / nivel_hobby)."""
     ocasion_norm = _quitar_tildes((ocasion or "").strip().lower())
-    grupo = GRUPOS_OCASION_MUJER.get(ocasion_norm)
-    return EXCLUSIONES_OCASION_MUJER.get(grupo, []) if grupo else []
+    grupo = GRUPOS_OCASION.get(ocasion_norm)
+    return EXCLUSIONES_OCASION_GENERO.get(grupo, []) if grupo else []
+
+
+def _prenda_confirmada_segura(producto, criterios):
+    """Lo opuesto a una exclusion normal: en vez de "excluir si calza con
+    X", esto es "excluir salvo que se pueda CONFIRMAR que es Y" -- usado
+    cuando no basta con detectar lo prohibido (buzo) porque la mayoria del
+    catalogo no tiene subtipo tageado y se puede colar un buzo sin marcar
+    (ver _prenda_excluida_por_ocasion). Mismos campos ya existentes
+    (subtipo/texto), nunca inventa un dato.
+
+    "palabras_prohibidas" (2026-09-03, bug real reportado por el usuario:
+    "Jogger Cargo UNK." con subtipo="cargo" -- tageado bien como cargo, pero
+    su propio nombre dice literal "Jogger") gana SIEMPRE sobre el subtipo:
+    un producto puede tener subtipo="cargo" (correcto, calza en la cadera
+    como cargo) y AUN ASI ser un jogger/buzo en su corte real -- si el texto
+    real lo dice, no se confia ciegamente en el subtipo tageado."""
+    palabras_prohibidas = criterios.get("palabras_prohibidas") or ()
+    if palabras_prohibidas and any(_contiene_palabra(texto_producto(producto), p) for p in palabras_prohibidas):
+        return False
+    subtipo = (producto.get("subtipo") or "").lower()
+    if subtipo and subtipo in criterios.get("subtipos", ()):
+        return True
+    palabras = criterios.get("palabras") or ()
+    return any(_contiene_palabra(texto_producto(producto), p) for p in palabras)
 
 
 def _prenda_excluida_por_ocasion(producto, reglas_exclusion):
@@ -503,10 +605,40 @@ def _prenda_excluida_por_ocasion(producto, reglas_exclusion):
     for regla in reglas_exclusion:
         if categoria != regla.get("categoria"):
             continue
-        if "subtipo" in regla and (producto.get("subtipo") or "").lower() != regla["subtipo"]:
-            continue
         if "capucha" in regla and (producto.get("capucha") or "").lower() != regla["capucha"]:
             continue
+        # "solo_confirmados" (2026-09-02, pedido del usuario: "buzo nunca
+        # puede aparecer... ni en ninguna tanda de mas opciones"): un buzo
+        # sin subtipo tageado y sin ninguna palabra clave en su nombre real
+        # (ej. "PANTALON BASICO HEAVYWEIGHT") no calza con ninguna regla de
+        # exclusion normal -- para garantizar 100% que nunca se cuele, se
+        # invierte la logica: en vez de excluir lo confirmado como buzo, se
+        # excluye TODO lo que no pueda confirmarse como jean/cargo (subtipo
+        # tageado o palabra en el texto real). Mas estricto a proposito:
+        # tambien oculta pantalones sin clasificar que en realidad SI eran
+        # jean/cargo -- el usuario eligio esta opcion sabiendo el trade-off.
+        if "solo_confirmados" in regla:
+            if _prenda_confirmada_segura(producto, regla["solo_confirmados"]):
+                continue
+            return True
+        # "subtipo" y "palabras_clave" son alternativas (OR), no las 2 a la
+        # vez: el campo subtipo del catalogo real esta vacio en la mayoria
+        # de los pantalones (bug real reportado por el usuario, 2026-09-02 --
+        # un buzo/sweatpant sin subtipo tageado se colaba en "carrete" porque
+        # la regla solo miraba subtipo=="buzo"). "palabras_clave" reusa el
+        # mismo mecanismo de busqueda por texto que ya usa el corte
+        # (_contiene_palabra sobre texto_producto), nunca inventa un campo
+        # nuevo -- si el nombre/tags/descripcion real no menciona la
+        # palabra, el producto simplemente no calza con esta regla.
+        if "subtipo" in regla or "palabras_clave" in regla:
+            coincide_subtipo = (
+                "subtipo" in regla and (producto.get("subtipo") or "").lower() == regla["subtipo"]
+            )
+            coincide_palabra = "palabras_clave" in regla and any(
+                _contiene_palabra(texto_producto(producto), palabra) for palabra in regla["palabras_clave"]
+            )
+            if not (coincide_subtipo or coincide_palabra):
+                continue
         return True
     return False
 
@@ -516,7 +648,33 @@ def elegir_candidatos(
     permitir_otro_subtipo=False,
     priorizar_material_natural=False, categorias_deprioritizadas=None,
     color_pedido=None, permitir_colores_similares=False, ocasion=None,
+    texto_pedido_filtros=None,
 ):
+    # Bug real (2026-09-07, reportado por el usuario): buscando "poleron
+    # regular fit" para Hombre + concierto/festival aparecio "Polera Crystal
+    # Slogan" (Van Gang) entre los resultados. Causa real: armar_resultados/
+    # buscar_plan_b arman un "texto_pedido" enriquecido pegandole el texto de
+    # la regla validada que aplique (ej. regla id=1 en reglas_streetwear.json:
+    # Hombre + concierto/festival -> prenda "polera") para darle puntaje extra
+    # a esos atributos -- pero ESE MISMO texto enriquecido tambien se usaba
+    # para *detectar* que tipo de prenda se esta pidiendo. Si el usuario pidio
+    # "poleron" pero la regla que matcheo (por genero+ocasion, sin mirar que
+    # prenda pidio el usuario) menciona "polera", el texto queda con las 2
+    # palabras a la vez -- y _detectar() devuelve la PRIMERA que encuentra
+    # segun el orden del diccionario TIPOS_PRENDA_CONOCIDOS ("polera" esta
+    # antes que "poleron"), pisando silenciosamente la categoria real pedida
+    # por CUALQUIER categoria que la regla nombre. Mismo mecanismo afecta a
+    # "corte" (ej. regla de pantalon cargo con atributo "baggy/suelto" podria
+    # pisar un corte especifico que el usuario si pidio).
+    # Fix: separar el texto que sirve para ENRIQUECER EL PUNTAJE (texto_pedido,
+    # sigue igual, se beneficia de las palabras extra de la regla) del texto
+    # que sirve para DETECTAR LOS FILTROS ESTRICTOS (texto_pedido_filtros,
+    # opcional -- si no se pasa, se usa texto_pedido tal cual, comportamiento
+    # identico al de antes para cualquier llamador que no lo use, ej. Koko).
+    # armar_resultados/buscar_plan_b pasan aca el texto_pedido ORIGINAL, antes
+    # de pegarle el texto de la regla, para que el tipo de prenda (y el resto
+    # de los filtros estrictos) nunca dependa de que prenda nombre una regla.
+    texto_filtros = texto_pedido_filtros if texto_pedido_filtros is not None else texto_pedido
     genero = (genero or "").strip().lower()
     # Antes, si el filtro de genero+categoria daba 0 resultados, el "or
     # catalog" hacia fallback al catalogo COMPLETO sin filtrar genero --
@@ -531,14 +689,19 @@ def elegir_candidatos(
     if categorias_excluidas:
         candidatos = [p for p in candidatos if p["categoria"].lower() not in categorias_excluidas]
 
-    if genero == "mujer":
-        reglas_exclusion_ocasion = _excluidos_por_ocasion_mujer(ocasion)
-        if reglas_exclusion_ocasion:
-            candidatos = [
+    # Aplica siempre, sin importar el genero de quien busca (2026-09-03,
+    # bug real: el formulario "regalo" permite genero "unisex" -- "No estoy
+    # segura/o" -- y con ese valor esta exclusion se saltaba entera, dejando
+    # pasar joggers/buzos igual). Las reglas en si no distinguen genero
+    # (EXCLUSIONES_OCASION_GENERO es la misma lista para mujer y hombre
+    # desde 2026-08-31), asi que no hay motivo para dejar unisex/vacio afuera.
+    reglas_exclusion_ocasion = _excluidos_por_ocasion(ocasion)
+    if reglas_exclusion_ocasion:
+        candidatos = [
                 p for p in candidatos if not _prenda_excluida_por_ocasion(p, reglas_exclusion_ocasion)
             ]
 
-    tipo_prenda = detectar_tipo_prenda(texto_pedido)
+    tipo_prenda = detectar_tipo_prenda(texto_filtros)
     if tipo_prenda:
         candidatos = [p for p in candidatos if p["categoria"].lower() == tipo_prenda]
     else:
@@ -547,31 +710,31 @@ def elegir_candidatos(
             candidatos = [p for p in candidatos if p["categoria"].lower() in grupo]
 
     if tipo_prenda in SUBTIPOS_POR_TIPO_PRENDA:
-        subtipo_pedido = detectar_subtipo_pedido(texto_pedido, tipo_prenda)
+        subtipo_pedido = detectar_subtipo_pedido(texto_filtros, tipo_prenda)
         if subtipo_pedido:
             candidatos_del_subtipo = [p for p in candidatos if p.get("subtipo", "").lower() == subtipo_pedido]
             if candidatos_del_subtipo or not permitir_otro_subtipo:
                 candidatos = candidatos_del_subtipo
 
     if tipo_prenda in TIPOS_CON_LARGO:
-        largo_pedido = detectar_largo_pedido(texto_pedido)
+        largo_pedido = detectar_largo_pedido(texto_filtros)
         if largo_pedido:
             candidatos = [p for p in candidatos if p.get("largo", "").lower() == largo_pedido]
 
     if tipo_prenda == "polera":
-        manga_pedida = detectar_manga_pedido(texto_pedido)
+        manga_pedida = detectar_manga_pedido(texto_filtros)
         if manga_pedida:
             candidatos = [p for p in candidatos if p.get("manga", "").lower() == manga_pedida]
 
     if tipo_prenda == "poleron":
-        capucha_pedida = detectar_capucha_pedido(texto_pedido)
+        capucha_pedida = detectar_capucha_pedido(texto_filtros)
         if capucha_pedida:
             candidatos = [p for p in candidatos if p.get("capucha", "").lower() == capucha_pedida]
-        cierre_pedido = detectar_cierre_pedido(texto_pedido)
+        cierre_pedido = detectar_cierre_pedido(texto_filtros)
         if cierre_pedido:
             candidatos = [p for p in candidatos if p.get("cierre", "").lower() == cierre_pedido]
 
-    corte_pedido = detectar_corte_pedido(texto_pedido)
+    corte_pedido = detectar_corte_pedido(texto_filtros)
     if corte_pedido:
         variantes = CORTES_CONOCIDOS[corte_pedido]
         candidatos_del_corte = [
@@ -613,6 +776,18 @@ def elegir_candidatos(
         if ocasion_norm in {"deporte", "junta social"}:
             corte_ancho_prioridad = CORTE_ANCHO_PRIORIDAD_PANTALON
 
+    # Prioridad suave de subtipo por ocasion (2026-08-31, pedido del
+    # usuario): en pantalon, "carrete" prioriza jeans y "universidad"/junta
+    # social/junta familiar/comida familiar/asado priorizan cargo; en
+    # shorts, "carrete" prioriza jorts. Mismo criterio que
+    # corte_ancho_prioridad -- nunca excluye otro subtipo, solo lo ordena
+    # despues (la exclusion dura de buzo en carrete/social ya la maneja
+    # EXCLUSIONES_OCASION_GENERO arriba).
+    subtipo_prioridad_ocasion = None
+    if tipo_prenda in PRIORIDAD_SUBTIPO_OCASION:
+        grupo_ocasion = GRUPOS_OCASION.get(_quitar_tildes((ocasion or "").strip().lower()))
+        subtipo_prioridad_ocasion = PRIORIDAD_SUBTIPO_OCASION[tipo_prenda].get(grupo_ocasion)
+
     palabras_pedido = tokenizar(texto_pedido)
 
     def puntaje(producto):
@@ -622,6 +797,10 @@ def elegir_candidatos(
         nivel_corte_ancho = (
             corte_ancho_prioridad.get((producto.get("corte") or "").lower(), 0)
             if corte_ancho_prioridad else 0
+        )
+        nivel_subtipo_ocasion = (
+            1 if subtipo_prioridad_ocasion and (producto.get("subtipo") or "").lower() == subtipo_prioridad_ocasion
+            else 0
         )
         # Cuando se busca "gorro" sin pedir una forma puntual (el formulario
         # normal SIEMPRE pide forma, pero Koko puede dejarla vacia), curvo y
@@ -650,16 +829,34 @@ def elegir_candidatos(
             return (
                 nivel_hobby,
                 nivel_corte_ancho,
+                nivel_subtipo_ocasion,
                 1 if _material_es_natural(producto) else 0,
                 1 if _algodon_buena_calidad(producto) else 0,
                 puntaje_palabras,
                 nivel_forma_gorro,
                 desempate_neutral,
             )
-        return (nivel_hobby, nivel_corte_ancho, puntaje_palabras, nivel_forma_gorro, desempate_neutral)
+        return (
+            nivel_hobby, nivel_corte_ancho, nivel_subtipo_ocasion, puntaje_palabras, nivel_forma_gorro,
+            desempate_neutral,
+        )
 
-    ordenados = sorted(candidatos, key=puntaje, reverse=True)
-    return _diversificar_por_tienda(ordenados, cantidad)
+    candidatos_con_puntaje = sorted(
+        ((puntaje(p), p) for p in candidatos), key=lambda par: par[0], reverse=True
+    )
+    # Agrupa por nivel de relevancia REAL, sin el desempate neutral (ultimo
+    # elemento de la tupla) -- ese termino es un hash por producto, nunca
+    # repetido, asi que agrupar con el incluido rompería cualquier empate
+    # genuino en un grupo de 1 solo producto. Como la lista ya viene
+    # ordenada, los productos de un mismo nivel quedan siempre adyacentes.
+    niveles = []
+    for score, p in candidatos_con_puntaje:
+        nivel = score[:-1]
+        if niveles and niveles[-1][0] == nivel:
+            niveles[-1][1].append(p)
+        else:
+            niveles.append((nivel, [p]))
+    return _diversificar_por_tienda([grupo for _, grupo in niveles], cantidad)
 
 
 def armar_resultados(
@@ -673,6 +870,7 @@ def armar_resultados(
             genero, f"{texto_pedido} {texto_extra}", catalog, cantidad=3, categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
+            texto_pedido_filtros=texto_pedido,
         )
         razon = (
             f'Sin consenso claro para este caso todavia: {regla.get("nota", "")} '
@@ -688,6 +886,7 @@ def armar_resultados(
             genero, f"{texto_pedido} {texto_extra}", catalog, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
+            texto_pedido_filtros=texto_pedido,
         )
         razon = (
             f'Segun una regla validada (confianza alta) para '
@@ -832,6 +1031,7 @@ def buscar_plan_b(
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas,
             color_pedido=color_pedido, permitir_colores_similares=True, ocasion=ocasion,
+            texto_pedido_filtros=texto_pedido,
         )
         razon = (
             f'Opcion alternativa (confianza media) para '

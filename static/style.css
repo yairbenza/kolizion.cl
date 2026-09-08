@@ -365,6 +365,30 @@ label {
   gap: 0.4rem;
   margin-top: 0.5rem;
 }
+
+/* Preferencia de calce/ajuste (2026-09-07) -- 3 opciones simples, siempre
+   visibles (a diferencia del dropdown de exclusiones, aca no hace falta
+   colapsar). */
+.ajuste-talla-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.ajuste-talla-opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 400;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+.ajuste-talla-opcion input { width: auto; }
+.ajuste-talla-opcion:has(input:checked) { border-color: var(--accent); color: var(--accent); }
 .selector-exclusiones-chip {
   display: inline-flex;
   align-items: center;
@@ -517,6 +541,60 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
   color: var(--accent);
   background: transparent;
 }
+
+/* "Confianza KOLIZION" (2026-09-02, en rojo llamativo a pedido del usuario):
+   a primera vista solo se lee "Nivel X" -- el desglose completo (que
+   criterios cumple) va en el title (tooltip) y en el acordeon de la ficha
+   completa, ver #vp-det-confianza. */
+.insignia-confianza {
+  display: inline-block;
+  margin: 0.2rem 0.3rem 0.4rem 0;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border: 1px solid #e11d2e;
+  color: #fff;
+  background: #e11d2e;
+  cursor: pointer;
+}
+
+/* Popup de "Confianza KOLIZION" (2026-09-03): se abre al tocar/clickear el
+   sello "Nivel X" de cualquier tarjeta (ver _abrirPopupConfianza en
+   comun.js) -- reemplaza el title (tooltip), que en mobile no se ve con
+   un tap. */
+.popup-confianza {
+  position: fixed;
+  z-index: 200;
+  width: 220px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  padding: 0.6rem 0.8rem;
+  font-size: 0.8rem;
+}
+.popup-confianza strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  color: #e11d2e;
+}
+.popup-confianza p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.vp-confianza-lista {
+  list-style: none;
+  margin: 0.3rem 0;
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.vp-confianza-si { color: var(--text); }
+.vp-confianza-no { color: #888; }
 
 /* Sello "por que es tendencia" en la ficha completa (2026-08-29, pedido del
    usuario: N.1 en clics, recien llegado, etc. -- mismo texto que ya se veia
@@ -974,17 +1052,6 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
   display: block;
 }
 
-.tour-icono-koko {
-  width: 72px;
-  height: 72px;
-  object-fit: cover;
-  object-position: top;
-  border-radius: 50%;
-  margin: 0 auto;
-  display: block;
-  border: 2px solid var(--accent);
-}
-
 .tour-puntos {
   display: flex;
   justify-content: center;
@@ -998,6 +1065,23 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
   background: var(--border);
 }
 .tour-punto.activo { background: var(--accent); }
+
+.btn-no-entendi {
+  display: block;
+  margin: 0.6rem auto 0;
+  background: none;
+  border: none;
+  color: var(--accent);
+  text-decoration: underline;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.video-ejemplo-tour {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 0.6rem;
+}
 
 /* --- Ficha de producto (2026-08-27): componente global, ver
    _vista_previa.html / abrirVistaPrevia en comun.js. En mobile se apila
@@ -1151,6 +1235,10 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
   text-decoration: line-through;
   cursor: not-allowed;
 }
+/* Talla recomendada segun tu cuerpo + preferencia de calce (2026-09-07) --
+   se mantiene marcada aunque el usuario elija otro chip despues (a
+   diferencia de .activa, que se mueve al hacer clic). */
+.vp-chip.sugerida { border-style: dashed; border-color: var(--accent); }
 
 /* Acordeon de detalles (descripcion/detalles/materiales/envio) -- <details>
    nativo, sin JS extra para abrir/cerrar. */
@@ -1847,15 +1935,20 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
 .tarjeta-vitrina a { font-size: 0.8rem; }
 
 /* "Llegan rápido a ti" (2026-08-25): ya no es una fila del feed ni un
-   boton inline -- ahora es un icono fijo arriba a la derecha, mismo
-   tamaño/estilo flotante que .fab-koko (abajo a la derecha), para que sea
-   un acceso constante en vez de una fila mas entre Ofertas/Destacados. El
-   click abre el mismo modal de siempre (reusa .modal-overlay/.tarjeta-modal)
-   con solo INFO de tiendas, nunca un catalogo de productos. */
+   boton inline -- ahora es un icono fijo arriba, mismo tamaño/estilo
+   flotante que .fab-koko (abajo a la derecha), para que sea un acceso
+   constante en vez de una fila mas entre Ofertas/Destacados. El click abre
+   el mismo modal de siempre (reusa .modal-overlay/.tarjeta-modal) con solo
+   INFO de tiendas, nunca un catalogo de productos.
+   2026-09-02: con el icono de "Mi cuenta" (.fab-cuenta) agregado despues en
+   ese mismo punto (arriba a la derecha, en TODAS las paginas), quedaban los
+   dos exactamente encimados y este quedaba tapado -- ahora va pegado al
+   lado izquierdo de .fab-cuenta (40px + 0.5rem de separacion), a la misma
+   altura, en vez de en la esquina opuesta. */
 .fab-llegan-rapido {
   position: fixed;
-  top: calc(1rem + env(safe-area-inset-top, 0px));
-  right: 1rem;
+  top: calc(1rem - 6px + env(safe-area-inset-top, 0px));
+  right: calc(1rem + 40px + 0.5rem);
   width: 52px;
   height: 52px;
   border-radius: 50%;

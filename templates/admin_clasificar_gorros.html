@@ -26,7 +26,8 @@
     <p class="subtitulo">
       {{ total_gorros }} gorros en el catálogo · {{ ya_revisados }} ya revisados por ti.
       Cada uno ya viene con una forma sugerida (curvo por defecto, plano si dice "snapback",
-      de lana si dice "beanie") — revisa la foto y confirma o cambia.
+      de lana si dice "beanie"/"gorro de lana", dad hat/trucker/bucket hat si el nombre lo dice) —
+      revisa la foto y confirma o cambia.
     </p>
 
     {% if not productos %}
@@ -44,6 +45,9 @@
           <button type="button" class="vp-chip" data-forma="curvo">Curvo</button>
           <button type="button" class="vp-chip" data-forma="plano">Plano</button>
           <button type="button" class="vp-chip" data-forma="lana">De lana</button>
+          <button type="button" class="vp-chip" data-forma="trucker">Trucker</button>
+          <button type="button" class="vp-chip" data-forma="dad hat">Dad Hat</button>
+          <button type="button" class="vp-chip" data-forma="bucket hat">Bucket Hat</button>
         </div>
 
         <button type="button" id="clasificar-confirmar" style="margin-top: 1rem;">Confirmar y siguiente</button>

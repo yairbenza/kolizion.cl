@@ -162,8 +162,7 @@ function continuarConGuiaBienvenida() {
 const TIPO_PRENDA_OPCIONES = {
   "prenda superior": ["Me da igual", "Polera", "Poleron", "Chaqueta", "Camisa", "Camiseta", "Top", "Chaleco", "Otro"],
   "prenda inferior": [
-    "Me da igual", "Pantalon", "Shorts",
-    ["Falda cargo", "con bolsillos grandes al costado"],
+    "Me da igual", "Pantalon", "Shorts", "Falda",
     ["Bike shorts / shorts ciclista", "ajustados, tipo ciclista"],
     "Otro",
   ],
@@ -496,6 +495,11 @@ function mostrarSeccion(id) {
     document.getElementById(s).classList.toggle("oculto", s !== id);
   }
   document.getElementById("estado").textContent = "";
+  // El selector "¿Para quien es?" solo existe si hay sesion iniciada (ver
+  // {% if usuario %} en index.html) -- si no existe, no hay nada que cargar.
+  if (id === "seccion-busqueda-regalo" && document.getElementById("subperfil-select")) {
+    cargarSubperfiles();
+  }
 }
 
 // Pone en un select el valor guardado de una busqueda anterior. Como
@@ -615,6 +619,60 @@ function limpiarFiltros(prefix) {
   // bloqueados por el limite de 3 (ver limitarSeleccionCheckboxes).
   const primerCheckboxColor = document.querySelector(`#campo-color-${prefix} input[type="checkbox"]`);
   if (primerCheckboxColor) primerCheckboxColor.dispatchEvent(new Event("change"));
+}
+
+// Subperfiles (2026-08-31, pedido del usuario): "personas" guardadas bajo
+// la cuenta para la busqueda "regalo" -- mismos campos que un perfil
+// normal (nombre/apellido/genero/edad/altura/peso), reutilizables en
+// futuras busquedas. El selector #subperfil-select solo existe en el HTML
+// si hay sesion iniciada (ver {% if usuario %} en index.html), asi que
+// todas estas funciones se cortan solas si no esta logueado.
+let subperfilesCache = [];
+
+async function cargarSubperfiles() {
+  const select = document.getElementById("subperfil-select");
+  if (!select) return;
+  try {
+    const resp = await fetch("/api/subperfiles");
+    subperfilesCache = resp.ok ? (await resp.json()).subperfiles || [] : [];
+  } catch (e) {
+    subperfilesCache = [];
+  }
+  const valorPrevio = select.value;
+  select.querySelectorAll("option:not(:first-child)").forEach((o) => o.remove());
+  subperfilesCache.forEach((sp) => {
+    const option = document.createElement("option");
+    option.value = sp.id;
+    option.textContent = [sp.nombre, sp.apellido].filter(Boolean).join(" ");
+    select.appendChild(option);
+  });
+  select.value = subperfilesCache.some((sp) => String(sp.id) === valorPrevio) ? valorPrevio : "";
+  aplicarSeleccionSubperfil();
+}
+
+// Al elegir una persona ya guardada, precarga altura/peso/genero en el
+// formulario (mismos campos que ya pide "regalo") y oculta los campos de
+// "persona nueva" -- nunca se pide guardar 2 veces lo mismo.
+function aplicarSeleccionSubperfil() {
+  const select = document.getElementById("subperfil-select");
+  if (!select) return;
+  const camposNuevaPersona = document.getElementById("campos-nueva-persona-regalo");
+  const infoGuardado = document.getElementById("subperfil-guardado-info");
+  const form = document.getElementById("form-busqueda-regalo");
+  const subperfil = subperfilesCache.find((sp) => String(sp.id) === select.value);
+
+  if (subperfil) {
+    camposNuevaPersona.classList.add("oculto");
+    infoGuardado.classList.remove("oculto");
+    document.getElementById("subperfil-guardado-nombre").textContent =
+      [subperfil.nombre, subperfil.apellido].filter(Boolean).join(" ");
+    if (subperfil.altura) form.elements["altura"].value = subperfil.altura;
+    if (subperfil.peso) form.elements["peso"].value = subperfil.peso;
+    if (subperfil.genero) form.elements["genero"].value = subperfil.genero;
+  } else {
+    camposNuevaPersona.classList.remove("oculto");
+    infoGuardado.classList.add("oculto");
+  }
 }
 
 // Mismo aviso que "Encontramos productos para ti hace un momento" del chat
@@ -793,6 +851,21 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarSeccion("seccion-busqueda-regalo");
   });
 
+  const subperfilSelect = document.getElementById("subperfil-select");
+  if (subperfilSelect) {
+    subperfilSelect.addEventListener("change", aplicarSeleccionSubperfil);
+  }
+  const btnEliminarSubperfil = document.getElementById("btn-eliminar-subperfil");
+  if (btnEliminarSubperfil) {
+    btnEliminarSubperfil.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("subperfil-select").value;
+      if (!id || !confirm("¿Eliminar esta persona guardada?")) return;
+      await fetch(`/api/subperfiles/${id}`, { method: "DELETE" });
+      await cargarSubperfiles();
+    });
+  }
+
   document.getElementById("link-editar-perfil").addEventListener("click", (e) => {
     e.preventDefault();
     abrirEdicionPerfil();
@@ -859,12 +932,40 @@ document.addEventListener("DOMContentLoaded", () => {
     buscar({
       modo: "yo", email: perfilCompleto.gmail || "", perfil: perfilParaBuscar,
       preferencias_negativas: getPreferenciasNegativas(),
+      ajuste_talla: getAjusteTalla(),
       ...leerBusquedaPrenda("yo"),
     });
   });
 
-  document.getElementById("form-busqueda-regalo").addEventListener("submit", (e) => {
+  document.getElementById("form-busqueda-regalo").addEventListener("submit", async (e) => {
     e.preventDefault();
+    // Si es "persona nueva" (no una ya guardada) y marco "guardar", crea el
+    // subperfil ANTES de buscar -- si falla por lo que sea, la busqueda
+    // sigue igual, nunca se bloquea por esto (pedido del usuario, 2026-08-31).
+    const subperfilSelect = document.getElementById("subperfil-select");
+    if (subperfilSelect && !subperfilSelect.value) {
+      const nombre = document.getElementById("subperfil-nombre").value.trim();
+      const guardar = document.getElementById("subperfil-guardar").checked;
+      if (nombre && guardar) {
+        const form = e.target;
+        try {
+          await fetch("/api/subperfiles", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              nombre,
+              apellido: document.getElementById("subperfil-apellido").value.trim(),
+              edad: document.getElementById("subperfil-edad").value,
+              genero: form.elements["genero"].value,
+              altura: form.elements["altura"].value,
+              peso: form.elements["peso"].value,
+            }),
+          });
+        } catch (err) {
+          // silencioso a proposito -- ver comentario arriba
+        }
+      }
+    }
     const datos = Object.fromEntries(new FormData(e.target).entries());
     buscar({ modo: "regalo", ...datos, ...leerBusquedaPrenda("regalo") });
   });

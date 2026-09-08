@@ -1,4 +1,5 @@
-<!-- Guia de bienvenida (tour de 3 pantallas: Buscador/Koko/Descubre) --
+<!-- Guia de bienvenida (tour de 8 pantallas, actualizado 2026-09-02 con las
+     funciones nuevas -- se saco la pantalla de Koko a pedido del usuario) --
      parcial compartido por las 4 paginas, igual que _panel_koko.html.
      Dos formas de abrirla (ver comun.js):
      - Automatica, la primera vez que se crea el perfil (index.html/script.js
@@ -26,26 +27,77 @@
         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
       <h2>El buscador</h2>
-      <p>Elige qué prenda buscas, el corte, la ocasión y el precio. Te mostramos ropa real de tiendas chicas que calza contigo.</p>
+      <p>Elige qué prenda buscas, el corte, la ocasión y el precio. Te mostramos ropa real de tiendas chicas que calza contigo — para ti o para regalar a alguien más.</p>
+      <button type="button" class="btn-no-entendi" data-video="{{ url_for('static', filename='guia/demo_buscador.mp4') }}">¿No entendiste? Mira un ejemplo</button>
+      <video class="video-ejemplo-tour oculto" playsinline controls></video>
     </div>
     <div class="tour-slide oculto" data-slide="1">
-      <img src="{{ url_for('static', filename='img/koko/koko.png') }}" alt="" class="tour-icono-koko">
-      <h2>Koko</h2>
-      <p>Es tu asistente de estilo. Conversa con él y pídele consejos de outfit, o que te ayude a encontrar algo puntual.</p>
-    </div>
-    <div class="tour-slide oculto" data-slide="2">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"></circle>
         <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
       </svg>
       <h2>Descubre</h2>
-      <p>Para cuando no buscas algo puntual: explora tendencias y ofertas de las tiendas.</p>
+      <p>En la pestaña Descubre navegas sin buscar nada puntual: tendencias, lanzamientos, ofertas y destacados, en filas que deslizas con el dedo.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="3" width="15" height="13"></rect>
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+      </svg>
+      <h2>Llegan rápido a ti</h2>
+      <p>Si guardas tu dirección en tu perfil, arriba aparece un ícono de camión 🚚 con las tiendas piloto que despachan más rápido a tu zona.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="3">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+        <polyline points="21 15 16 10 5 21"></polyline>
+      </svg>
+      <h2>La ficha del producto</h2>
+      <p>Toca cualquier prenda para ver todas sus fotos reales, elegir talla y color, revisar materiales/envío, y agregarla al carrito.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="4">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.59 13.41L13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+      </svg>
+      <h2>Insignias</h2>
+      <p>✦ Marca de autor: diseño propio de la tienda. Unisex y el % rojo de ofertas te dan la info clave de un vistazo, sin entrar a la ficha.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="5">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+      <h2>Confianza KOLIZION</h2>
+      <p>El sello rojo "Nivel X" junto a cada prenda resume qué tan verificada está: marca de autor, material informado, despacho declarado, trayectoria en KOLIZION y fotos reales. Mantén el dedo sobre el sello para ver el detalle.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="6">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      <h2>Favoritos</h2>
+      <p>Toca la estrella en cualquier tarjeta para guardarla. Después la encuentras en "Favoritos", en la barra de abajo.</p>
+    </div>
+    <div class="tour-slide oculto" data-slide="7">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      <h2>Mi cuenta</h2>
+      <p>El círculo con tu foto (arriba a la derecha) es tu cuenta: edítala ahí. Necesitas tener sesión iniciada para abrir el link de una tienda o comprar.</p>
     </div>
 
     <div class="tour-puntos">
       <span class="tour-punto activo" data-punto="0"></span>
       <span class="tour-punto" data-punto="1"></span>
       <span class="tour-punto" data-punto="2"></span>
+      <span class="tour-punto" data-punto="3"></span>
+      <span class="tour-punto" data-punto="4"></span>
+      <span class="tour-punto" data-punto="5"></span>
+      <span class="tour-punto" data-punto="6"></span>
+      <span class="tour-punto" data-punto="7"></span>
     </div>
     <div class="botones-quien">
       <button type="button" id="btn-tour-anterior" class="oculto">Anterior</button>

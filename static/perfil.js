@@ -41,22 +41,58 @@ function agregarFilaPerfil(resumen, etiqueta, valor) {
 // referencia (no es un dato que el usuario haya escrito, no se puede
 // editar). Si hay 2 tallas posibles (ej. peso y altura no coinciden
 // exacto), se muestra la principal + la segunda opcion entre parentesis.
-async function agregarTallaEstimada(resumen, perfil) {
+async function agregarTallaEstimada(resumen, perfil, ajuste) {
+  // Si ya existia la fila (ej. se llama de nuevo al cambiar la preferencia
+  // de ajuste/calce), se saca antes de recalcular -- evita duplicarla.
+  const filaVieja = resumen.querySelector('[data-campo="talla-estimada"]');
+  if (filaVieja) filaVieja.remove();
   if (!perfil.altura && !perfil.peso) return;
   try {
     const params = new URLSearchParams({
       genero: perfil.genero || "",
       peso: perfil.peso || "",
       altura: perfil.altura || "",
+      ajuste_talla: ajuste || getAjusteTalla(),
     });
     const resp = await fetch("/api/estimar_talla?" + params.toString());
     const data = await resp.json();
     const tallas = data.tallas || [];
     if (tallas.length === 0) return;
     const texto = tallas.length > 1 ? `${tallas[0]} (o ${tallas[1]})` : tallas[0];
-    agregarFilaPerfil(resumen, "Talla estimada", texto);
+    const fila = agregarFilaPerfil(resumen, "Talla estimada", texto);
+    fila.dataset.campo = "talla-estimada";
   } catch (e) {
     // Best-effort: si falla, simplemente no se muestra esta fila.
+  }
+}
+
+// Preferencia de calce/ajuste (2026-09-07, pedido del usuario): "Como
+// prefieres que te quede la ropa" -- radios Ajustado/Normal/Holgado, mismo
+// patron de auto-guardado que MAPA_PREFERENCIAS_NEGATIVAS. Independiente de
+// tener perfil guardado (se arma junto al resto de los interruptores, antes
+// del "return" de "sin perfil todavia") -- solo actualiza la fila "Talla
+// estimada" si ademas hay un perfil con altura/peso guardado.
+const MAPA_AJUSTE_TALLA = {
+  "ajuste-talla-ajustado": "ajustado",
+  "ajuste-talla-normal": "normal",
+  "ajuste-talla-holgado": "holgado",
+};
+
+function configurarAjusteTalla() {
+  const contenedor = document.getElementById("ajuste-talla-opciones");
+  if (!contenedor) return;
+  const actual = getAjusteTalla();
+  for (const [id, valor] of Object.entries(MAPA_AJUSTE_TALLA)) {
+    const input = document.getElementById(id);
+    if (!input) continue;
+    input.checked = valor === actual;
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      guardarAjusteTalla(valor);
+      const perfil = getPerfil();
+      const resumen = document.getElementById("perfil-resumen");
+      if (perfil && resumen) agregarTallaEstimada(resumen, perfil, valor);
+    });
   }
 }
 
@@ -236,8 +272,8 @@ function configurarPreferenciasNegativas() {
     const marcados = Object.entries(MAPA_PREFERENCIAS_NEGATIVAS)
       .filter(([id]) => document.getElementById(id).checked);
     texto.textContent = marcados.length
-      ? `${marcados.length} preferencia${marcados.length > 1 ? "s" : ""} seleccionada${marcados.length > 1 ? "s" : ""}`
-      : "Seleccionar preferencias";
+      ? `${marcados.length} característica${marcados.length > 1 ? "s" : ""} excluida${marcados.length > 1 ? "s" : ""}`
+      : "Excluir características";
     chips.innerHTML = "";
     for (const [id, { texto: textoChip }] of marcados) {
       const chip = document.createElement("span");
@@ -286,6 +322,7 @@ function configurarPreferenciasNegativas() {
 document.addEventListener("DOMContentLoaded", () => {
   configurarInterruptorTema();
   configurarPreferenciasNegativas();
+  configurarAjusteTalla();
   // Independiente del perfil de busqueda (localStorage) de mas abajo -- el
   // historial depende solo de la sesion real (ver {% if usuario %} en
   // perfil.html), asi que alguien logueado sin perfil local igual tiene
@@ -319,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
     agregarFilaPerfil(resumen, etiqueta, valor);
   }
 
-  agregarTallaEstimada(resumen, perfil);
+  agregarTallaEstimada(resumen, perfil, getAjusteTalla());
   agregarPreferenciaIdiomaKoko(resumen, perfil.gmail || "");
 
   linkEditar.classList.remove("oculto");

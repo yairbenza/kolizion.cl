@@ -20,6 +20,7 @@ from constantes import (
 )
 from extensions import limiter
 from servicio_tiendas import (
+    _clics_por_producto,
     _fecha_clic,
     _parsear_comuna_region,
     cargar_clics_tiendas,
@@ -198,9 +199,20 @@ def admin_clics():
         })
     filas.sort(key=lambda f: f["total"], reverse=True)
 
+    # Clics reales de hoy por producto (2026-09-07, pedido del usuario) --
+    # es la misma cuenta que usa _armar_tendencias para rankear Tendencias
+    # en /vitrina, para que el usuario pueda confirmar que el ranking sale
+    # de clics reales y no esta "inventado".
+    catalog_por_nombre = {p["nombre"]: p for p in load_json(CATALOG_PATH)}
+    tendencias_clics = [
+        {"nombre": nombre, "tienda": catalog_por_nombre[nombre].get("tienda", ""), "clics_hoy": cantidad}
+        for nombre, cantidad in _clics_por_producto(dias=1).most_common(15)
+        if nombre in catalog_por_nombre
+    ]
+
     return render_template(
         "admin_clics.html", filas=filas, rango=rango, rangos=RANGOS_CLICS,
-        etiqueta_rango=config_rango["etiqueta"],
+        etiqueta_rango=config_rango["etiqueta"], tendencias_clics=tendencias_clics,
     )
 
 
@@ -209,6 +221,22 @@ def admin_clics():
 def admin_usuarios():
     usuarios = db_usuarios.listar_usuarios()
     return render_template("admin_usuarios.html", usuarios=usuarios)
+
+
+@admin_bp.route("/admin/usuarios/respaldo")
+@requiere_admin
+def admin_respaldo_usuarios():
+    """Descarga un JSON con todas las cuentas (incluye password_hash --
+    es un hash, no sirve para nada sin volver a subirlo a esta misma app --
+    y subperfiles) para poder restaurarlas si el disco de Render se borra
+    en un redeploy (plan gratis, no tiene disco persistente)."""
+    respaldo = db_usuarios.exportar_respaldo_completo()
+    fecha = datetime.now(timezone.utc).strftime("%Y-%m-%d_%H%M")
+    cuerpo = json.dumps(respaldo, ensure_ascii=False, indent=2)
+    return cuerpo, 200, {
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Disposition": f'attachment; filename="respaldo_usuarios_{fecha}.json"',
+    }
 
 
 # --- Clasificacion manual de grafico/estampado (2026-08-29) ---------------

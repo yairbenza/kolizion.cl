@@ -24,6 +24,14 @@ CAMPOS_PERFIL_TEXTO = ["nombre", "apellido", "genero", "direccion", "telefono"]
 CAMPOS_PERFIL_NUMERO = ["edad", "altura", "peso"]
 CAMPOS_PERFIL_LISTA = ["hobbie", "hobbie_musica_genero", "hobbie_deportes_subtipo"]
 
+# Subperfiles (2026-08-31, pedido del usuario): "personas" guardadas bajo
+# una cuenta real para la busqueda "regalo" -- mismos campos que un perfil
+# normal (nombre/apellido/genero/edad/altura/peso/hobbies), sin
+# direccion/telefono (no aplica a alguien que no es el dueno de la cuenta).
+CAMPOS_SUBPERFIL_TEXTO = ["nombre", "apellido", "genero"]
+CAMPOS_SUBPERFIL_NUMERO = ["edad", "altura", "peso"]
+CAMPOS_SUBPERFIL_LISTA = ["hobbie", "hobbie_musica_genero", "hobbie_deportes_subtipo"]
+
 
 def get_conexion():
     """Conexion nueva por llamada -- este proyecto corre como un solo
@@ -63,6 +71,23 @@ def inicializar_db():
             creado_en                TEXT NOT NULL,
             actualizado_en           TEXT,
             CHECK (password_hash IS NOT NULL OR google_sub IS NOT NULL)
+        )
+    """)
+    conexion.execute("""
+        CREATE TABLE IF NOT EXISTS subperfiles (
+            id                       INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id               INTEGER NOT NULL REFERENCES usuarios(id),
+            nombre                   TEXT NOT NULL,
+            apellido                 TEXT,
+            genero                   TEXT,
+            edad                     INTEGER,
+            altura                   REAL,
+            peso                     REAL,
+            hobbie                   TEXT,
+            hobbie_musica_genero     TEXT,
+            hobbie_deportes_subtipo  TEXT,
+            creado_en                TEXT NOT NULL,
+            actualizado_en           TEXT
         )
     """)
     conexion.commit()
@@ -125,6 +150,21 @@ def listar_usuarios():
     ).fetchall()
     conexion.close()
     return [fila_a_dict(f) for f in filas]
+
+
+def exportar_respaldo_completo():
+    """Todo lo necesario para reconstruir las cuentas si se pierde la base
+    de datos (ej. redeploy en el plan gratis de Render, que borra el disco)
+    -- a diferencia de listar_usuarios(), SI incluye password_hash (es un
+    hash, no la contrasena en texto plano -- sin esto un usuario con login
+    por email/contrasena quedaria sin forma de volver a entrar) y los
+    subperfiles de cada cuenta. Solo la usa la ruta de respaldo en
+    rutas_admin.py, nunca se muestra en pantalla."""
+    conexion = get_conexion()
+    usuarios = [dict(f) for f in conexion.execute("SELECT * FROM usuarios ORDER BY id").fetchall()]
+    subperfiles = [dict(f) for f in conexion.execute("SELECT * FROM subperfiles ORDER BY id").fetchall()]
+    conexion.close()
+    return {"usuarios": usuarios, "subperfiles": subperfiles}
 
 
 def buscar_por_email(email):
@@ -234,6 +274,75 @@ def vincular_google(usuario_id, google_sub):
     conexion = get_conexion()
     conexion.execute(
         "UPDATE usuarios SET google_sub = ? WHERE id = ?", (google_sub, usuario_id)
+    )
+    conexion.commit()
+    conexion.close()
+
+
+def fila_subperfil_a_dict(fila):
+    if fila is None:
+        return None
+    datos = dict(fila)
+    for campo in CAMPOS_SUBPERFIL_LISTA:
+        try:
+            datos[campo] = json.loads(datos.get(campo) or "[]")
+        except (json.JSONDecodeError, TypeError):
+            datos[campo] = []
+    return datos
+
+
+def listar_subperfiles(usuario_id):
+    """Subperfiles de una cuenta (busqueda 'regalo'), mas nuevos primero."""
+    conexion = get_conexion()
+    filas = conexion.execute(
+        "SELECT * FROM subperfiles WHERE usuario_id = ? ORDER BY creado_en DESC", (usuario_id,)
+    ).fetchall()
+    conexion.close()
+    return [fila_subperfil_a_dict(f) for f in filas]
+
+
+def buscar_subperfil(subperfil_id, usuario_id):
+    """Siempre filtrado por usuario_id -- para que nadie pueda leer/borrar
+    el subperfil de otra cuenta adivinando un id (ver rutas_auth.py)."""
+    conexion = get_conexion()
+    fila = conexion.execute(
+        "SELECT * FROM subperfiles WHERE id = ? AND usuario_id = ?", (subperfil_id, usuario_id)
+    ).fetchone()
+    conexion.close()
+    return fila_subperfil_a_dict(fila)
+
+
+def crear_subperfil(usuario_id, datos):
+    ahora = datetime.now(timezone.utc).isoformat()
+    columnas = ["usuario_id", "creado_en"]
+    valores = [usuario_id, ahora]
+
+    for campo in CAMPOS_SUBPERFIL_TEXTO:
+        columnas.append(campo)
+        valores.append(datos.get(campo) or None)
+    for campo in CAMPOS_SUBPERFIL_NUMERO:
+        columnas.append(campo)
+        valores.append(_numero_o_none(datos.get(campo)))
+    for campo in CAMPOS_SUBPERFIL_LISTA:
+        columnas.append(campo)
+        valores.append(_lista_a_json(datos.get(campo)))
+
+    placeholders = ", ".join("?" for _ in columnas)
+    conexion = get_conexion()
+    cursor = conexion.execute(
+        f"INSERT INTO subperfiles ({', '.join(columnas)}) VALUES ({placeholders})",
+        valores,
+    )
+    conexion.commit()
+    subperfil_id = cursor.lastrowid
+    conexion.close()
+    return buscar_subperfil(subperfil_id, usuario_id)
+
+
+def eliminar_subperfil(subperfil_id, usuario_id):
+    conexion = get_conexion()
+    conexion.execute(
+        "DELETE FROM subperfiles WHERE id = ? AND usuario_id = ?", (subperfil_id, usuario_id)
     )
     conexion.commit()
     conexion.close()

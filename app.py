@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import secrets
@@ -21,6 +22,7 @@ load_dotenv()
 
 import db_usuarios
 from constantes import (
+    AJUSTES_TALLA_CONOCIDOS,
     ALIAS_METROPOLITANA,
     BASE_DIR,
     CANTIDAD_RESULTADOS,
@@ -161,6 +163,12 @@ from servicio_koko import (
     reiniciar_chat_koko,
     resumen_historial_para_prompt,
 )
+from servicio_stock_live import (
+    aplicar_overlay as _aplicar_overlay_stock_live,
+    guardar_resultado_verificacion as _guardar_resultado_verificacion_stock_live,
+    iniciar_refresco_en_segundo_plano as _iniciar_refresco_stock_live,
+    verificar_stock_producto,
+)
 from servicio_tiendas import (
     _armar_basado_en_busquedas,
     _armar_tendencias,
@@ -220,10 +228,48 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+MODO_DEBUG = os.environ.get("KOLIZION_DEBUG", "").strip() == "1"
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or secrets.token_hex(32)
+
+# Refresco de stock en vivo en segundo plano (2026-09-07, pedido del
+# usuario): cada 20 min (punto medio de "15-30 min" que eligio) recorre las
+# tiendas Shopify (la gran mayoria del catalogo) y actualiza data/
+# stock_live.json -- ver servicio_stock_live.py para el detalle completo de
+# que plataformas se pueden verificar en vivo hoy y cuales no. Guard contra
+# el reloader de Flask (solo con KOLIZION_DEBUG=1): sin esto, el proceso
+# "lanzador" del modo debug tambien arrancaria su propio hilo ademas del
+# proceso real que sirve las requests -- 2 refrescos duplicados en paralelo.
+if not MODO_DEBUG or os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+    _iniciar_refresco_stock_live(CATALOG_PATH)
+
+
+def cargar_catalog_con_stock_live():
+    """load_json(CATALOG_PATH) + la capa de stock en vivo aprendida (ver
+    servicio_stock_live.py) -- nunca modifica catalog.json, solo ajusta la
+    copia en memoria de esta request. Punto central: cualquier ruta que use
+    esto ya queda al dia sin tener que tocar cada llamador por separado."""
+    return _aplicar_overlay_stock_live(load_json(CATALOG_PATH))
+
+
 app.permanent_session_lifetime = timedelta(days=30)
 app.config["MAX_CONTENT_LENGTH"] = 3 * 1024 * 1024  # 3 MB
+# Cookie de sesion solo por HTTPS en produccion (en debug/local, que corre
+# por http://, exigir "secure" haria que la cookie nunca se mande y el login
+# no funcionara nunca).
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = not MODO_DEBUG
+
+
+@app.after_request
+def _agregar_headers_seguridad(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if not MODO_DEBUG:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 db_usuarios.inicializar_db()
 
@@ -327,7 +373,21 @@ def api_vitrina():
     # 2026-08-30, pedido del usuario: Descubre no debe mostrar prendas
     # agotadas (mismo criterio que decide "Agregar al carrito" vs
     # "Proximamente" en la ficha, ver tiene_stock()).
-    catalog = [p for p in load_json(CATALOG_PATH) if tiene_stock(p)]
+    catalog = [p for p in cargar_catalog_con_stock_live() if tiene_stock(p)]
+
+    # 2026-08-31, pedido del usuario: Descubre tampoco respetaba "Excluir
+    # caracteristicas" (texto grande/grafico grande/cara-logo gigante/rotos)
+    # -- esas preferencias viven en localStorage del navegador, no en el
+    # perfil del servidor, asi que el frontend las manda como query param
+    # (ver vitrina.js). Si viene vacio o mal formado, no se excluye nada
+    # (mismo comportamiento que /api/recommend sin preferencias).
+    try:
+        prefs_vitrina = json.loads(request.args.get("prefs") or "{}")
+    except (TypeError, ValueError):
+        prefs_vitrina = {}
+    if isinstance(prefs_vitrina, dict):
+        catalog = filtrar_por_preferencias_negativas(catalog, prefs_vitrina)
+
     cantidad = 10
 
     catalogo_ofertas = sorted(
@@ -400,7 +460,65 @@ def api_estimar_talla():
     genero = _texto_seguro(request.args.get("genero", ""))
     peso = _texto_seguro(request.args.get("peso", ""))
     altura = _texto_seguro(request.args.get("altura", ""))
-    return jsonify({"tallas": estimar_tallas(genero, peso, altura)})
+    ajuste_talla = _texto_seguro(request.args.get("ajuste_talla", "")).strip().lower()
+    if ajuste_talla not in AJUSTES_TALLA_CONOCIDOS:
+        ajuste_talla = "normal"
+    return jsonify({"tallas": estimar_tallas(genero, peso, altura, ajuste_talla)})
+
+
+@app.route("/api/verificar_stock", methods=["POST"])
+@limiter.limit("30 per minute")
+def api_verificar_stock():
+    """Revalidacion en vivo al momento de "Agregar al carrito" (2026-09-07,
+    pedido del usuario) -- consulta la ficha real de la tienda (ver
+    servicio_stock_live.py: Shopify via <link>.js, IPREX via JSON-LD, ZAMU
+    via WooCommerce Store API; el resto de las plataformas todavia no tiene
+    una fuente publica verificada, asi que sigue con el dato de catalog.json
+    sin bloquear la compra).
+    Lo que se aprenda aca se guarda en el overlay compartido -- otros
+    usuarios que busquen este mismo producto despues ya ven el dato
+    actualizado, sin tener que volver a consultarlo (pedido del usuario:
+    reducir verificaciones repetidas)."""
+    data = request.get_json() or {}
+    producto_id = _texto_seguro(data.get("producto_id", ""), 80)
+    talla_pedida = _texto_seguro(data.get("talla", ""), 20).strip().upper()
+    if not producto_id:
+        return jsonify({"verificado": False}), 400
+
+    catalog = load_json(CATALOG_PATH)
+    producto = next((p for p in catalog if p["id"] == producto_id), None)
+    if not producto:
+        return jsonify({"verificado": False}), 404
+
+    resultado = verificar_stock_producto(producto)
+    if resultado["fuente"] is None:
+        return jsonify({"verificado": False})
+
+    _guardar_resultado_verificacion_stock_live(producto_id, resultado)
+
+    if resultado["variantes"] is not None:
+        disponible = any(
+            v["talla"].strip().upper() == talla_pedida and v["disponible"]
+            for v in resultado["variantes"]
+        )
+        return jsonify({
+            "verificado": True,
+            "disponible": disponible,
+            "talla_confirmada": True,
+            "tallas_variantes": resultado["variantes"],
+            "tallas_disponibles": [v["talla"] for v in resultado["variantes"] if v["disponible"]],
+        })
+
+    # Solo se supo disponibilidad del producto COMPLETO (ej. IPREX, que no
+    # separa stock por talla) -- si esta agotado, aplica igual a la talla
+    # pedida (no hay ninguna talla disponible si no queda nada); si SI tiene
+    # stock, no se puede confirmar la talla puntual, se avisa asi.
+    disponible_general = bool(resultado["disponible_general"])
+    return jsonify({
+        "verificado": True,
+        "disponible": disponible_general,
+        "talla_confirmada": False,
+    })
 
 
 @app.route("/api/favoritos", methods=["GET"])
@@ -447,7 +565,7 @@ def api_envio_tienda():
 @limiter.limit("20 per minute")
 def recommend():
     data = request.get_json() or {}
-    catalog = load_json(CATALOG_PATH)
+    catalog = cargar_catalog_con_stock_live()
     reglas = load_json(REGLAS_PATH)
     modo = data.get("modo")
     plan_b = bool(data.get("plan_b"))
@@ -531,6 +649,15 @@ def recommend():
     if modo == "yo":
         catalog = filtrar_por_preferencias_negativas(catalog, prefs_efectivas)
 
+    # Preferencia de calce del perfil (2026-09-07, pedido del usuario): "Como
+    # prefieres que te quede la ropa" -- Ajustado/Normal/Holgado, se guarda en
+    # /perfil (ver perfil.js) y solo aplica a busquedas "yo" (en "regalo" no
+    # hay perfil personal guardado). Cualquier valor que no sea uno de los 3
+    # conocidos cae a "normal" (el calculo de siempre, sin desplazar nada).
+    ajuste_talla = _texto_seguro(data.get("ajuste_talla", "")).strip().lower() if modo == "yo" else "normal"
+    if ajuste_talla not in AJUSTES_TALLA_CONOCIDOS:
+        ajuste_talla = "normal"
+
     if modo == "yo":
         perfil = data.get("perfil") or {}
         genero = _texto_seguro(perfil.get("genero"))
@@ -552,7 +679,7 @@ def recommend():
         campos_pedido = [categoria, tipo_prenda, subtipo, largo, manga, capucha, cierre, corte, ocasion]
         texto_pedido = " ".join(campos_pedido)
 
-    tallas_usuario = estimar_tallas(genero, peso, altura)
+    tallas_usuario = estimar_tallas(genero, peso, altura, ajuste_talla)
     catalog_con_talla = catalog if ignorar_talla else filtrar_por_talla(catalog, tallas_usuario)
 
     if plan_b:
@@ -854,5 +981,4 @@ def koko_chat():
 
 
 if __name__ == "__main__":
-    modo_debug = os.environ.get("KOLIZION_DEBUG", "").strip() == "1"
-    app.run(debug=modo_debug, host="0.0.0.0", port=5000)
+    app.run(debug=MODO_DEBUG, host="0.0.0.0", port=5000)

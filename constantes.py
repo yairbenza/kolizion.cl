@@ -20,6 +20,7 @@ REPORTES_MANUALES_PATH = BASE_DIR / "data" / "reportes_manuales.json"
 FAVORITOS_PATH = BASE_DIR / "data" / "favoritos.json"
 RESENAS_PATH = BASE_DIR / "data" / "resenas.json"
 LIMITE_KOKO_PATH = BASE_DIR / "data" / "limite_koko.json"
+STOCK_LIVE_PATH = BASE_DIR / "data" / "stock_live.json"
 
 # Subido temporalmente para pruebas (2026-08-26, pedido del usuario) -- volver
 # a 15 antes de sacar la app real (asi se controla el gasto de API por persona).
@@ -42,11 +43,25 @@ MATERIALES_CONOCIDOS = {
     "poliester": {"etiqueta": "Poliéster", "natural": False},
     "nylon": {"etiqueta": "Nylon", "natural": False},
     "acrilico": {"etiqueta": "Acrílico", "natural": False},
+    # 2026-09-02 (Brissa): materiales reales declarados en fichas que no
+    # existian en este diccionario todavia -- "lino" es evidencia valida
+    # de Criterio 2 (Nivel de Confianza KOLIZION) segun pedido explicito
+    # del usuario. Cupro/viscosa son fibras semi-sinteticas reales (no
+    # inventadas, vienen literales de la ficha), se marcan "natural": False
+    # por honestidad aunque igual cuentan como material declarado.
+    "lino": {"etiqueta": "Lino", "natural": True},
+    "cupro": {"etiqueta": "Cupro", "natural": False},
+    "viscosa": {"etiqueta": "Viscosa", "natural": False},
+    # 2026-09-03 (Brissa, Blusa Mañío): "Lino con Algodón" declarado
+    # literal en la ficha -- mezcla de 2 fibras naturales (a diferencia de
+    # mezcla_algodon_poliester, que es natural+sintetico), se marca
+    # "natural": True.
+    "mezcla_lino_algodon": {"etiqueta": "Lino con algodón", "natural": True},
 }
 
 CATEGORIA_GRUPOS = {
     "prenda superior": ["poleron", "camisa", "chaqueta", "polera", "chaleco", "camiseta", "top"],
-    "prenda inferior": ["pantalon", "falda", "shorts", "faldacargo", "bikeshorts"],
+    "prenda inferior": ["pantalon", "falda", "shorts", "bikeshorts"],
 }
 
 # Regla validada (ver docs/buscador.md, tabla "Filtros del formulario"):
@@ -123,7 +138,6 @@ CORTES_CONOCIDOS = {
 }
 
 TIPOS_PRENDA_CONOCIDOS = {
-    "faldacargo": ["falda cargo", "cargo skirt", "faldacargo"],
     "bikeshorts": ["bike shorts", "shorts ciclista", "bikeshorts", "ciclista"],
     "polera": ["polera"],
     "top": ["top"],
@@ -193,12 +207,19 @@ CIERRES_CONOCIDOS = {
     "sin cierre": ["sin cierre", "crewneck"],
 }
 
-FORMAS_GORRO_CONOCIDAS = ["curvo", "plano", "lana"]
+# 2026-09-07: se agregan "trucker"/"dad hat"/"bucket hat" (pedido explicito
+# del usuario al integrar Custom Caps/Bang Concept/The Wolf, para no seguir
+# guardando todo gorro con visera como "curvo" generico) -- "curvo"/"plano"/
+# "lana" no se tocan, siguen significando exactamente lo mismo que antes.
+FORMAS_GORRO_CONOCIDAS = ["curvo", "plano", "lana", "trucker", "dad hat", "bucket hat"]
 
 FORMA_GORRO_CONOCIDA = {
     "curvo": ["gorro curvo", "curvo"],
     "plano": ["gorro plano", "plano", "snapback"],
     "lana": ["gorro de lana", "gorro lana", "de lana", "lana", "beanie", "gorro tejido"],
+    "trucker": ["trucker"],
+    "dad hat": ["dad hat", "dad-hat", "dadhat"],
+    "bucket hat": ["bucket hat", "bucket"],
 }
 
 LIMITES_PESO_KG = {
@@ -212,6 +233,14 @@ LIMITES_ALTURA_M = {
 }
 
 ORDEN_TALLAS = ["S", "M", "L", "XL"]
+
+# Preferencia de calce del perfil (2026-09-07, pedido del usuario): "Como
+# prefieres que te quede la ropa" -- ajusta que talla se destaca como
+# recomendada por defecto en cada producto, sin sacar ninguna opcion (el
+# usuario sigue pudiendo elegir cualquier talla real del producto). "normal"
+# es el default y deja el calculo de estimar_tallas() tal cual como estaba
+# antes de esto.
+AJUSTES_TALLA_CONOCIDOS = {"ajustado", "normal", "holgado"}
 
 HOBBIES_CONOCIDOS = {
     "musica": {"etiqueta": "Música"},
@@ -244,37 +273,118 @@ EXCLUSIONES_HOBBY = {
     ("deportes", "gym"): {"camisa"},
 }
 
-# Exclusiones duras por ocasion, SOLO mujer (pedido explicito del usuario,
-# 2026-08-30). A diferencia de EXCLUSIONES_HOBBY (que solo reordena, ver
-# nivel_hobby en motor_recomendacion.py), estas SI sacan la prenda del pool
-# de candidatos -- el usuario pidio expresamente no tocar el ranking para
-# esto. Cada regla usa solo atributos que YA existen en el catalogo
-# (categoria/subtipo/capucha); "calzas" (carrete), "deportiva"/"casero"/
-# "chill" (junta social, junta familiar, asado, concierto) y "brillo"/
-# "tachas" (boost de concierto) se omitieron a proposito porque el catalogo
-# no tiene esos atributos tageados (ver docs/buscador.md) -- no se inventaron.
-EXCLUSIONES_OCASION_MUJER = {
+# Exclusiones duras por ocasion, mujer Y hombre (pedido explicito del
+# usuario, 2026-08-30 para mujer; 2026-08-31 pedido explicito de aplicar las
+# mismas reglas tambien a hombre). A diferencia de EXCLUSIONES_HOBBY (que
+# solo reordena, ver nivel_hobby en motor_recomendacion.py), estas SI sacan
+# la prenda del pool de candidatos -- el usuario pidio expresamente no tocar
+# el ranking para esto. Cada regla usa solo atributos que YA existen en el
+# catalogo (categoria/subtipo/capucha/texto del producto); "calzas"
+# (carrete), "deportiva"/"casero"/"chill" (junta social, junta familiar,
+# asado, concierto) y "brillo"/"tachas" (boost de concierto) se omitieron a
+# proposito porque el catalogo no tiene esos atributos tageados (ver
+# docs/buscador.md) -- no se inventaron.
+#
+# "palabras_clave" (2026-09-02, bug real reportado por el usuario: un
+# "PANTALON BASICO HEAVYWEIGHT" de AbsolutelyWrong, sin subtipo tageado,
+# se colaba en carrete): la mayoria de los pantalones del catalogo real NO
+# tienen el campo "subtipo" tageado (84 de 144 al momento de este cambio),
+# asi que confiar solo en subtipo=="buzo" dejaba pasar buzos/sweatpants sin
+# tagear que SI dicen "buzo"/"jogger"/"sweatpant" en su nombre real -- se
+# agrega busqueda por palabra sobre el texto del producto (mismo mecanismo
+# ya usado para "corte", ver _prenda_excluida_por_ocasion en
+# motor_recomendacion.py) como alternativa (OR), nunca inventando un campo
+# nuevo. Un pantalon sin subtipo tageado NI ninguna de estas palabras en su
+# nombre/descripcion/tags real (como el ejemplo de AbsolutelyWrong, que solo
+# dice "HEAVYWEIGHT" y no trae descripcion real de la tienda) sigue sin
+# poder identificarse como buzo de forma confiable -- eso requeriria mirar
+# la foto, fuera de alcance de este cambio (ver limitacion en docs/buscador.md).
+#
+# "conjunto" (2026-09-02): categoria nueva del catalogo real que hoy son 8
+# productos, TODOS trajes/sets tipo buzo ("TRACKSUIT"/"set") -- se excluye
+# la categoria completa en carrete, igual que chaleco/poleron-con-capucha.
+#
+# "solo_confirmados" en pantalon+carrete (2026-09-02, pedido explicito del
+# usuario: "buzo nunca puede aparecer... ni en ninguna tanda de mas
+# opciones"): la regla de arriba (subtipo/palabras_clave) no alcanzaba a
+# garantizar el 100% -- un pantalon sin subtipo tageado y sin ninguna
+# palabra en su nombre real (como el caso reportado de AbsolutelyWrong) no
+# calzaba con nada y se colaba igual. Para carrete especificamente se
+# invierte la logica: en vez de excluir lo confirmado como buzo, solo se
+# PERMITEN pantalones confirmados como jean o cargo (subtipo tageado, o esas
+# palabras en el texto real -- se reusan las listas ya existentes de
+# SUBTIPOS_CONOCIDOS, no se inventan nuevas). Cualquier pantalon sin forma
+# de confirmar que NO es buzo (incluye el caso reportado) queda fuera --
+# el usuario eligio explicitamente este trade-off (ver docs/buscador.md):
+# se ven menos pantalones en carrete, pero nunca se cuela un buzo sin
+# tagear. universidad/social_casera/concierto_festival NO se tocaron -- el
+# usuario pidio esto puntualmente para carrete.
+#
+# "palabras_prohibidas" (2026-09-03, bug real reportado por el usuario:
+# buscando "pantalon cargo" en carrete salian "Jogger Cargo UNK." -- subtipo
+# "cargo" tageado correctamente, pero el nombre real dice literal "Jogger").
+# El subtipo NO es garantia absoluta: gana la palabra prohibida por sobre el
+# subtipo confirmado (ver _prenda_confirmada_segura en
+# motor_recomendacion.py) -- un "Jogger Cargo" o "Pantalon Buzo ... Cargo"
+# queda excluido igual, aunque su subtipo diga "cargo".
+EXCLUSIONES_OCASION_GENERO = {
     "carrete": [
         {"categoria": "poleron", "capucha": "con capucha"},
         {"categoria": "chaleco"},
-        {"categoria": "pantalon", "subtipo": "buzo"},
+        {"categoria": "conjunto"},
+        {
+            "categoria": "pantalon",
+            "solo_confirmados": {
+                "subtipos": ["jeans", "cargo"],
+                "palabras": SUBTIPOS_CONOCIDOS["jeans"] + SUBTIPOS_CONOCIDOS["cargo"],
+                "palabras_prohibidas": ["buzo", "jogger", "sweatpant", "sweat pant"],
+            },
+        },
     ],
     "universidad": [
         {"categoria": "chaqueta", "subtipo": "cuero"},
+        # 2026-09-03, pedido explicito del usuario: una camisa de carrete
+        # (lino/algodon, corte casual) no es lo mismo que una camisa para
+        # la u (generalmente mas formal). El catalogo real no tiene campo
+        # "formal"/"casual" para camisa -- mismo mecanismo "solo_confirmados"
+        # que ya se usaba para pantalon+carrete (ver arriba): en vez de
+        # adivinar, solo se permite en universidad la camisa que declare
+        # ella misma ser formal (nombre/descripcion real con "vestir",
+        # "formal", "oxford" o "popelina"). Ninguna de las 2 camisas reales
+        # de hoy (Doslobos "Moon Ritual", flanela oversize con capucha; ZAMU
+        # "Algodon 90%", descrita como "looks casuales y de uso diario") lo
+        # declara -- las 2 quedan fuera de universidad hasta que exista una
+        # camisa real tageada como formal. Siguen apareciendo normal en
+        # carrete y el resto de ocasiones, no se tocaron.
+        {
+            "categoria": "camisa",
+            "solo_confirmados": {
+                "subtipos": [],
+                "palabras": ["vestir", "formal", "oxford", "popelina"],
+            },
+        },
     ],
     "social_casera": [
-        {"categoria": "pantalon", "subtipo": "buzo"},
+        {
+            "categoria": "pantalon", "subtipo": "buzo",
+            "palabras_clave": ["buzo", "jogger", "sweatpant", "sweat pant"],
+        },
     ],
     "concierto_festival": [
-        {"categoria": "pantalon", "subtipo": "buzo"},
+        {
+            "categoria": "pantalon", "subtipo": "buzo",
+            "palabras_clave": ["buzo", "jogger", "sweatpant", "sweat pant"],
+        },
     ],
 }
 
 # Sinonimos de texto libre ("otro" en el formulario, o texto de Koko) que
 # mapean a las claves de arriba -- "junta social"/"junta familiar" son los
 # valores reales del <select> del formulario; el resto son la forma en que
-# el usuario nombro la misma ocasion al pedir esta regla.
-GRUPOS_OCASION_MUJER = {
+# el usuario nombro la misma ocasion al pedir esta regla. Genero-agnostico
+# (se uso primero solo para mujer, 2026-08-30; extendido a hombre y
+# reusado para la prioridad de subtipo de abajo, 2026-08-31).
+GRUPOS_OCASION = {
     "carrete": "carrete",
     "universidad": "universidad",
     "junta social": "social_casera",
@@ -285,6 +395,24 @@ GRUPOS_OCASION_MUJER = {
     "concierto/festival": "concierto_festival",
     "concierto": "concierto_festival",
     "festival": "concierto_festival",
+}
+
+# Prioridad SUAVE de subtipo por ocasion (2026-08-31, pedido del usuario) --
+# a diferencia de EXCLUSIONES_OCASION_GENERO, esto NUNCA saca nada del pool,
+# solo reordena el puntaje (mismo mecanismo que CORTE_ANCHO_PRIORIDAD_PANTALON
+# en motor_recomendacion.py): "carrete" prioriza jeans en pantalon y jorts en
+# shorts; cargo (pantalon) queda para universidad/junta social/junta
+# familiar/comida familiar/asado -- el resto de subtipos sigue apareciendo,
+# solo mas abajo en el orden. Reusa GRUPOS_OCASION para los sinonimos.
+PRIORIDAD_SUBTIPO_OCASION = {
+    "pantalon": {
+        "carrete": "jeans",
+        "universidad": "cargo",
+        "social_casera": "cargo",
+    },
+    "shorts": {
+        "carrete": "jorts",
+    },
 }
 
 REGLAS_HOBBY = {

@@ -93,6 +93,11 @@
       const chkRecordar = document.getElementById("chk-recordar");
       iniciarLoginGoogle({{ siguiente | tojson }}, chkRecordar ? chkRecordar.checked : false);
     });
+
+    document.getElementById("form-registro").addEventListener("submit", () => {
+      const email = document.getElementById("campo-email").value.trim().toLowerCase();
+      guardarUltimoEmail(email);
+    });
   </script>
 </body>
 </html>

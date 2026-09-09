@@ -18,33 +18,44 @@
     <p class="descripcion" style="color: var(--accent); font-weight: 600;">{{ error }}</p>
     {% endif %}
 
-    {% if google_disponible %}
-    <button type="button" id="btn-google-login" class="btn-google">Continuar con Google</button>
-    <p class="ayuda" style="text-align: center;">o con tu correo</p>
-    {% endif %}
+    <div id="prompt-recordado" class="tarjeta-recordado oculto">
+      <p>La última vez entraste como <strong id="email-recordado"></strong>.</p>
+      <p class="ayuda">¿Seguimos con esta cuenta?</p>
+      <div class="botones-quien">
+        <button type="button" id="btn-recordado-si">Sí, continuar</button>
+        <button type="button" id="btn-recordado-no">No, soy otra persona</button>
+      </div>
+    </div>
 
-    <form method="post" action="/login">
-      <input type="hidden" name="siguiente" value="{{ siguiente }}">
-      <label>
-        Correo
-        <input type="email" name="email" autofocus required>
-      </label>
-      <label>
-        Contraseña
-        <input type="password" name="password" required>
-      </label>
-      {% if es_safari %}
-      <p class="ayuda">En Safari siempre te vamos a pedir iniciar sesión de nuevo cada vez que vuelvas.</p>
-      {% else %}
-      <label class="checkbox-inline">
-        <input type="checkbox" name="recordar" value="1" id="chk-recordar" checked>
-        Mantener la sesión iniciada en este dispositivo
-      </label>
+    <div id="bloque-login">
+      {% if google_disponible %}
+      <button type="button" id="btn-google-login" class="btn-google">Continuar con Google</button>
+      <p class="ayuda" style="text-align: center;">o con tu correo</p>
       {% endif %}
-      <button type="submit">Entrar</button>
-    </form>
 
-    <p class="ayuda">¿No tienes cuenta? <a href="/registro?siguiente={{ siguiente }}">Crea una</a>.</p>
+      <form method="post" action="/login" id="form-login">
+        <input type="hidden" name="siguiente" value="{{ siguiente }}">
+        <label>
+          Correo
+          <input type="email" name="email" id="campo-email-login" autofocus required>
+        </label>
+        <label>
+          Contraseña
+          <input type="password" name="password" id="campo-password-login" required>
+        </label>
+        {% if es_safari %}
+        <p class="ayuda">En Safari siempre te vamos a pedir iniciar sesión de nuevo cada vez que vuelvas.</p>
+        {% else %}
+        <label class="checkbox-inline">
+          <input type="checkbox" name="recordar" value="1" id="chk-recordar" checked>
+          Mantener la sesión iniciada en este dispositivo
+        </label>
+        {% endif %}
+        <button type="submit">Entrar</button>
+      </form>
+
+      <p class="ayuda">¿No tienes cuenta? <a href="/registro?siguiente={{ siguiente }}">Crea una</a>.</p>
+    </div>
   </main>
 
   <script src="{{ url_for('static', filename='comun.js') }}"></script>
@@ -53,6 +64,37 @@
     document.getElementById("btn-google-login")?.addEventListener("click", () => {
       const chkRecordar = document.getElementById("chk-recordar");
       iniciarLoginGoogle({{ siguiente | tojson }}, chkRecordar ? chkRecordar.checked : false);
+    });
+
+    document.getElementById("form-login").addEventListener("submit", () => {
+      guardarUltimoEmail(document.getElementById("campo-email-login").value.trim().toLowerCase());
+    });
+
+    // "Seguir como X" (2026-09-08, pedido del usuario): si ya se inicio
+    // sesion antes en este navegador, evita mostrar el formulario vacio de
+    // nuevo -- solo pide confirmar y la contraseña. Nunca guarda la
+    // contraseña, solo el correo (ver comun.js).
+    (function () {
+      if ({{ "true" if error else "false" }}) return; // tras un error, mostrar el formulario tal cual
+      const ultimoEmail = obtenerUltimoEmail();
+      if (!ultimoEmail) return;
+      document.getElementById("email-recordado").textContent = ultimoEmail;
+      document.getElementById("prompt-recordado").classList.remove("oculto");
+      document.getElementById("bloque-login").classList.add("oculto");
+    })();
+
+    document.getElementById("btn-recordado-si").addEventListener("click", () => {
+      document.getElementById("campo-email-login").value = obtenerUltimoEmail();
+      document.getElementById("prompt-recordado").classList.add("oculto");
+      document.getElementById("bloque-login").classList.remove("oculto");
+      document.getElementById("campo-password-login").focus();
+    });
+
+    document.getElementById("btn-recordado-no").addEventListener("click", () => {
+      olvidarUltimoEmail();
+      document.getElementById("prompt-recordado").classList.add("oculto");
+      document.getElementById("bloque-login").classList.remove("oculto");
+      document.getElementById("campo-email-login").focus();
     });
   </script>
 </body>

@@ -34,6 +34,7 @@
       hobbie_musica_genero: {{ (usuario.hobbie_musica_genero or []) | tojson }},
       hobbie_deportes_subtipo: {{ (usuario.hobbie_deportes_subtipo or []) | tojson }},
     });
+    guardarUltimoEmail({{ usuario.email | tojson }});
     window.location.replace({{ siguiente | tojson }});
   </script>
 </body>

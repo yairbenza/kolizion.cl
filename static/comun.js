@@ -145,6 +145,25 @@ function guardarPerfil(perfil) {
   localStorage.setItem(PERFIL_KEY, JSON.stringify(perfil));
 }
 
+// Ultimo correo con el que se inicio sesion en este navegador (2026-09-08,
+// pedido del usuario) -- solo el correo, nunca la contraseña. Se usa en
+// /login para preguntar "seguir como X" en vez de mostrar el formulario
+// vacio de nuevo. Se guarda tanto en login/registro por contraseña como
+// en el callback de Google (ver _auth_sincronizar.html).
+const ULTIMO_EMAIL_KEY = "kolizionUltimoEmail";
+
+function guardarUltimoEmail(email) {
+  if (email) localStorage.setItem(ULTIMO_EMAIL_KEY, email);
+}
+
+function obtenerUltimoEmail() {
+  return localStorage.getItem(ULTIMO_EMAIL_KEY) || "";
+}
+
+function olvidarUltimoEmail() {
+  localStorage.removeItem(ULTIMO_EMAIL_KEY);
+}
+
 // Preferencias negativas (2026-08-28): que excluir por completo de "yo"
 // buscando -- aparte del perfil (no es un dato de la persona, es un filtro),
 // se manda tal cual al servidor en cada busqueda "yo" (ver form-busqueda-yo

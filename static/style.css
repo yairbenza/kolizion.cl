@@ -467,6 +467,15 @@ button:not(.fab-koko, .fab-ayuda, .btn-cerrar-koko, .btn-cerrar-tour, .btn-favor
 
 .ayuda { color: #666; font-size: 0.9rem; }
 
+.tarjeta-recordado {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
 .botones-quien {
   display: flex;
   gap: 1rem;

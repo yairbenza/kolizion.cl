@@ -1,0 +1,174 @@
+{
+  "doslobos": {
+    "nombre": "Doslobos",
+    "tipo": "sin_sitio_web",
+    "comuna": "Providencia",
+    "region": "Metropolitana"
+  },
+  "roots-south": {
+    "nombre": "Roots South",
+    "tipo": "sin_sitio_web",
+    "comuna": "Providencia",
+    "region": "Metropolitana"
+  },
+  "ova-chile": {
+    "nombre": "OVA Chile",
+    "tipo": "sin_sitio_web",
+    "comuna": "Linares",
+    "region": "Maule"
+  },
+  "rotten": {
+    "nombre": "Rotten",
+    "tipo": "sin_sitio_web",
+    "comuna": "Santiago",
+    "region": "Metropolitana"
+  },
+  "bang-gang": {
+    "nombre": "BANG GANG",
+    "tipo": "sin_sitio_web"
+  },
+  "floating": {
+    "nombre": "Floating",
+    "tipo": "sin_sitio_web"
+  },
+  "absolutelywrong": {
+    "nombre": "AbsolutelyWrong",
+    "tipo": "sin_sitio_web"
+  },
+  "forceblack": {
+    "nombre": "ForceBlack",
+    "tipo": "sin_sitio_web"
+  },
+  "oversaints": {
+    "nombre": "Oversaints",
+    "tipo": "sin_sitio_web"
+  },
+  "rapt": {
+    "nombre": "Rapt",
+    "tipo": "sin_sitio_web"
+  },
+  "selvanegrawear": {
+    "nombre": "Selvanegrawear",
+    "tipo": "sin_sitio_web"
+  },
+  "simpl": {
+    "nombre": "Simpl.",
+    "tipo": "sin_sitio_web"
+  },
+  "unk-chile": {
+    "nombre": "UNK Chile",
+    "tipo": "sin_sitio_web"
+  },
+  "novorich": {
+    "nombre": "Novorich",
+    "tipo": "sin_sitio_web"
+  },
+  "shatters": {
+    "nombre": "Shatters",
+    "tipo": "sin_sitio_web"
+  },
+  "stuffies-concept": {
+    "nombre": "Stuffies Concept",
+    "tipo": "sin_sitio_web"
+  },
+  "club-33": {
+    "nombre": "Club 33",
+    "tipo": "sin_sitio_web"
+  },
+  "1libra": {
+    "nombre": "1Libra",
+    "tipo": "sin_sitio_web"
+  },
+  "addictve": {
+    "nombre": "Addictve",
+    "tipo": "sin_sitio_web"
+  },
+  "feroni-studios": {
+    "nombre": "Feroni Studios",
+    "tipo": "sin_sitio_web"
+  },
+  "haze-concept": {
+    "nombre": "Haze Concept",
+    "tipo": "sin_sitio_web"
+  },
+  "kotonaru-store": {
+    "nombre": "Kotonaru Store",
+    "tipo": "sin_sitio_web"
+  },
+  "blazze": {
+    "nombre": "Blazze",
+    "tipo": "sin_sitio_web"
+  },
+  "kagi": {
+    "nombre": "Kagi",
+    "tipo": "sin_sitio_web"
+  },
+  "oopsi": {
+    "nombre": "Oopsi",
+    "tipo": "sin_sitio_web"
+  },
+  "28keys": {
+    "nombre": "28Keys",
+    "tipo": "sin_sitio_web"
+  },
+  "traperas-company": {
+    "nombre": "Traperas Company",
+    "tipo": "sin_sitio_web"
+  },
+  "viloria": {
+    "nombre": "Viloria",
+    "tipo": "sin_sitio_web"
+  },
+  "enila": {
+    "nombre": "Enila",
+    "tipo": "sin_sitio_web"
+  },
+  "rrreused": {
+    "nombre": "RRREUSED",
+    "tipo": "sin_sitio_web"
+  },
+  "iprex": {
+    "nombre": "IPREX",
+    "tipo": "sin_sitio_web"
+  },
+  "beeway": {
+    "nombre": "BEEWAY",
+    "tipo": "sin_sitio_web"
+  },
+  "wav": {
+    "nombre": "WAV",
+    "tipo": "sin_sitio_web"
+  },
+  "zamu": {
+    "nombre": "ZAMU",
+    "tipo": "sin_sitio_web"
+  },
+  "lamariadolores": {
+    "nombre": "La Maria Dolores",
+    "tipo": "sin_sitio_web"
+  },
+  "brissa": {
+    "nombre": "Brissa",
+    "tipo": "sin_sitio_web"
+  },
+  "hush": {
+    "nombre": "Hush",
+    "tipo": "sin_sitio_web"
+  },
+  "byadriansanchez": {
+    "nombre": "By Adrián Sánchez",
+    "tipo": "sin_sitio_web"
+  },
+  "endless": {
+    "nombre": "Endless",
+    "tipo": "sin_sitio_web"
+  },
+  "bangconcept": {
+    "nombre": "Bang Concept",
+    "tipo": "sin_sitio_web"
+  },
+  "thewolf": {
+    "nombre": "The Wolf",
+    "tipo": "sin_sitio_web"
+  }
+}

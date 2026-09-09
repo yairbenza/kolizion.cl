@@ -95,6 +95,29 @@
       </label>
     </div>
 
+    <!-- Preferencia de genero (2026-09-08, pedido del usuario): mismo patron
+         que ajuste de talla -- se guarda aparte en localStorage
+         (preferenciaGeneroKolizion, ver comun.js), auto-guarda al tocar cada
+         opcion. Ajusta que mostrar ademas de mi propio genero en "yo" --
+         nunca toca las exclusiones de categoria ya validadas (ver
+         elegir_candidatos() en motor_recomendacion.py). -->
+    <h2>¿Qué géneros quieres ver en tus búsquedas?</h2>
+    <p class="ayuda">* Unos 3 de cada 4 productos en KOLIZION son unisex -- por eso "Mi género + unisex" viene recomendado, para no perderte la mayoría del catálogo.</p>
+    <div class="ajuste-talla-opciones" id="preferencia-genero-opciones">
+      <label class="ajuste-talla-opcion">
+        <input type="radio" name="preferencia-genero" id="preferencia-genero-con_unisex" value="con_unisex" checked>
+        Mi género + unisex (recomendado)
+      </label>
+      <label class="ajuste-talla-opcion">
+        <input type="radio" name="preferencia-genero" id="preferencia-genero-solo_mi_genero" value="solo_mi_genero">
+        Solo mi género
+      </label>
+      <label class="ajuste-talla-opcion">
+        <input type="radio" name="preferencia-genero" id="preferencia-genero-todos" value="todos">
+        Me da igual (todos)
+      </label>
+    </div>
+
     <!-- El historial solo se muestra con sesion REAL iniciada (Google/
          email+contraseña, ver docs/cuentas.md) -- a diferencia del "perfil
          de busqueda" de mas arriba (dato local, no verificado), esto son

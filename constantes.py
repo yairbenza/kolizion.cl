@@ -57,7 +57,87 @@ MATERIALES_CONOCIDOS = {
     # mezcla_algodon_poliester, que es natural+sintetico), se marca
     # "natural": True.
     "mezcla_lino_algodon": {"etiqueta": "Lino con algodón", "natural": True},
+    # 2026-09-08 (StreetVibe/Sioux/KronoLex): fibras/mezclas reales que
+    # aparecen en composiciones declaradas de estas tiendas y no tenian
+    # clave todavia -- "algodon" (sin "_100") es para cuando la ficha
+    # declara algodon como parte de una mezcla o como fibra dominante sin
+    # ser el 100% (a diferencia de "algodon_100", que es exclusivo de la
+    # composicion pura). Ver parsear_composicion()/es_composicion_100_pura()
+    # mas abajo para el detalle estructurado por fibra.
+    "algodon": {"etiqueta": "Algodón", "natural": True},
+    "poliamida": {"etiqueta": "Poliamida", "natural": False},
+    "mezcla_algodon_elastano": {"etiqueta": "Mezcla algodón/elastano", "natural": False},
+    "mezcla_poliester_elastano": {"etiqueta": "Mezcla poliéster/elastano", "natural": False},
+    "mezcla_algodon_poliamida": {"etiqueta": "Mezcla algodón/poliamida", "natural": False},
 }
+
+# --- Composicion estructurada por fibra (2026-09-08) -------------------
+# Antes del pedido de integrar StreetVibe/Sioux/KronoLex, el buscador no
+# tenia forma de saber si una ficha es REALMENTE "100% del mismo material"
+# -- MATERIALES_CONOCIDOS de arriba es un enum plano (una sola clave por
+# producto, ej. "algodon_100"), no una composicion con porcentajes, asi que
+# nunca distinguia "100% algodon" de "98% algodon + 2% elastano" (ambas
+# hubieran quedado en la misma clave o simplemente sin dato). Esto es la
+# correccion CENTRAL pedida explicitamente por el usuario para ese caso,
+# pensada para cualquier tienda actual o futura que declare composicion con
+# porcentajes -- no es una regla exclusiva de Sioux.
+FIBRAS_CONOCIDAS = {
+    "algodon": ["algodon"],
+    "poliester": ["poliester", "polyester"],
+    "elastano": ["elastano", "spandex", "licra", "lycra"],
+    "poliamida": ["poliamida", "nylon", "polyamide"],
+    "lana": ["lana"],
+    "lino": ["lino"],
+    "viscosa": ["viscosa"],
+    "cupro": ["cupro"],
+    "acrilico": ["acrilico"],
+    "cuero": ["cuero"],
+}
+
+
+def _sin_tildes_material(texto):
+    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii")
+
+
+def parsear_composicion(texto):
+    """Lista [{'fibra': 'algodon', 'porcentaje': 100}, ...] a partir de un
+    texto de composicion real tipo '100% Algodon' o '98% Algodon 2%
+    Elastano'. Vacia si el texto no trae ningun porcentaje+fibra reconocible
+    -- nunca inventa una fibra que el texto no declare literalmente (mismo
+    criterio que el resto de la clasificacion: sin evidencia, sin dato)."""
+    if not texto:
+        return []
+    t = _sin_tildes_material(texto.lower())
+    resultado = []
+    vistos = set()
+    for pct_str, palabra in re.findall(r"(\d{1,3})\s*%\s*([a-z]+)", t):
+        for fibra, alias in FIBRAS_CONOCIDAS.items():
+            if any(palabra.startswith(a) for a in alias):
+                # Dedup (2026-09-08, Sioux): algunas fichas repiten la misma
+                # frase de composicion 2 veces dentro del mismo texto (parrafo
+                # de marketing + campo "Composicion:" real) -- sin esto,
+                # "100% Algodon...100% Algodon" en el mismo texto se contaba
+                # como 2 fibras (aunque sea la MISMA), rompiendo la logica de
+                # "una sola fibra = 100% puro".
+                clave = (fibra, int(pct_str))
+                if clave not in vistos:
+                    vistos.add(clave)
+                    resultado.append({"fibra": fibra, "porcentaje": int(pct_str)})
+                break
+    return resultado
+
+
+def es_composicion_100_pura(composicion):
+    """True solo si la ficha declara UNA sola fibra que suma 100% -- 98%
+    algodon + 2% elastano, o 70% algodon + 30% poliester, devuelven False
+    aunque el algodon sea mayoria. Sin composicion cargada (tienda que no
+    declara esto) tambien es False -- nunca se asume 100% sin evidencia."""
+    if not composicion:
+        return False
+    fibras = {c["fibra"] for c in composicion}
+    if len(fibras) != 1:
+        return False
+    return sum(c["porcentaje"] for c in composicion) >= 100
 
 CATEGORIA_GRUPOS = {
     "prenda superior": ["poleron", "camisa", "chaqueta", "polera", "chaleco", "camiseta", "top"],
@@ -135,6 +215,17 @@ CORTES_CONOCIDOS = {
     "skinny": ["skinny"],
     "regular fit": ["regular fit"],
     "straight": ["straight fit", "straight", "recto"],
+    # 2026-09-08 (StreetVibe/Sioux): fits reales declarados por estas
+    # tiendas en el nombre del producto que no tenian clave todavia --
+    # mismo criterio que el resto de CORTES_CONOCIDOS, palabra literal de
+    # la ficha, nada inferido de la foto.
+    "relaxed": ["relaxed"],
+    "loose fit": ["loose fit", "loose"],
+    "wide leg": ["wide leg", "wideleg", "wide-leg"],
+    "flare": ["flare"],
+    "tapered": ["tapered"],
+    "balloon": ["balloon", "ballong"],
+    "barrel": ["barrel"],
 }
 
 TIPOS_PRENDA_CONOCIDOS = {
@@ -241,6 +332,15 @@ ORDEN_TALLAS = ["S", "M", "L", "XL"]
 # es el default y deja el calculo de estimar_tallas() tal cual como estaba
 # antes de esto.
 AJUSTES_TALLA_CONOCIDOS = {"ajustado", "normal", "holgado"}
+
+# Preferencia de genero del perfil (2026-09-08, pedido del usuario): que
+# mostrar ademas del propio genero -- "con_unisex" (default, comportamiento
+# de siempre: mi genero + unisex), "solo_mi_genero" (excluye unisex),
+# "todos" ("me da igual", ve tambien el otro genero). Las exclusiones ya
+# validadas por genero (ej. "top" no se ofrece a hombre, ver
+# CATEGORIAS_EXCLUIDAS_POR_GENERO, este mismo archivo) siguen aplicando siempre, sin
+# importar esta preferencia -- son reglas de producto, no solo de genero.
+PREFERENCIAS_GENERO_CONOCIDAS = {"con_unisex", "solo_mi_genero", "todos"}
 
 HOBBIES_CONOCIDOS = {
     "musica": {"etiqueta": "Música"},

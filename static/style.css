@@ -2053,18 +2053,21 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
 
 /* Fila de "Busquedas recientes" en el historial (2026-08-28) que si guardo
    el payload para volver a correrse -- ver pintarHistorial en perfil.js.
-   Una flecha a la derecha del valor avisa que es clickeable, sin agregar
-   otro elemento de texto (el valor ya esta alineado a la derecha). */
+   2026-09-07: la sola flecha "›" no se notaba (sobre todo en mobile, sin
+   hover) -- ahora se agrega un texto explicito "Buscar de nuevo" debajo,
+   por eso pasa a wrap (2 lineas) en vez de una sola fila de una linea. */
 .perfil-fila-clickable {
   cursor: pointer;
+  flex-wrap: wrap;
 }
 .perfil-fila-clickable:hover {
   background: var(--bg);
 }
-.perfil-fila-clickable .perfil-valor::after {
-  content: " ›";
+.perfil-fila-accion {
+  width: 100%;
+  font-size: 0.78rem;
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .perfil-etiqueta {

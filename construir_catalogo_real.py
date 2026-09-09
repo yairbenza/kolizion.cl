@@ -43,7 +43,7 @@ import unicodedata
 from pathlib import Path
 
 from data.catalogo_manual_viloria import VILORIA_PRODUCTOS
-from constantes import ENVIOS_TIENDAS_PATH
+from constantes import ENVIOS_TIENDAS_PATH, parsear_composicion, es_composicion_100_pura
 
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / "data" / "catalog.json"
@@ -1385,6 +1385,492 @@ VERIFICADO_A_MANO = {
     "Polera Esencial - Blanca": {"genero": "hombre"},  # confianza media, solo mandibula visible
     "Polera Esencial - Verde botella": {"genero": "hombre"},  # confianza media, solo mandibula visible
     "Stealth Jorts": {"genero": "hombre"},  # confianza media, piernas/zapatillas
+
+    # --- Genero por foto de modelo, ronda 2 (2026-09-07): mismo mecanismo
+    # de la ronda anterior, 250 productos unisex mas revisados foto por foto.
+    # "STRASS BLACK HOODIE" (Doslobos) se dejo fuera a proposito: hay 2
+    # productos con ese mismo nombre exacto y solo uno de los dos trae foto
+    # con modelo (mujer) -- el otro es flat lay sin evidencia, y este mecanismo
+    # aplica por NOMBRE (no por id), asi que forzar el override marcaria mal
+    # al que no tiene evidencia. Queda unisex hasta tener un mecanismo por id.
+    "Polera Unk. New Plane Steel Green": {"genero": "mujer"},
+    "Jogger Unk. Generation Black": {"genero": "hombre"},
+    "Polera UNK. Head Pro Black": {"genero": "mujer"},
+    "Polera UNK. Pastel Black": {"genero": "mujer"},
+    "Polera Camaleón Army White": {"genero": "hombre"},
+    "Polera UNK. Future Green": {"genero": "hombre"},
+    "Polera Unk. Skate Large Black": {"genero": "hombre"},
+    "Polera Unk. Large Rainbow Pink": {"genero": "mujer"},
+    "Polerón Unk. Focus Colors": {"genero": "hombre"},
+    "Jacket Unk. Peak Pink": {"genero": "hombre"},
+    "Polar Hoodie UNK. Blue": {"genero": "hombre"},
+    "Polera UNK. Premium Burgundy": {"genero": "mujer"},
+    "Polera UNK. Tie Dye Duo Mint": {"genero": "hombre"},
+    "Polera Camaleón Tie Dye Blue": {"genero": "hombre"},
+    "Polera Camaleón Tie Dye Burgundy": {"genero": "hombre"},
+    "Polera Tie dye World Blue": {"genero": "hombre"},
+    "Polera Unk. Skate Light Blue": {"genero": "hombre"},
+    "Hoodie UNK. Tie Dye Jade": {"genero": "hombre"},
+    "Jacket Cortaviento UNK. 4k Colors": {"genero": "hombre"},
+    "Jacket Cortaviento UNK. 4K Black": {"genero": "hombre"},
+    "Jogger UNK. Euro Calypso": {"genero": "hombre"},
+    "Jacket Cortaviendo unk. 4K Blue": {"genero": "mujer"},
+    "Jacket Cortaviento Unk. Crack Gray": {"genero": "hombre"},
+    "Polera Unk. Skate Pink": {"genero": "hombre"},
+    "Jogger Unk. Green": {"genero": "hombre"},
+    "Hoodie Block White": {"genero": "hombre"},
+    "Jacket Cortaviento Unk. Rainbow Pink": {"genero": "mujer"},
+    "Hoodie Unk. Spiral Mint": {"genero": "hombre"},
+    "Jacket Cortaviento UNK. Wire White": {"genero": "hombre"},
+    "Jogger Unk. Dark": {"genero": "hombre"},
+    "Hoodie Unk. Spiral Blue": {"genero": "mujer"},
+    "Hoodie Unk. Old Brown": {"genero": "mujer"},
+    "Polera Unk. Marley Red": {"genero": "hombre"},
+    "Jacket Cortaviento Camaleón Head Blue": {"genero": "mujer"},
+    "Jacket Cortaviento Camaleón Head Black": {"genero": "hombre"},
+    "Jacket Cortaviento Unk. Snowflake White": {"genero": "hombre"},
+    "Jacket Cortaviento Unk. Noodles Pink": {"genero": "hombre"},
+    "Jacket Cortaviento Unk. Noodles Tiffany": {"genero": "hombre"},
+    "Jacket Cortaviento Unk. Fall Calypso": {"genero": "hombre"},
+    "Hoodie Unk. Peace Steel": {"genero": "mujer"},
+    "Short Unk. Tiger Gray": {"genero": "hombre"},
+    "Polera Camaleón Dynamic Turquoise": {"genero": "hombre"},
+    "Polera Camaleón Dynamic Coral": {"genero": "hombre"},
+    "Polera Camaleón Crazy Black": {"genero": "hombre"},
+    "Polera Camaleón Crazy Oil Blue": {"genero": "hombre"},
+    "Jogger Unk. Rainbow blue": {"genero": "hombre"},
+    "Polera Kmaleón Tie Dye Pink": {"genero": "mujer"},
+    "Joggers Unk. Generation Blue": {"genero": "mujer"},
+    "Hoodie Unk. Level Orange": {"genero": "hombre"},
+    "Polera UNK. Tie Dye Duo Steel": {"genero": "hombre"},
+    "Polera UNK. Plane Blue": {"genero": "mujer"},
+    "Hoodie Camaleón Safary Blue": {"genero": "hombre"},
+    "NITIDO long sleeve": {"genero": "hombre"},
+    "WOLVES emblem tee": {"genero": "hombre"},
+    "LOGO black tee": {"genero": "hombre"},
+    "NITIDO vibe hoodie": {"genero": "hombre"},
+    "LOGO dark hoodie": {"genero": "hombre"},
+    "WASHED long sleeve": {"genero": "hombre"},
+    "LOBO plaid shirt": {"genero": "hombre"},
+    "RESILIO plaid shirt": {"genero": "hombre"},
+    "BIG LOGO RAW SWEATER": {"genero": "mujer"},
+    "BIG LOGO BLACK SWEATER": {"genero": "hombre"},
+    "+ TIME 4 LOVE SWEATER": {"genero": "mujer"},
+    "SUEDE VAQUERA-JACKET": {"genero": "mujer"},
+    "FEAR BLACK HOODIE": {"genero": "mujer"},
+    "SAINTWOLF HOODIE": {"genero": "hombre"},
+    "SAINT WOLF TEE": {"genero": "hombre"},
+    "+ TIME 4 LOVE TEE": {"genero": "hombre"},
+    "METAL GRAY HOODIE": {"genero": "mujer"},
+    "METAL GRAY PANTS": {"genero": "mujer"},
+    "METAL BLACK HOODIE": {"genero": "mujer"},
+    "ESFINGE CATS HOODIE": {"genero": "mujer"},
+    "ESFINGE CATS TEE": {"genero": "mujer"},
+    "3D CHROME HOODIE": {"genero": "hombre"},
+    "DSLS JAPO TEE": {"genero": "hombre"},
+    "MANADA TOUR HOODIE": {"genero": "hombre"},
+    "MANADA TOUR BLACK TEE": {"genero": "hombre"},
+    "MANADA TOUR WHITE TEE": {"genero": "hombre"},
+    "BLACK MINIMAL TEE": {"genero": "hombre"},
+    "BIG LOGO MINT SWEATER": {"genero": "hombre"},
+    "BLACK WOLF PANTS": {"genero": "hombre"},
+    "LIGHT BLUE JORT": {"genero": "hombre"},
+    "METAL BLACK JORT": {"genero": "hombre"},
+    "CAMO GRAY JORT": {"genero": "hombre"},
+    "ICE BLUE PANTS": {"genero": "mujer"},
+    "CAMO GRAY PANTS": {"genero": "hombre"},
+    "BIG LOGO PINK SWEATER": {"genero": "hombre"},
+    "BIG LOGO GRAY SWEATER": {"genero": "mujer"},
+    "ANNIVERSARY 10 JAPO-TEE": {"genero": "hombre"},
+    "ESFINGE PINK CATS TEE": {"genero": "hombre"},
+    "BLACK LOGO 3D TEE": {"genero": "hombre"},
+    "METAL CROMO BLACK HOODIE": {"genero": "hombre"},
+    "ACABÉ TRIUNFANDO HOODIE": {"genero": "hombre"},
+    "ESFINGE PINK CATS HOODIE": {"genero": "hombre"},
+    "ANNIVERSARY 10 CAMISETA": {"genero": "hombre"},
+    "CAMO 10TH BOMBER-JACKET": {"genero": "hombre"},
+    "BLACK 10TH VARSITY-JACKET": {"genero": "hombre"},
+    "DENIM RAPPORT JORT": {"genero": "hombre"},
+    "SKULL HOODIE": {"genero": "hombre"},
+    "GRITA Y EXHALE HOODIE": {"genero": "mujer"},
+    "GRITA & EXHALE TEE": {"genero": "mujer"},
+    "BLUE SKULL TEE": {"genero": "hombre"},
+    "STRASS BLUE TEE": {"genero": "mujer"},
+    "STRASS BLACK TEE": {"genero": "hombre"},
+    "WOLVES CROME VARSITY-JACKET": {"genero": "mujer"},
+    "TOTAL BLACK VARSITY-JACKET": {"genero": "hombre"},
+    "MANADA VARSITY-JACKET": {"genero": "hombre"},
+    "STRASS BLUE HOODIE": {"genero": "mujer"},
+    "KRYPTA TEE": {"genero": "hombre"},
+    "KRYPTA HOODIE": {"genero": "hombre"},
+    "BLVCK LOGO TEE": {"genero": "hombre"},
+    "SKULL DARK PANTS": {"genero": "hombre"},
+    "SKULL SWEATER": {"genero": "hombre"},
+    "DETHKID BABY-TEE": {"genero": "mujer"},
+    "DETHKID HOODIE": {"genero": "hombre"},
+    "DETHKID TEE": {"genero": "hombre"},
+    "DEHTKID BOMBER-JACKET": {"genero": "mujer"},
+    "EXHALE BLUE SWEATER.": {"genero": "hombre"},
+    "MANADA STONE TEE": {"genero": "hombre"},
+    "BLACK CORE TEE": {"genero": "hombre"},
+    "CAPUCHA BLACK GILETTE": {"genero": "mujer"},
+    "TIGER BOMBER-JACKET": {"genero": "hombre"},
+    "TIGER PANTS": {"genero": "mujer"},
+    "BLACK RIVET FLARE-PANTS": {"genero": "hombre"},
+    "EXHALE BLUE SWEATER": {"genero": "hombre"},
+    "MANADA STONE HOODIE": {"genero": "hombre"},
+    "BLACK VAQUERA-JACKET": {"genero": "mujer"},
+    "CORE BLACK HOODIE": {"genero": "mujer"},
+    "I LOVE DSLS TEE": {"genero": "mujer"},
+    "GRAY JAPO-TEE": {"genero": "mujer"},
+    "VARSITY JACKET 09": {"genero": "hombre"},
+    "CAMO GREEN PANTS GIRL": {"genero": "mujer"},
+    "CAMO GRAY PANTS GIRL": {"genero": "mujer"},
+    "BOXY TEE NEGRA": {"genero": "hombre"},
+    "HOODIE CAMO STRASS": {"genero": "mujer"},
+
+    # --- Genero por foto de modelo, ronda 3 (2026-09-07): mismo mecanismo de
+    # las rondas anteriores, 250 productos unisex mas revisados foto por foto
+    # (tiendas Doslobos resto del catalogo, Novorich, Shatters, Stuffies
+    # Concept, Club 33, Feroni Studios, Addictve, 1Libra). 3 nombres duplicados
+    # en catalogo revisados uno por uno antes de aplicar por nombre (ver
+    # docs/buscador.md): "Tee oversize gray logo" y "BASIC MINI LOGO//
+    # OVERSIZED HOODIE" tienen sus 2-3 instancias confirmadas con el mismo
+    # modelo hombre; "POLERAS OVERSIZED// BASIC MINI LOGO" tiene una instancia
+    # con modelo hombre y la otra es flat lay sin modelo (mismo diseño, sin
+    # evidencia contradictoria) -- se aplico por nombre en los 3 casos.
+    "BOXY TEE NEGRA // NocityLimits": {"genero": "hombre"},
+    "Faith&Love HOODIE": {"genero": "mujer"},
+    "María flame TEE": {"genero": "hombre"},
+    "Faith&Love TEE": {"genero": "mujer"},
+    "Love-strong TEE": {"genero": "mujer"},
+    "Wolf-graffiti TEE": {"genero": "hombre"},
+    "Rosary TEE": {"genero": "hombre"},
+    "Dsls-cromo TEE": {"genero": "hombre"},
+    "Wolf graffiti CREWNECK": {"genero": "mujer"},
+    "María flame HOODIE": {"genero": "hombre"},
+    "Embroidery PANTS": {"genero": "hombre"},
+    "Denim-rapport JACKET": {"genero": "hombre"},
+    "Denim-rapport PANTS": {"genero": "hombre"},
+    "Denim-tribal SHORT": {"genero": "hombre"},
+    "Denim-rapport JORT": {"genero": "hombre"},
+    "LA FERIA ON TOUR / Anniversary tee": {"genero": "mujer"},
+    "POLERA STRASS GRIS": {"genero": "hombre"},
+    "LOGO STRASS TEE": {"genero": "hombre"},
+    "LOGO STRASS HOODIE": {"genero": "hombre"},
+    "JORT CARGO CAMO VERDE": {"genero": "mujer"},
+    "JORT CARGO CAMO GRIS": {"genero": "hombre"},
+    "TANK TOP GIRL": {"genero": "mujer"},
+    "BOXY TEE GRIS": {"genero": "mujer"},
+    "SWEATER CAPUCHA LOGO": {"genero": "hombre"},
+    "VARSITY-JACKET CAMO": {"genero": "mujer"},
+    "STRASS PINK HOODIE": {"genero": "mujer"},
+    "VARSITY JACKET LUCIERNAGA": {"genero": "mujer"},
+    "CATS GRAY TEE": {"genero": "hombre"},
+    "CAPUCHA JACKET BLACK 02": {"genero": "mujer"},
+    "POLERA BLACK 02 BOXY": {"genero": "mujer"},
+    "VARSITY JACKET BLACK 02": {"genero": "mujer"},
+    "TEE BOXY DARK PINK": {"genero": "mujer"},
+    "CROP-TOP DARK PINK": {"genero": "mujer"},
+    "CROP-TOP CROMO NEGRO": {"genero": "mujer"},
+    "HOODIE CROMO OVERSIZE": {"genero": "mujer"},
+    "CARGO-PANTS WOLVES": {"genero": "hombre"},
+    "CARPINTERO-PANTS CHEETAH": {"genero": "hombre"},
+    "FLARE-PANTS DARK": {"genero": "hombre"},
+    "CROP-TOP CROMO GRIS": {"genero": "mujer"},
+    "POLERA CONEXIÓN NEGRA": {"genero": "mujer"},
+    "POLERA UNIÓN GRIS": {"genero": "hombre"},
+    "POLERA OBSIDIANA CLIP": {"genero": "mujer"},
+    "POLERA NOCTURA DISCO": {"genero": "mujer"},
+    "SWEATER TRIBAL": {"genero": "hombre"},
+    "SWEATER SALLY ROJO": {"genero": "hombre"},
+    "SWEATER JACK NEGRO": {"genero": "hombre"},
+    "VARSITY-JACKET ARCANA CAFÉ": {"genero": "hombre"},
+    "VARSITY-JACKET ARCANA NEGRA": {"genero": "mujer"},
+    "HOODIE CROMO BOXY": {"genero": "hombre"},
+    "HOODIE DARK OSCURIDAD": {"genero": "hombre"},
+    "CREWNECK DARK ARCANA": {"genero": "hombre"},
+    "Pants \"Black Wolf\"": {"genero": "hombre"},
+    "Tee gray \"Angel wings\"": {"genero": "hombre"},
+    "Tee Gray \"Girly\"": {"genero": "mujer"},
+    "Snake Blue Tee": {"genero": "hombre"},
+    "Pants \"Gray Wolf\"": {"genero": "hombre"},
+    "Zipper gray hoodie": {"genero": "hombre"},
+    "CREWNECK OXIDADO MINIMAL": {"genero": "hombre"},
+    "Tee oversize gray logo": {"genero": "hombre"},
+    "Tee Black \"Night Witch\"": {"genero": "hombre"},
+    "Tee Black \"Biker skeletons\"": {"genero": "hombre"},
+    "Tee Minimal \"Mint\"": {"genero": "hombre"},
+    "Tee Stripe \"Orange\"": {"genero": "hombre"},
+    "Tee Stripe \"Cross\"": {"genero": "hombre"},
+    "Cargo zipper pants": {"genero": "hombre"},
+    "Two wolves hoodie": {"genero": "hombre"},
+    "CREWNECK GALGOS ETERNAL VERSIÓN": {"genero": "hombre"},
+    "Tee Oversize \"White Mask\"": {"genero": "hombre"},
+    "Tee oversize black \"Anniversary Nº7\"": {"genero": "mujer"},
+    "CAMO LOGO SHIRT": {"genero": "hombre"},
+    "Camisa Moon Ritual": {"genero": "hombre"},
+    "ROMULO Y REMO TEE": {"genero": "hombre"},
+    "Post vortex gray hoodie": {"genero": "mujer"},
+    "WOLVES BLACK TEE": {"genero": "hombre"},
+    "Skull blue tee": {"genero": "hombre"},
+    "Monje black tee": {"genero": "hombre"},
+    "Monje color gray tee": {"genero": "hombre"},
+    "Rómulo y Remo hoodie": {"genero": "mujer"},
+    "Skull gray tee": {"genero": "hombre"},
+    "Wolf chrome tee": {"genero": "hombre"},
+    "Tee oversize blue logo": {"genero": "mujer"},
+    "WOLVES RED HOODIE": {"genero": "hombre"},
+    "Post Vortex Crewneck": {"genero": "mujer"},
+    "Moon raw hoodie": {"genero": "hombre"},
+    "Tee oversize black \"Angel\"": {"genero": "hombre"},
+    "WOLVES GRAY/BLACK TEE": {"genero": "hombre"},
+    "RED ANGEL TEE": {"genero": "hombre"},
+    "MOON RITUAL BLACK TEE": {"genero": "hombre"},
+    "MOON RITUAL GRAY/BLACK TEE": {"genero": "hombre"},
+    "LUCIÉRNAGA BLACK CROPPED TEE": {"genero": "mujer"},
+    "Tee Ninja \"Black\"": {"genero": "hombre"},
+    "Hoodie Mint Logo": {"genero": "hombre"},
+    "LUCIÉRNAGA BLACK HOODIE": {"genero": "hombre"},
+    "Varsity Jacket Mint Minimal": {"genero": "hombre"},
+    "Tee Ninja \"Mint\"": {"genero": "hombre"},
+    "LOGO CHROME TEE": {"genero": "mujer"},
+    "Sweater Étnico": {"genero": "hombre"},
+    "Varsity Jacket \"Brown Paisley\"": {"genero": "mujer"},
+    "Varsity Jacket Black Minimal": {"genero": "hombre"},
+    "Crewneck Galgos": {"genero": "mujer"},
+    "Tee Black \"orange mask\"": {"genero": "hombre"},
+    "CHROME SWEATER": {"genero": "hombre"},
+    "POLERA CALMA NEGRA": {"genero": "hombre"},
+    "POLERA ALMA BLANCA": {"genero": "mujer"},
+    "POLERÓN CONTIGO NEGRO": {"genero": "mujer"},
+    "POLERÓN SIEMPRE ROJO": {"genero": "hombre"},
+    "Varsity Jacket Black Wolf": {"genero": "hombre"},
+    "STRASS LUCIÉRNAGA HOODIE": {"genero": "hombre"},
+    "CATS BLACK HOODIE": {"genero": "mujer"},
+    "Tee Gray Galgos": {"genero": "mujer"},
+    "CATS BLACK TEE": {"genero": "mujer"},
+    "3D CHROME LOGO HOODIE": {"genero": "hombre"},
+    "POLERA DARK IGOR": {"genero": "mujer"},
+    "JORT CARGO CORROÍDO": {"genero": "hombre"},
+    "CHAQUETA CORROÍDO": {"genero": "hombre"},
+    "PANTALÓN CARGO": {"genero": "mujer"},
+    "PANTALÓN CARPINTERO": {"genero": "hombre"},
+    "POLERA DARK CARRIE": {"genero": "hombre"},
+    "CROP TOP LOGOGRAMA": {"genero": "mujer"},
+    "POLERA LOGOGRAMA": {"genero": "hombre"},
+    "POLERÓN INFINITO 08": {"genero": "hombre"},
+    "CAMISETA DARK ETERNAL": {"genero": "hombre"},
+    "SWEATER MINIMALISTA": {"genero": "hombre"},
+    "SWEATER ETERNAL": {"genero": "hombre"},
+    "POLERA INFINITO 08": {"genero": "hombre"},
+    "JORT CARPINTERO ETERNO 08": {"genero": "hombre"},
+    "CAMISA ETERNO 08": {"genero": "mujer"},
+    "Night Code Ascend": {"genero": "hombre"},
+    "Ice Blue Ascend": {"genero": "hombre"},
+    "NOVVM LUXURY - BLACK TRACKSUIT": {"genero": "hombre"},
+    "NOVVM LUXURY - PURPLE TRACKSUIT": {"genero": "hombre"},
+    "NOVVM LUXURY - WHITE TRACKSUIT": {"genero": "hombre"},
+    "NOVVM ESSENCE - PURPLE TRACKSUIT": {"genero": "hombre"},
+    "NOVVM ESSENCE - BLVCK TRACKSUIT": {"genero": "hombre"},
+    "T-SHIRT \"PACIFIC SUN\"": {"genero": "hombre"},
+    "T-SHIRT \"LEMON PALETA\"": {"genero": "hombre"},
+    "Baby Tee Fur": {"genero": "mujer"},
+    "Baby Tee 8 Ball": {"genero": "mujer"},
+    "Baby Tee Sofía": {"genero": "mujer"},
+    "Long Sleeve FERONI": {"genero": "hombre"},
+    "\"YELLOW LABEL COMP\"// OVERSIZED HOODIE": {"genero": "hombre"},
+    "BASICA//ESSENCIAL OVERSIZED TEES // GRIS ACERO": {"genero": "hombre"},
+    "BASIC MINI LOGO// OVERSIZED HOODIE": {"genero": "hombre"},
+    "POLERAS OVERSIZED// CANINE BLACK": {"genero": "hombre"},
+    "POLERA OVERSIZED BASIC MINI LOGO V2": {"genero": "hombre"},
+    "POLERAS OVERSIZED// BASIC MINI LOGO": {"genero": "hombre"},
+
+    # --- Genero por foto de modelo, ronda 4 (2026-09-08): mismo mecanismo de
+    # las rondas anteriores, 250 productos unisex mas revisados foto por foto
+    # (1Libra resto, Haze Concept, Kotonaru Store, Blazze, Kagi, Oopsi,
+    # 28Keys, Traperas Company, Enila, RRREUSED). Un solo nombre duplicado
+    # en catalogo ("BASICA//ESSENCIAL OVERSIZED TEES", 3 instancias) -- las 3
+    # fotos se revisaron directo y muestran el mismo modelo hombre en 3
+    # colores, sin conflicto, seguro aplicar por nombre.
+    "BASICO MINI LOGO// OVERSIZED HOODIE": {"genero": "hombre"},
+    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE NEGRO": {"genero": "hombre"},
+    "BASIC//ESSENCIAL OVERSIZED HOODIE BEIGE": {"genero": "hombre"},
+    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE BLANCO": {"genero": "hombre"},
+    "BASICA//ESSENCIAL OVERSIZED TEES": {"genero": "hombre"},
+    "BASIC MINI LOGO//OVERSIZED HOODIE": {"genero": "hombre"},
+    "Haze Leather Jacket Camel": {"genero": "hombre"},
+    "\"Everyday\" Knit Sweater Burgundy": {"genero": "mujer"},
+    "\"Everyday\" Knit Sweater Black": {"genero": "hombre"},
+    "Hoodie \"The Locals\" Black HEAVYWEIGHT": {"genero": "hombre"},
+    "Hoodie \"The Locals\" Pink": {"genero": "mujer"},
+    "Hoodie \"The Locals\" Chocolate": {"genero": "hombre"},
+    "Hoodie \"Shelter\" Black": {"genero": "hombre"},
+    "Hoodie \"Shelter\" Pink": {"genero": "hombre"},
+    "Hoodie \"Shelter\" Chocolate": {"genero": "hombre"},
+    "\"Clubhouse\" Zipper Knit Navy": {"genero": "hombre"},
+    "\"Clubhouse\" Zipper Knit Black": {"genero": "hombre"},
+    "\"Archives\" Black Boxy Fit Tee": {"genero": "hombre"},
+    "\"Archives\" White Boxy Fit Tee": {"genero": "hombre"},
+    "\"Bohemian\" White Boxy Fit Tee": {"genero": "hombre"},
+    "\"Bohemian\" Black Boxy Fit Tee": {"genero": "hombre"},
+    "Black Daily Regular Tee": {"genero": "hombre"},
+    "White Daily Regular Tee": {"genero": "hombre"},
+    "First Date Double Zip Chocolate": {"genero": "hombre"},
+    "First Date Double Zip Black HEAVYWEIGHT": {"genero": "hombre"},
+    "Haze Leather Jacket": {"genero": "hombre"},
+    "Raw Icon Denim Pants": {"genero": "hombre"},
+    "Black Icon Denim Pants": {"genero": "hombre"},
+    "\"Always On\" Baggy Sweatpants Black HEAVYWEIGHT": {"genero": "hombre"},
+    "\"Always On\" Baggy Sweatpants Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
+    "Zip Up \"Logo\" Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
+    "White Daily Boxy Tee": {"genero": "hombre"},
+    "Zip Up Hoodie Navy Blue HEAVYWEIGHT": {"genero": "hombre"},
+    "Boxy Fit Hoodie Navy Blue HEAVYWEIGHT": {"genero": "hombre"},
+    "Boxy Fit Hoodie Pink HEAVYWEIGHT": {"genero": "hombre"},
+    "Boxy Fit Hoodie Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
+    "Zip Up Hoodie Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
+    "Zip Up Hoodie Chocolate": {"genero": "hombre"},
+    "Zip Up Hoodie Black HEAVYWEIGHT": {"genero": "hombre"},
+    "Black Daily Boxy Tee": {"genero": "hombre"},
+    "Boxy Fit Hoodie Black HEAVYWEIGHT": {"genero": "hombre"},
+    "Boxy Fit Hoodie Chocolate": {"genero": "hombre"},
+    "Dress T-Shirt Boxy Fit": {"genero": "hombre"},
+    "Flared Pants RE: Cargo": {"genero": "hombre"},
+    "Blazze 04 - Zip set indigo": {"genero": "mujer"},
+    "Blazze 04 - Button set raw": {"genero": "mujer"},
+    "Blazze 04 - Indigo": {"genero": "mujer"},
+    "Blazze 04 - Raw": {"genero": "mujer"},
+    "Blazze 04 - Black": {"genero": "mujer"},
+    "Blazze 04 - Light blue": {"genero": "mujer"},
+    "Blazze 04 - Zip jacket indigo": {"genero": "mujer"},
+    "Blazze 04 - Button jacket raw": {"genero": "mujer"},
+    "Blazze 03 - Bare Waist Black": {"genero": "mujer"},
+    "Blazze 03 - Bare Waist Blue": {"genero": "mujer"},
+    "Blazze 01 - Blue": {"genero": "mujer"},
+    "Blazze 01 - Gray": {"genero": "mujer"},
+    "Blazze 01 - White": {"genero": "mujer"},
+    "Blazze 02 - Black": {"genero": "mujer"},
+    "Blazze 02 - White": {"genero": "mujer"},
+    "Blazze 02 - Mid blue": {"genero": "mujer"},
+    "Blazze 02 - Light blue": {"genero": "mujer"},
+    "Blazze 01 - Black": {"genero": "mujer"},
+    "CHAQUETA I": {"genero": "mujer"},
+    "POLERA 14F": {"genero": "hombre"},
+    "JORT TABLEADO": {"genero": "mujer"},
+    "TEE REGALA FLORES": {"genero": "hombre"},
+    "TEE FLORES, COMO LLAVES": {"genero": "mujer"},
+    "Polerón LA Azul Eléctrico Over Size": {"genero": "mujer"},
+    "Polerón Blanco Estrella Negra Tachas Over Size": {"genero": "mujer"},
+    "Polerón Soccer 08 Franela Fantasía": {"genero": "mujer"},
+    "Polerón Spicy Pink Over Size": {"genero": "mujer"},
+    "Chaqueta Bomber Marrón": {"genero": "mujer"},
+    "Denim Corteza Negro": {"genero": "mujer"},
+    "Bomber Índigo": {"genero": "mujer"},
+    "Bomber Breña": {"genero": "mujer"},
+    "Chaqueta Archivo": {"genero": "mujer"},
+    "Bomber Corteza": {"genero": "mujer"},
+    "Bomber Granate": {"genero": "mujer"},
+    "Bomber Alba": {"genero": "mujer"},
+    "Chaqueta Vestigio": {"genero": "mujer"},
+    "Jeans Corteza Vestigio": {"genero": "mujer"},
+    "Denim Alba": {"genero": "mujer"},
+
+    # --- Genero por foto de modelo, ronda 5 (2026-09-08): mismo mecanismo de
+    # las rondas anteriores, 250 productos unisex mas revisados foto por foto
+    # (RRREUSED resto, IPREX, BEEWAY inicio). RRREUSED e IPREX son casi
+    # puramente ropa vintage en percha o modelos con rostro cubierto/
+    # enmascarado (estilo de marca de IPREX), asi que la gran mayoria quedo
+    # no_verificable -- solo se aplico genero donde el modelo o ilustracion
+    # mostraba rasgos claros (ej. la ilustracion anime de mujer reusada en
+    # toda la linea "Saddabae" de IPREX, o fotos reales con rostro/cuerpo
+    # visible). Sin nombres duplicados en el catalogo para este lote.
+    "Polera Baby Tee Brasil iprex": {"genero": "mujer"},
+    "Polera Minimal m2 Saddabae": {"genero": "mujer"},
+    "polera minimal saddabae": {"genero": "mujer"},
+    "Polera Sad Rulay Saddabae": {"genero": "mujer"},
+    "Polera Trivial Saddabae": {"genero": "mujer"},
+    "Polera Waifu Saddabae": {"genero": "mujer"},
+    "Polera Waifu triviales Saddabae": {"genero": "mujer"},
+    "Polerón full zip trivial M2 Saddabae": {"genero": "mujer"},
+    "Polerón full zip Trivial m3 Saddabae": {"genero": "mujer"},
+    "Polerón full zip trivial Saddabae": {"genero": "mujer"},
+    "Polerón Minimal m2 Saddabae": {"genero": "mujer"},
+    "Polerón minimal Saddabae": {"genero": "mujer"},
+    "Polerón personajes Saddabae": {"genero": "mujer"},
+    "Polerón Sad Rulay Saddabae": {"genero": "mujer"},
+    "CROPPED BEEWAY ROSA": {"genero": "mujer"},
+    "CROPPED BEEWAY BLACK": {"genero": "mujer"},
+    "CROPPED BEEWAY (BLUE)": {"genero": "mujer"},
+    "T- SHIRT XXXTENTACION ———(SLIM FIT)": {"genero": "hombre"},
+    "T-SHIRT XXXTENTACION.  —— (BOXY FIT)": {"genero": "hombre"},
+    "RESILIENCE ULTRA BLACK": {"genero": "hombre"},
+    "Polera Slim fit (OG)": {"genero": "hombre"},
+    "TANK TOP SLIM FIT (LÍNEAS CAMO )": {"genero": "hombre"},
+    "POLERA SLIM FIT LÍNEAS CAMO": {"genero": "hombre"},
+    "HOODIE BUZO": {"genero": "hombre"},
+
+    # --- Genero por foto de modelo, ronda 6 (2026-09-08): termina el pool de
+    # 434 productos unisex que quedaba sin revisar (RRREUSED/IPREX/BEEWAY
+    # resto, WAV, ZAMU, La Maria Dolores, Hush, By Adrian Sanchez, Endless,
+    # Bang Concept, The Wolf, Viloria, Selvanegrawear). WAV, La Maria Dolores
+    # y Viloria tienen fotos reales con modelo con rostro visible en casi
+    # todo su catalogo, de ahi la mayoria de estas correcciones. ZAMU, Hush,
+    # By Adrian Sanchez, Endless, Bang Concept y The Wolf resultaron ser
+    # tiendas 100% ghost mannequin/flat lay (sin modelo humano en ninguna
+    # foto), asi que quedaron unisex por falta de evidencia, no por omision.
+    # Sin nombres duplicados en el catalogo para este lote.
+    "Haring Jort Japonés": {"genero": "hombre"},
+    "Polar Sakura Azul": {"genero": "hombre"},
+    "Polar Sakura Café": {"genero": "mujer"},
+    "Polar Micelio": {"genero": "mujer"},
+    "Polera con Capucha Warhol": {"genero": "hombre"},
+    "Jockey Gamuza Wav": {"genero": "hombre"},
+    "Jockey Walk With Your Friends": {"genero": "mujer"},
+    "Jort Negro Japonés": {"genero": "hombre"},
+    "Short Basic Negro": {"genero": "mujer"},
+    "Short Happy Flower": {"genero": "mujer"},
+    "Polera Baby Tee Blanca": {"genero": "mujer"},
+    "Polera Baby Tee Striped": {"genero": "mujer"},
+    "Polera Baby Tee Negra": {"genero": "mujer"},
+    "Polera Morpho Menelaus": {"genero": "hombre"},
+    "Polera Super Mr. Wav": {"genero": "hombre"},
+    "Polera Happy Flower": {"genero": "hombre"},
+    "Poleron Ume No Hakiri": {"genero": "hombre"},
+    "Beanie Beige": {"genero": "mujer"},
+    "Beatle Hidden Clover": {"genero": "hombre"},
+    "Jockeys Chiporro": {"genero": "mujer"},
+    "Beanie Black": {"genero": "mujer"},
+    "Poleron Ghost Input 808": {"genero": "mujer"},
+    "Polera Hongo Corazón": {"genero": "hombre"},
+    "Polera Warm inside": {"genero": "hombre"},
+    "Polera Dormant Love": {"genero": "hombre"},
+    "Polera Basic Café": {"genero": "mujer"},
+    "Polera Basic White": {"genero": "hombre"},
+    "Polera Basic Negra": {"genero": "hombre"},
+    "Crewneck Art Escapist": {"genero": "mujer"},
+    "POLERA BOXY FIT FUCSIA – HEART LMD": {"genero": "mujer"},
+    "FIVE STARS ONLY HOODIE": {"genero": "mujer"},
+    "Poleron café desgastado LMD studio - Boxy": {"genero": "mujer"},
+    "Sobrefalda tartan #4": {"genero": "mujer"},
+    "Sobrefalda tartan #3": {"genero": "mujer"},
+    "Sobrefalda tartan #2": {"genero": "mujer"},
+    "Sobrefalda tartan #1": {"genero": "mujer"},
+    "Hoodie gris desgastado LMD studio con cierre": {"genero": "mujer"},
+    "Hoodie Boxy Oversized · Rosado coderas de estrella": {"genero": "hombre"},
+    "Hoodie Boxy Oversized 5 Estrellas Café Bolsillo Canguro": {"genero": "hombre"},
+    "Poleron Verde Desgastado estrellas bordadas - Boxy": {"genero": "mujer"},
+    "Poleron Negro Desgastado estrellas bordadas - Boxy": {"genero": "mujer"},
+    "Poleron Básico Negro Gravillado": {"genero": "mujer"},
+    "Polerón Básico Crewneck": {"genero": "hombre"},
+    "Polera Estrella": {"genero": "hombre"},
+    "Polera basica Hush": {"genero": "hombre"},
+    "TOADALLY FRESH": {"genero": "hombre"},
+    "Jersey's HELLSTAR Azul": {"genero": "hombre"},
+    "Jersey's HELLSTAR Sports Morado": {"genero": "hombre"},
+    "Jersey's HELLSTAR Rojo": {"genero": "hombre"},
+    "BANE - Oversized": {"genero": "hombre"},
+    "BANGE": {"genero": "hombre"},
 }
 
 # 2026-08-20 -- capucha/cierre de los 28 polerones reales (ninguno lo tenia
@@ -1892,10 +2378,27 @@ def detectar_corte(nombre):
         return "slim fit"
     if "regular" in n:
         return "regular fit"
-    if "straight" in n:
+    if "straight" in n or "recto" in n:
         return "straight"
     if "skinny" in n:
         return "skinny"
+    # 2026-09-08 (StreetVibe/Sioux): fits reales declarados en el nombre que
+    # no tenian disparador todavia -- ver CORTES_CONOCIDOS (constantes.py)
+    # para el mismo vocabulario usado del lado de la busqueda.
+    if "wide leg" in n or "wideleg" in n or "wide-leg" in n:
+        return "wide leg"
+    if "flare" in n:
+        return "flare"
+    if "tapered" in n:
+        return "tapered"
+    if "relaxed" in n:
+        return "relaxed"
+    if "balloon" in n or "ballong" in n:
+        return "balloon"
+    if "barrel" in n:
+        return "barrel"
+    if "loose" in n:
+        return "loose fit"
     return ""
 
 
@@ -1928,7 +2431,15 @@ def clasificar_prenda(nombre):
     # de gorro reales que el nombre real de la tienda ya declara, sin
     # ninguna palabra "gorro"/"gorra"/"jockey"/"beanie" -- sin esto caian al
     # default "polera".
-    if (
+    # 2026-09-08 (Sioux): "con gorro" dentro del nombre de una chaqueta/
+    # parka real ("Parka Hombre Basica Con Gorro Gris") describe una
+    # CAPUCHA de la prenda, no un gorro/beanie vendido aparte -- sin esta
+    # excepcion, "gorro" como substring caia primero y clasificaba la
+    # parka entera como categoria "gorro" (bug real, 2 productos).
+    _es_capucha_de_prenda = "con gorro" in n and (
+        "chaqueta" in n or "parka" in n or "jacket" in n or "cortaviento" in n
+    )
+    if not _es_capucha_de_prenda and (
         "gorro" in n or "beanie" in n or "gorra" in n or "jockey" in n
         or "dad hat" in n or "dad-hat" in n or "trucker" in n or "bucket hat" in n
     ):
@@ -1963,7 +2474,11 @@ def clasificar_prenda(nombre):
     if "jort" in n:
         return "shorts", "jorts", None, None
 
-    if "jacket" in n or "chaqueta" in n:
+    # 2026-09-08 (Sioux): "parka"/"cortaviento" son chaquetas reales (abrigo
+    # de invierno / rompevientos) que el nombre real de la tienda ya declara
+    # sin decir literalmente "chaqueta"/"jacket" -- bug real que hubiera
+    # dejado estos productos caer al default "polera".
+    if "jacket" in n or "chaqueta" in n or "parka" in n or "cortaviento" in n:
         subtipo = None
         if "denim" in n:
             subtipo = "mezclilla"
@@ -2371,6 +2886,155 @@ def cargar_jumpseller_cache(ruta_json, excluir_slugs=()):
     return resultado
 
 
+def cargar_streetvibe_cache(ruta_json):
+    """StreetVibe (streetvibe.cl) es WooCommerce con la Store API publica
+    (2026-09-08). MUY IMPORTANTE: a diferencia de otras tiendas cargadas por
+    nombre (genero_de() mirando el nombre del producto), StreetVibe declara
+    el genero por CATEGORIA real ("Unisex Jeans"/"Mujer Jeans"/"Hombre
+    Jeans") y varios nombres NO dicen "hombre"/"mujer" aunque su categoria
+    si sea especifica (ej. "Baggy Amanda Negro" es categoria real "Mujer
+    Jeans") -- pedido explicito del usuario: nunca asumir Unisex por
+    estetica, usar solo lo que la tienda declara. Por eso "genero_override"
+    siempre se manda con el genero de la categoria real, nunca se deja que
+    genero_de() adivine por el nombre. El JSON de origen (streetvibe_
+    productos.json) ya viene con categorias/fit/variantes por talla
+    reales, bajados via Store API + pagina de producto real (curl, sin IA
+    de por medio) -- ver docs/catalogo_real.md."""
+    productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in productos:
+        precio_clp = int(float(p["precio"]))
+        precio_regular = int(float(p["precio_regular"])) if p.get("precio_regular") else None
+        tallas_variantes = [{"talla": v["talla"], "disponible": v["disponible"]} for v in p["variantes"] if v.get("talla")]
+        tallas_reales = [t["talla"] for t in tallas_variantes if t["disponible"]]
+        resultado.append({
+            "nombre": p["nombre"],
+            "precio": precio_clp,
+            "precio_original_clp": precio_regular if precio_regular and precio_regular > precio_clp else None,
+            "path": p["url"],
+            "fotos": [p["imagen"]] + p.get("galeria", []) if p.get("imagen") else p.get("galeria") or [],
+            "descripcion_real": None,
+            "tallas_reales": tallas_reales,
+            "tallas_variantes": tallas_variantes or None,
+            "genero_override": p["genero"],
+            # Categoria forzada (2026-09-08): TODOS estos 57 productos vienen
+            # de una pagina de categoria real "*Jeans*" de la tienda (nunca
+            # se selecciono a mano) -- varios nombres reales ("Baggy
+            # Destroyed Negro", "Low flow Celeste") no traen ninguna palabra
+            # clave de clasificar_prenda(), lo que los hacia caer a "polera"
+            # por default; y "Jort ..." los hacia caer a shorts/jorts, aunque
+            # la tienda los tenga en su categoria de jeans. Pedido explicito
+            # del usuario: "StreetVibe -> solo Jeans", asi que se fuerza
+            # Pantalones > Jeans para todos, en vez de adivinar por nombre.
+            "categoria_override": "pantalon",
+            "subtipo_override": "jeans",
+        })
+    return resultado
+
+
+def cargar_sioux_cache(ruta_json):
+    """Sioux (siouxjeans.cl) es Jumpseller, sin products.json/Store API
+    publica -- mismo patron que cargar_jumpseller_cache() (By Adrian
+    Sanchez), pero ampliado con los campos extra que Sioux SI declara por
+    ficha y que se pidieron explicitamente: color/composicion/genero/calce
+    estructurados (JSON-LD "description" trae "Color: X", "Composicion: X",
+    "Calce: X" separados por el caracter "▪" -- parseado con curl real,
+    sin IA de por medio, ver docs/catalogo_real.md). Genero por URL
+    (/jeans-hombre-.../jeans-mujer-...), nunca por nombre, mismo criterio
+    de "solo lo que la tienda declara" que StreetVibe. Composicion real via
+    parsear_composicion() (constantes.py) -- alimenta C2 de Confianza
+    KOLIZION y el filtro "100% del mismo material" sin ninguna regla
+    exclusiva de Sioux."""
+    productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in productos:
+        if not p.get("genero"):
+            continue
+        precios = [v["price"] for v in p["variantes"] if v.get("price")]
+        precio_clp = int(min(precios)) if precios else 0
+        tallas_variantes = [{"talla": v["talla"], "disponible": v["stock"] > 0} for v in p["variantes"] if v.get("talla")]
+        tallas_reales = [t["talla"] for t in tallas_variantes if t["disponible"]]
+        composicion = parsear_composicion(p.get("composicion_texto", ""))
+        material = None
+        if composicion:
+            fibras = {c["fibra"] for c in composicion}
+            if fibras == {"algodon"} and es_composicion_100_pura(composicion):
+                material = "algodon_100"
+            elif fibras == {"algodon", "elastano"}:
+                material = "mezcla_algodon_elastano"
+            elif fibras == {"poliester", "elastano"}:
+                material = "mezcla_poliester_elastano"
+            elif fibras == {"algodon", "poliamida"}:
+                material = "mezcla_algodon_poliamida"
+            elif len(fibras) == 1:
+                material = next(iter(fibras))
+        resultado.append({
+            "nombre": p["nombre"],
+            "precio": precio_clp,
+            "path": p["url"],
+            "fotos": [p["imagen"]] if p.get("imagen") else [],
+            "descripcion_real": None,
+            "tallas_reales": tallas_reales,
+            "tallas_variantes": tallas_variantes or None,
+            "genero_override": p["genero"],
+            "colores": [p["color"]] if p.get("color") else None,
+            "composicion": composicion or None,
+            "material": material,
+        })
+    return resultado
+
+
+def cargar_kronolex_cache(ruta_json, excluir_handles=()):
+    """KronoLex (kronolex.cl) es Shopify real (products.json publico,
+    confirmado con curl) -- pedido explicito del usuario: TODO el catalogo
+    compatible EXCEPTO chaquetas (excluir_handles se llena con los handles
+    de nombre que contienen "chaqueta" antes de llamar esto). A diferencia
+    de otras tiendas Shopify ya cargadas, el body_html de KronoLex SI trae
+    bullets reales y parseables: "Fit <corte> <genero>", "<pct>% <fibra>...",
+    "Color: <color>" -- se extraen aca (una sola vez, reutilizando
+    parsear_composicion() central) en vez de dejarlos sin usar."""
+    datos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in datos["products"]:
+        if p["handle"] in excluir_handles:
+            continue
+        variantes = p["variants"]
+        precio_clp = int(float(variantes[0]["price"]))
+        compare_at = variantes[0].get("compare_at_price")
+        precio_original_clp = int(float(compare_at)) if compare_at else None
+        cuerpo = (p.get("body_html") or "")
+        cuerpo_plano = re.sub(r"<[^>]+>", " ", cuerpo)
+        genero_override = None
+        m_genero = re.search(r"\b(unisex|hombre|mujer)\b", cuerpo_plano, re.I)
+        if m_genero:
+            genero_override = m_genero.group(1).lower()
+        m_color = re.search(r"color\s*:\s*([a-zA-Zá-úÁ-Ú ]+)", cuerpo_plano, re.I)
+        colores = [m_color.group(1).strip().title()] if m_color else None
+        composicion = parsear_composicion(cuerpo_plano)
+        material = None
+        if composicion:
+            fibras = {c["fibra"] for c in composicion}
+            if fibras == {"algodon"} and es_composicion_100_pura(composicion):
+                material = "algodon_100"
+            elif len(fibras) == 1:
+                material = next(iter(fibras))
+        resultado.append({
+            "nombre": p["title"],
+            "precio": precio_clp,
+            "precio_original_clp": precio_original_clp if precio_original_clp and precio_original_clp > precio_clp else None,
+            "path": f"/products/{p['handle']}",
+            "fotos": [img["src"] for img in p.get("images", [])],
+            "descripcion_real": _limpiar_html(cuerpo),
+            "tallas_reales": _tallas_disponibles_shopify(p),
+            "tallas_variantes": _variantes_talla_shopify(p),
+            "genero_override": genero_override,
+            "colores": colores,
+            "composicion": composicion or None,
+            "material": material,
+        })
+    return resultado
+
+
 TIENDAS_OFICIALES = {
     # Tiendas con consentimiento explicito del dueno de la tienda para
     # pasar de "vista previa" a ficha oficial lista para vender (no solo
@@ -2418,6 +3082,9 @@ TIENDAS_OFICIALES = {
     "Endless",
     "Bang Concept",
     "The Wolf",
+    "StreetVibe",
+    "Sioux",
+    "KronoLex",
 }
 
 # Excepciones dentro de una tienda oficial: categorias que NO quedan
@@ -2603,10 +3270,33 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
                         marca_autor=True, es_gorro=False, color_dominante=None, forma_gorro=None,
                         fotos=None, descripcion_real=None, tallas_reales=None, tallas_variantes=None,
                         precio_original_clp=None, colores=None, interes_musica=False, interes_arte=False,
-                        interes_anime=False, franquicia_anime=None):
+                        interes_anime=False, franquicia_anime=None,
+                        genero_override=None, material=None, composicion=None,
+                        categoria_override=None, subtipo_override=None):
     categoria, subtipo, manga, largo = ("gorro", None, None, None) if es_gorro else clasificar_prenda(nombre)
+    if categoria_override:
+        # 2026-09-08 (StreetVibe): para cuando la propia tienda ya declara la
+        # categoria real via su pagina/coleccion de origen (ej. StreetVibe
+        # "solo Jeans" -- cada producto viene de una pagina de categoria
+        # real "*Jeans*") y el NOMBRE del producto no trae ninguna palabra
+        # clave que clasificar_prenda() reconozca (ej. "Baggy Destroyed
+        # Negro" no dice "jean"/"pantalon" en ningun lado, aunque la tienda
+        # lo tenga en su categoria "Unisex Jeans"). Mismo nivel de prioridad
+        # que genero_override: evidencia REAL de la fuente, no inferencia.
+        categoria = categoria_override
+        subtipo = subtipo_override
     corte = detectar_corte(nombre)
     genero = genero_de(nombre)
+    if genero_override:
+        # 2026-09-08 (StreetVibe/Sioux/KronoLex): para cuando la propia
+        # tienda declara el genero en un campo ESTRUCTURADO real (categoria/
+        # breadcrumb de la fuente, ej. "Mujer Jeans" en StreetVibe) en vez de
+        # en el nombre del producto -- genero_de() solo mira el nombre, asi
+        # que un producto como "Baggy Amanda Negro" (categoria real "Mujer
+        # Jeans" pero sin la palabra "mujer" en el nombre) caeria mal a
+        # "unisex" por default sin esto. Mismo nivel de prioridad que
+        # TIENDAS_GENERO_COMPLETO: puntual por producto, nunca "adivinado".
+        genero = genero_override
     if tienda in TIENDAS_GENERO_COMPLETO:
         genero = TIENDAS_GENERO_COMPLETO[tienda]
 
@@ -2843,6 +3533,18 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         if _forma_detectada == "lana" and not producto.get("material"):
             producto["material"] = "lana"
 
+    if material:
+        producto["material"] = material
+    if composicion:
+        # 2026-09-08 (Sioux): composicion ESTRUCTURADA y normalizada por
+        # fibra (ver parsear_composicion() en constantes.py) -- separado del
+        # enum plano "material" de arriba porque ahi no hay forma de
+        # distinguir "100% algodon" de "98% algodon + 2% elastano". Este es
+        # el dato que usa es_composicion_100_pura() para el filtro real
+        # "100% del mismo material" (motor_recomendacion.py), pensado para
+        # cualquier tienda actual o futura que declare composicion con
+        # porcentaje, no solo Sioux.
+        producto["composicion"] = composicion
     if extra.get("material"):
         producto["material"] = extra["material"]
     if extra.get("gramaje_gsm"):
@@ -4268,6 +4970,42 @@ BANGCONCEPT = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "bangco
 # no hay reventa de otras marcas, se carga completo sin exclusiones.
 THEWOLF = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "thewolf.json")
 
+# STREETVIBE (streetvibe.cl, 2026-09-08): WooCommerce, solo Jeans (pedido
+# explicito del usuario -- el catalogo real de la tienda tiene mas
+# categorias, esta tienda entra SOLO con lo que ya viene filtrado a
+# "categorias contiene 'jeans'" en el JSON de origen). Ver cargar_streetvibe_
+# cache() para el detalle de genero por categoria real. marca_autor=False:
+# no se encontro pagina "Nosotros" ni declaracion de diseño propio.
+STREETVIBE = cargar_streetvibe_cache(BASE_DIR / "data" / "woocommerce_cache" / "streetvibe.json")
+for _p in STREETVIBE:
+    _p["marca_autor"] = False
+
+# SIOUX (siouxjeans.cl, 2026-09-08): Jumpseller, Jeans + Chaquetas (parka/
+# cortaviento incluidos como chaqueta -- ver clasificar_prenda(); "polar" y
+# "vestido" de su categoria "chaquetas-y-parkas" quedaron afuera a proposito,
+# ver cargar_sioux_cache()/docs/catalogo_real.md, no son chaquetas reales).
+# marca_autor=False: sin declaracion de diseño propio encontrada.
+SIOUX = cargar_sioux_cache(BASE_DIR / "data" / "jumpseller_cache" / "sioux.json")
+for _p in SIOUX:
+    _p["marca_autor"] = False
+
+# KRONOLEX (kronolex.cl, 2026-09-08): Shopify, TODO el catalogo compatible
+# EXCEPTO chaquetas (regla estricta pedida por el usuario) -- se excluyen
+# por handle ANTES de construir productos, nunca se cargan y se sacan
+# despues (mismo criterio ya usado para excluir productos no-apparel de
+# otras tiendas, ver _WAV_EXCLUIR/_LMD_EXCLUIR arriba). marca_autor=False:
+# sin declaracion de diseño propio encontrada.
+_KRONOLEX_RAW = json.loads((BASE_DIR / "data" / "shopify_cache" / "kronolex.json").read_text(encoding="utf-8"))
+_KRONOLEX_EXCLUIR_CHAQUETAS = {
+    p["handle"] for p in _KRONOLEX_RAW["products"] if "chaqueta" in p["title"].lower()
+}
+KRONOLEX = cargar_kronolex_cache(
+    BASE_DIR / "data" / "shopify_cache" / "kronolex.json",
+    excluir_handles=_KRONOLEX_EXCLUIR_CHAQUETAS,
+)
+for _p in KRONOLEX:
+    _p["marca_autor"] = False
+
 # BY ADRIAN SANCHEZ (byadriansanchez.com, 2026-09-02): Jumpseller, ver
 # cargar_jumpseller_cache(). marca_autor=False para toda la tienda: a
 # diferencia de Brissa/Hush, no se encontro pagina "Nosotros"/about ni
@@ -4844,6 +5582,9 @@ def main():
         ("Endless", "endlesscl.com", "Endless", ENDLESS),
         ("Bang Concept", "bangconcept.cl", "Bang Concept", BANGCONCEPT),
         ("The Wolf", "thewolfchile.com", "The Wolf", THEWOLF),
+        ("StreetVibe", "www.streetvibe.cl", "StreetVibe", STREETVIBE),
+        ("Sioux", "siouxjeans.cl", "Sioux", SIOUX),
+        ("KronoLex", "kronolex.cl", "KronoLex", KRONOLEX),
     ]
     for tienda, dominio, marca, productos in nuevas_tiendas_shopify:
         for i, p in enumerate(productos, start=1):
@@ -4859,6 +5600,11 @@ def main():
                     interes_arte=p.get("interes_arte", False),
                     interes_anime=p.get("interes_anime", False),
                     franquicia_anime=p.get("franquicia_anime"),
+                    genero_override=p.get("genero_override"),
+                    material=p.get("material"),
+                    composicion=p.get("composicion"),
+                    categoria_override=p.get("categoria_override"),
+                    subtipo_override=p.get("subtipo_override"),
                 )
             )
 

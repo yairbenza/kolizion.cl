@@ -180,6 +180,21 @@ function guardarAjusteTalla(ajuste) {
   localStorage.setItem(AJUSTE_TALLA_KEY, ajuste);
 }
 
+// Preferencia de genero (2026-09-08, pedido del usuario): que mostrar
+// ademas de mi propio genero en "yo" -- "con_unisex" (default, mi genero +
+// unisex, igual que siempre), "solo_mi_genero" (excluye unisex), "todos"
+// ("me da igual"). Mismo patron que ajuste de talla -- se edita en /perfil
+// (ver configurarPreferenciaGenero en perfil.js).
+const PREFERENCIA_GENERO_KEY = "preferenciaGeneroKolizion";
+
+function getPreferenciaGenero() {
+  return localStorage.getItem(PREFERENCIA_GENERO_KEY) || "con_unisex";
+}
+
+function guardarPreferenciaGenero(preferencia) {
+  localStorage.setItem(PREFERENCIA_GENERO_KEY, preferencia);
+}
+
 // Texto humano de cada clave de preferencia negativa (usado por
 // resultados.js para armar la pregunta "tienes marcado que no te gustan
 // X -- ¿buscamos igual incluyendo esas opciones, solo por esta vez?").

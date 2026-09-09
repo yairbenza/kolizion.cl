@@ -96,6 +96,30 @@ function configurarAjusteTalla() {
   }
 }
 
+// Preferencia de genero (2026-09-08, pedido del usuario): mismo patron de
+// auto-guardado que MAPA_AJUSTE_TALLA -- independiente de tener perfil
+// guardado, no necesita re-renderizar nada mas (solo afecta la proxima
+// busqueda "yo", ver script.js).
+const MAPA_PREFERENCIA_GENERO = {
+  "preferencia-genero-con_unisex": "con_unisex",
+  "preferencia-genero-solo_mi_genero": "solo_mi_genero",
+  "preferencia-genero-todos": "todos",
+};
+
+function configurarPreferenciaGenero() {
+  const contenedor = document.getElementById("preferencia-genero-opciones");
+  if (!contenedor) return;
+  const actual = getPreferenciaGenero();
+  for (const [id, valor] of Object.entries(MAPA_PREFERENCIA_GENERO)) {
+    const input = document.getElementById(id);
+    if (!input) continue;
+    input.checked = valor === actual;
+    input.addEventListener("change", () => {
+      if (input.checked) guardarPreferenciaGenero(valor);
+    });
+  }
+}
+
 // Preferencia de idioma de Koko -- solo se muestra si el usuario ya le
 // pidio alguna vez hablar como chileno en alguna conversacion (ver
 // preferencia_idioma_koko() en app.py); el default es neutro, y como
@@ -190,7 +214,11 @@ function pintarHistorial(contenido, busquedas, productos) {
       // vez de fingir que se puede volver a algo que no se guardo.
       if (b.payload) {
         fila.classList.add("perfil-fila-clickable");
-        fila.title = "Ver estos resultados de nuevo";
+        fila.title = "Buscar de nuevo para ver si hay resultados nuevos";
+        const accion = document.createElement("span");
+        accion.className = "perfil-fila-accion";
+        accion.textContent = "🔄 Buscar de nuevo (ver si se actualizó algo)";
+        fila.appendChild(accion);
         fila.addEventListener("click", () => {
           buscar({ ...b.payload, _historial_replay: true });
         });
@@ -323,6 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
   configurarInterruptorTema();
   configurarPreferenciasNegativas();
   configurarAjusteTalla();
+  configurarPreferenciaGenero();
   // Independiente del perfil de busqueda (localStorage) de mas abajo -- el
   // historial depende solo de la sesion real (ver {% if usuario %} en
   // perfil.html), asi que alguien logueado sin perfil local igual tiene

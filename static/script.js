@@ -933,6 +933,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modo: "yo", email: perfilCompleto.gmail || "", perfil: perfilParaBuscar,
       preferencias_negativas: getPreferenciasNegativas(),
       ajuste_talla: getAjusteTalla(),
+      preferencia_genero: getPreferenciaGenero(),
       ...leerBusquedaPrenda("yo"),
     });
   });

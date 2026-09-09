@@ -55,6 +55,7 @@ from constantes import (
     MATERIALES_CONOCIDOS,
     MAX_MENSAJES_HISTORIAL_KOKO,
     ORDEN_TALLAS,
+    PREFERENCIAS_GENERO_CONOCIDAS,
     RANGOS_CLICS,
     REGLAS_HOBBY,
     REGLAS_PATH,
@@ -658,6 +659,16 @@ def recommend():
     if ajuste_talla not in AJUSTES_TALLA_CONOCIDOS:
         ajuste_talla = "normal"
 
+    # Preferencia de genero del perfil (2026-09-08, pedido del usuario):
+    # "con_unisex" (default)/"solo_mi_genero"/"todos" -- solo aplica a "yo"
+    # (en "regalo" no hay perfil personal guardado). Ver elegir_candidatos()
+    # en motor_recomendacion.py para el detalle de que cambia cada opcion.
+    preferencia_genero = (
+        _texto_seguro(data.get("preferencia_genero", "")).strip().lower() if modo == "yo" else "con_unisex"
+    )
+    if preferencia_genero not in PREFERENCIAS_GENERO_CONOCIDAS:
+        preferencia_genero = "con_unisex"
+
     if modo == "yo":
         perfil = data.get("perfil") or {}
         genero = _texto_seguro(perfil.get("genero"))
@@ -687,7 +698,7 @@ def recommend():
             genero, ocasion, categoria, texto_pedido, catalog_con_talla, reglas, tallas_usuario,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
-            precio_pedido=precio, ids_excluir=ids_excluir,
+            precio_pedido=precio, ids_excluir=ids_excluir, preferencia_genero=preferencia_genero,
         )
     else:
         catalog_con_precio = filtrar_por_precio(catalog_con_talla, precio)
@@ -695,6 +706,7 @@ def recommend():
             genero, ocasion, categoria, texto_pedido, catalog_con_precio, reglas, tallas_usuario,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
+            preferencia_genero=preferencia_genero,
         )
         alternativas, aviso_alternativas = [], None
 
@@ -705,7 +717,7 @@ def recommend():
                 genero, ocasion, categoria, texto_pedido, catalog, reglas,
                 priorizar_material_natural=priorizar_material_natural,
                 categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
-                precio_pedido=precio, ids_excluir=ids_excluir,
+                precio_pedido=precio, ids_excluir=ids_excluir, preferencia_genero=preferencia_genero,
             )
             sin_talla = bool(resultados_sin_talla) or bool(alternativas_sin_talla)
         else:
@@ -713,6 +725,7 @@ def recommend():
                 genero, ocasion, categoria, texto_pedido, filtrar_por_precio(catalog, precio), reglas,
                 priorizar_material_natural=priorizar_material_natural,
                 categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
+                preferencia_genero=preferencia_genero,
             )
             sin_talla = bool(resultados_sin_talla)
 
@@ -732,13 +745,14 @@ def recommend():
                     genero, ocasion, categoria, texto_pedido, catalog_prueba, reglas, tallas_usuario,
                     priorizar_material_natural=priorizar_material_natural,
                     categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
-                    precio_pedido=precio, ids_excluir=ids_excluir,
+                    precio_pedido=precio, ids_excluir=ids_excluir, preferencia_genero=preferencia_genero,
                 )
                 return bool(r) or bool(a)
             r = armar_resultados(
                 genero, ocasion, categoria, texto_pedido, filtrar_por_precio(catalog_prueba, precio), reglas,
                 tallas_usuario, priorizar_material_natural=priorizar_material_natural,
                 categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
+                preferencia_genero=preferencia_genero,
             )
             return bool(r)
 

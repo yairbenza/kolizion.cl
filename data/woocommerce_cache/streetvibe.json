@@ -1,0 +1,3044 @@
+[
+ {
+  "id": 3734,
+  "nombre": "Jeans Viral Acid Blue",
+  "url": "https://www.streetvibe.cl/producto/jeans-viral-acid-blue/",
+  "precio": "34990",
+  "precio_regular": "34990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3707,
+  "nombre": "Baggy Destroyed Negro",
+  "url": "https://www.streetvibe.cl/producto/baggy-destroyed-negro/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3337,
+  "nombre": "Baggy Amanda  Negro",
+  "url": "https://www.streetvibe.cl/producto/baggy-amanda-negro/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "mujer",
+  "fit": "baggy",
+  "categorias": [
+   "Mujer Jeans",
+   "Mujer Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 3270,
+  "nombre": "Jeans Baggy  Hombre  Recto Dark Blue",
+  "url": "https://www.streetvibe.cl/producto/jeans-baggy-hombre-recto-dark-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "hombre",
+  "fit": "straight",
+  "categorias": [
+   "Hombre",
+   "Hombre Jeans",
+   "Hombre Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "50",
+    "disponible": true
+   },
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3263,
+  "nombre": "Jeans Baggy  Hombre  Recto Gris focalizado",
+  "url": "https://www.streetvibe.cl/producto/jeans-baggy-hombre-recto-gris-focalizado/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "hombre",
+  "fit": "straight",
+  "categorias": [
+   "Hombre",
+   "Hombre Jeans",
+   "Hombre Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "50",
+    "disponible": true
+   },
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3256,
+  "nombre": "Jeans Baggy  Hombre  Recto Acid Blue",
+  "url": "https://www.streetvibe.cl/producto/jeans-baggy-hombre-recto-acid-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "hombre",
+  "fit": "straight",
+  "categorias": [
+   "Hombre",
+   "Hombre Jeans",
+   "Hombre Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "50",
+    "disponible": true
+   },
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3152,
+  "nombre": "Baggy ajuste laterales Gris Focalizado Hilo Blanco",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-gris-focalizado-hilo-blanco/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3145,
+  "nombre": "Jeans Flare Hombre  Cafe",
+  "url": "https://www.streetvibe.cl/producto/jeans-flare-hombre-cafe/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "hombre",
+  "fit": "straight",
+  "categorias": [
+   "Hombre",
+   "Hombre Jeans",
+   "Hombre Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "50",
+    "disponible": true
+   },
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3108,
+  "nombre": "Jeans Flare Hombre  Dark Blue",
+  "url": "https://www.streetvibe.cl/producto/jeans-flare-hombre-dark-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "hombre",
+  "fit": "straight",
+  "categorias": [
+   "Hombre",
+   "Hombre Jeans",
+   "Hombre Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "50",
+    "disponible": true
+   },
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3101,
+  "nombre": "Jeans Flare Hombre  Acid Blue",
+  "url": "https://www.streetvibe.cl/producto/jeans-flare-hombre-acid-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "hombre",
+  "fit": "straight",
+  "categorias": [
+   "Hombre",
+   "Hombre Jeans",
+   "Hombre Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "50",
+    "disponible": true
+   },
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 3089,
+  "nombre": "Jeans Flare Hombre  Gris Focalizado",
+  "url": "https://www.streetvibe.cl/producto/jeans-flare-hombre-gris-focalizado/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "hombre",
+  "fit": "straight",
+  "categorias": [
+   "Hombre",
+   "Hombre Jeans",
+   "Hombre Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "50",
+    "disponible": true
+   },
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2863,
+  "nombre": "Baggy Streetvibe Negro",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-negro/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2764,
+  "nombre": "Baggy Destroyed Negro Hilo Blanco",
+  "url": "https://www.streetvibe.cl/producto/baggy-destroyed-negro-hilo-negro/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 2711,
+  "nombre": "Baggy Amanda Ceniza",
+  "url": "https://www.streetvibe.cl/producto/baggy-amanda-ceniza/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "mujer",
+  "fit": "baggy",
+  "categorias": [
+   "Mujer Jeans",
+   "Mujer Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2700,
+  "nombre": "Baggy Amanda Cafe",
+  "url": "https://www.streetvibe.cl/producto/baggy-amanda-lila/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "mujer",
+  "fit": "baggy",
+  "categorias": [
+   "Mujer Jeans",
+   "Mujer Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2689,
+  "nombre": "Baggy Amanda Gris",
+  "url": "https://www.streetvibe.cl/producto/baggy-amanda-gris/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "mujer",
+  "fit": "baggy",
+  "categorias": [
+   "Mujer Jeans",
+   "Mujer Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 2678,
+  "nombre": "Baggy Amanda  Ocre",
+  "url": "https://www.streetvibe.cl/producto/baggy-amanda-ocre/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "mujer",
+  "fit": "baggy",
+  "categorias": [
+   "Mujer Jeans",
+   "Mujer Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2667,
+  "nombre": "Baggy Amanda   Acid",
+  "url": "https://www.streetvibe.cl/producto/baggy-amanda-acid/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "mujer",
+  "fit": "baggy",
+  "categorias": [
+   "Mujer Jeans",
+   "Mujer Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2656,
+  "nombre": "Baggy Amanda   Blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-amanda-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "mujer",
+  "fit": "baggy",
+  "categorias": [
+   "Mujer Jeans",
+   "Mujer Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2575,
+  "nombre": "Low flow Celeste",
+  "url": "https://www.streetvibe.cl/producto/low-flow-celeste/",
+  "precio": "25990",
+  "precio_regular": "25990",
+  "genero": "unisex",
+  "fit": "straight",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2564,
+  "nombre": "Low flow Ocre",
+  "url": "https://www.streetvibe.cl/producto/low-flow-ocre/",
+  "precio": "25990",
+  "precio_regular": "25990",
+  "genero": "unisex",
+  "fit": "straight",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2553,
+  "nombre": "Low flow Acid",
+  "url": "https://www.streetvibe.cl/producto/low-flow-acid/",
+  "precio": "25990",
+  "precio_regular": "25990",
+  "genero": "unisex",
+  "fit": "straight",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 2467,
+  "nombre": "Jeans Viral Dark Blue",
+  "url": "https://www.streetvibe.cl/producto/jeans-viral-dark-blue/",
+  "precio": "34990",
+  "precio_regular": "34990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2455,
+  "nombre": "Low flow brown",
+  "url": "https://www.streetvibe.cl/producto/low-flow-ash-brown/",
+  "precio": "25990",
+  "precio_regular": "25990",
+  "genero": "unisex",
+  "fit": "straight",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2443,
+  "nombre": "Low flow ash",
+  "url": "https://www.streetvibe.cl/producto/low-flow-ash/",
+  "precio": "25990",
+  "precio_regular": "25990",
+  "genero": "unisex",
+  "fit": "straight",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2432,
+  "nombre": "Low flow Dark",
+  "url": "https://www.streetvibe.cl/producto/low-flow-grey/",
+  "precio": "25990",
+  "precio_regular": "25990",
+  "genero": "unisex",
+  "fit": "straight",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Straight Fit"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 2171,
+  "nombre": "Baggy Streetvibe  acid blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-acid/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 2160,
+  "nombre": "Baggy Streetvibe  Ocre",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-ocre/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 1373,
+  "nombre": "Baggy Destroyed Acid Blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-destroyed-acid-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 1362,
+  "nombre": "Baggy Destroyed Dark Blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-destroyed-dark-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 1311,
+  "nombre": "Baggy ajuste laterales Gris",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-gris/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 1301,
+  "nombre": "Baggy ajuste laterales Cafe",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-cafe/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 1095,
+  "nombre": "Baggy Destroyed Gris",
+  "url": "https://www.streetvibe.cl/producto/baggy-destroyed-gris/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 1065,
+  "nombre": "Baggy Destroyed Café",
+  "url": "https://www.streetvibe.cl/producto/baggy-destroyed-cafe/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 837,
+  "nombre": "Baggy ajuste laterales Dark Blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-dark-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 827,
+  "nombre": "Baggy ajuste laterales Acid Blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-acid-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 465,
+  "nombre": "Jort Celeste Hielo",
+  "url": "https://www.streetvibe.cl/producto/jort-celeste-hielo/",
+  "precio": "26990",
+  "precio_regular": "26990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 455,
+  "nombre": "Jort Ocre",
+  "url": "https://www.streetvibe.cl/producto/jort-ocre/",
+  "precio": "26990",
+  "precio_regular": "26990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 445,
+  "nombre": "Jort Cafe",
+  "url": "https://www.streetvibe.cl/producto/jort-cafe/",
+  "precio": "26990",
+  "precio_regular": "26990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 435,
+  "nombre": "Jort Gris Focalizado",
+  "url": "https://www.streetvibe.cl/producto/jort-gris-focalizado/",
+  "precio": "26990",
+  "precio_regular": "26990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 410,
+  "nombre": "Baggy ajuste laterales Ocre",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-ocre/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 400,
+  "nombre": "Baggy Streetvibe Azul Petroleo",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-azul-petroleo/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 390,
+  "nombre": "Baggy Streetvibe Celeste Hielo",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-celeste-hielo/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 362,
+  "nombre": "Jeans Recto Celeste Focalizado",
+  "url": "https://www.streetvibe.cl/producto/jeans-recto-celeste-focalizado/",
+  "precio": "19990",
+  "precio_regular": "19990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 314,
+  "nombre": "Baggy ajuste laterales Celeste Gravillado",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-celeste-gravillado/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/12/regulador-lados-sin-fondo.jpg"
+  ],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 305,
+  "nombre": "Baggy ajuste laterales Verde Gravillado",
+  "url": "https://www.streetvibe.cl/producto/baggy-ajuste-laterales-verde-gravillado/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/12/regulador-lados-verde-gravillado.jpg"
+  ],
+  "variantes": [
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 295,
+  "nombre": "Jeans Recto Verde Agua Gravillado",
+  "url": "https://www.streetvibe.cl/producto/jeans-recto-celeste-oxidado-gravillado/",
+  "precio": "19990",
+  "precio_regular": "19990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/11/Jeans-recto-verde-agua.jpg"
+  ],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 285,
+  "nombre": "Jeans Recto Azul Oxidado Gravillado",
+  "url": "https://www.streetvibe.cl/producto/jeans-recto-azul-oxidado-gravillado/",
+  "precio": "19990",
+  "precio_regular": "19990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/11/Jeans-Recto-Azul-Oxidado-Gravillado.jpg"
+  ],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 276,
+  "nombre": "Baggy Streetvibe Verde Oliva Acido",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-urban-green/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 267,
+  "nombre": "Jeans Baggy Destroyed Azul Oxidado",
+  "url": "https://www.streetvibe.cl/producto/jeans-baggy-destroyed-azul-oxidado/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/11/Jeans-Baggy-Destroyed-Azul-Oxidado.jpg"
+  ],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 258,
+  "nombre": "Jeans Baggy Destroyed Azul Stone",
+  "url": "https://www.streetvibe.cl/producto/jeans-baggy-destroyed-azul-stone/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/11/Jeans-Baggy-Destroyed-Azul-Stone.jpg"
+  ],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": false
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 249,
+  "nombre": "Baggy Destroyed Ocre",
+  "url": "https://www.streetvibe.cl/producto/baggy-destroyed-ocre/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": "baggy",
+  "categorias": [
+   "Unisex Jeans",
+   "Unisex Jeans Baggy"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": true
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 240,
+  "nombre": "Baggy Streetvibe Urban Blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-urban-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 230,
+  "nombre": "Baggy Streetvibe Gris Focalizado",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-gris-focalizado/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "48",
+    "disponible": false
+   },
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 221,
+  "nombre": "Baggy Streetvibe Dark Blue",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-dark-blue/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": true
+   },
+   {
+    "talla": "36",
+    "disponible": true
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": true
+   }
+  ]
+ },
+ {
+  "id": 209,
+  "nombre": "Jeans Baggy  Cafe",
+  "url": "https://www.streetvibe.cl/producto/jeans-baggy-cafe/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-Jeans-Cafe.jpg"
+  ],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": true
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": true
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": true
+   },
+   {
+    "talla": "42",
+    "disponible": true
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ },
+ {
+  "id": 186,
+  "nombre": "Baggy Streetvibe lila",
+  "url": "https://www.streetvibe.cl/producto/baggy-streetvibe-lila/",
+  "precio": "29990",
+  "precio_regular": "29990",
+  "genero": "unisex",
+  "fit": null,
+  "categorias": [
+   "Unisex Jeans"
+  ],
+  "imagen": "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-lila-1200x600-3.png",
+  "galeria": [
+   "https://www.streetvibe.cl/wp-content/uploads/2025/11/baggy-jeans-lila-sf.png"
+  ],
+  "variantes": [
+   {
+    "talla": "46",
+    "disponible": false
+   },
+   {
+    "talla": "30",
+    "disponible": false
+   },
+   {
+    "talla": "32",
+    "disponible": false
+   },
+   {
+    "talla": "34",
+    "disponible": false
+   },
+   {
+    "talla": "36",
+    "disponible": false
+   },
+   {
+    "talla": "38",
+    "disponible": true
+   },
+   {
+    "talla": "40",
+    "disponible": false
+   },
+   {
+    "talla": "42",
+    "disponible": false
+   },
+   {
+    "talla": "44",
+    "disponible": false
+   }
+  ]
+ }
+]

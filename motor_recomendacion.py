@@ -22,6 +22,8 @@ from constantes import (
     LIMITES_PESO_KG,
     MANGAS_CONOCIDAS,
     MATERIALES_CONOCIDOS,
+    FIBRAS_CONOCIDAS,
+    es_composicion_100_pura,
     ORDEN_TALLAS,
     PRIORIDAD_SUBTIPO_OCASION,
     REGLAS_HOBBY,
@@ -261,12 +263,31 @@ def _color_producto(producto):
     return _color_declarado(producto)
 
 
+# Bug real (2026-09-08, reportado por el usuario): "FIVE STARS ONLY HOODIE"
+# (La Maria Dolores) declara su color real en prosa ("confeccionado en tono
+# amarillo mantequilla"), sin el campo "Color : X" que _color_declarado() ya
+# sabe leer -- asi que el fallback de texto completo se activaba, y mas
+# abajo en la MISMA descripcion aparece "parche negro de 4,5 x 4,5cm en
+# manga" (un detalle chico, no el color de la prenda). Buscar "negro"
+# matcheaba ese parche y el hoodie amarillo aparecia en una busqueda de
+# poleron negro. Mismo espiritu que _color_declarado() (preferir una fuente
+# mas confiable en vez de creer cualquier mencion suelta): antes de buscar
+# la palabra de color en el texto completo, se sacan las menciones de
+# "parche <color>"/"detalle(s) <color>" -- esas SIEMPRE describen un
+# accesorio chico, nunca el color real de la prenda.
+_PATRON_ACCESORIO_COLOR = re.compile(r"\b(?:parche|detalles?)\w*\s+\w+")
+
+
+def _texto_sin_accesorios_color(producto):
+    return _PATRON_ACCESORIO_COLOR.sub("", texto_producto(producto))
+
+
 def _color_coincide_exacto(producto, color_pedido):
     variantes = COLORES_CONOCIDOS.get(color_pedido, [color_pedido])
     fuente = _color_producto(producto)
     if fuente is not None:
         return any(_contiene_palabra(fuente, v) for v in variantes)
-    return any(_contiene_palabra(texto_producto(producto), v) for v in variantes)
+    return any(_contiene_palabra(_texto_sin_accesorios_color(producto), v) for v in variantes)
 
 
 def _color_coincide_similar(producto, color_pedido):
@@ -274,7 +295,7 @@ def _color_coincide_similar(producto, color_pedido):
     fuente = _color_producto(producto)
     if fuente is not None:
         return any(_contiene_palabra(fuente, v) for v in variantes)
-    return any(_contiene_palabra(texto_producto(producto), v) for v in variantes)
+    return any(_contiene_palabra(_texto_sin_accesorios_color(producto), v) for v in variantes)
 
 
 def detectar_color_pedido(texto_pedido):
@@ -287,6 +308,52 @@ def detectar_color_pedido_conversacion(mensajes):
 
 def detectar_corte_pedido(texto_pedido):
     return _detectar(texto_pedido, CORTES_CONOCIDOS)
+
+
+# 2026-09-08 (Sioux): filtro real "100% del mismo material" -- antes no
+# existia (el buscador solo tenia "priorizar material natural", un boost
+# suave que no distingue pureza de composicion). Este es estricto a
+# proposito (como solo_marca_autor), porque el usuario pide "100%"
+# explicito: "100% algodon"/"100% mismo material" -> solo una fibra al
+# 100% (ver es_composicion_100_pura en constantes.py); "98% algodon + 2%
+# elastano" nunca pasa aunque el algodon sea mayoria. Piensa en cualquier
+# tienda con composicion estructurada, no solo Sioux.
+_RE_MATERIAL_100 = re.compile(r"100\s*%\s*(?:del\s+)?(mismo\s+material|[a-zA-Zá-úÁ-Ú]+)")
+
+
+def detectar_material_100_pedido(texto_pedido):
+    """Devuelve una clave de FIBRAS_CONOCIDAS si el pedido nombra una fibra
+    puntual ('100% algodon'), 'cualquiera' si pide el concepto generico
+    ('100% mismo material' / '100% del mismo material'), o None si no se
+    pidio nada de esto."""
+    if not texto_pedido:
+        return None
+    m = _RE_MATERIAL_100.search(texto_pedido.lower())
+    if not m:
+        return None
+    palabra = m.group(1)
+    if "mismo material" in palabra:
+        return "cualquiera"
+    palabra_sin_tilde = _quitar_tildes(palabra)
+    for fibra, alias in FIBRAS_CONOCIDAS.items():
+        if any(palabra_sin_tilde.startswith(a) for a in alias):
+            return fibra
+    return None
+
+
+def filtrar_por_material_100(catalog, material_100_pedido):
+    if not material_100_pedido:
+        return catalog
+
+    def _cumple(producto):
+        comp = producto.get("composicion")
+        if not es_composicion_100_pura(comp):
+            return False
+        if material_100_pedido == "cualquiera":
+            return True
+        return comp[0]["fibra"] == material_100_pedido
+
+    return [p for p in catalog if _cumple(p)]
 
 
 def detectar_tipo_prenda(texto_pedido):
@@ -648,7 +715,7 @@ def elegir_candidatos(
     permitir_otro_subtipo=False,
     priorizar_material_natural=False, categorias_deprioritizadas=None,
     color_pedido=None, permitir_colores_similares=False, ocasion=None,
-    texto_pedido_filtros=None,
+    texto_pedido_filtros=None, preferencia_genero="con_unisex",
 ):
     # Bug real (2026-09-07, reportado por el usuario): buscando "poleron
     # regular fit" para Hombre + concierto/festival aparecio "Polera Crystal
@@ -683,7 +750,21 @@ def elegir_candidatos(
     # tiene sentido cuando no hay genero definido (texto_pedido sin perfil);
     # si el usuario SI pidio un genero, ese filtro debe ser estricto -- si
     # no hay nada en ese genero, mejor 0 resultados que mezclar el otro.
-    candidatos = [p for p in catalog if p["genero"].lower() in (genero, "unisex")] if genero else catalog
+    # Preferencia de genero del perfil (2026-09-08, pedido del usuario):
+    # "con_unisex" (default) es el comportamiento de siempre -- mi genero +
+    # unisex. "solo_mi_genero" saca ademas lo tageado como unisex.
+    # "todos" ("me da igual") no filtra por genero -- pero las exclusiones
+    # de categoria por genero (CATEGORIAS_EXCLUIDAS_POR_GENERO, ej. "top" no
+    # se ofrece a hombre) siguen aplicando siempre, son reglas de producto
+    # validadas, no dependen de esta preferencia.
+    if not genero:
+        candidatos = catalog
+    elif preferencia_genero == "solo_mi_genero":
+        candidatos = [p for p in catalog if p["genero"].lower() == genero]
+    elif preferencia_genero == "todos":
+        candidatos = catalog
+    else:
+        candidatos = [p for p in catalog if p["genero"].lower() in (genero, "unisex")]
 
     categorias_excluidas = CATEGORIAS_EXCLUIDAS_POR_GENERO.get(genero, set())
     if categorias_excluidas:
@@ -742,6 +823,12 @@ def elegir_candidatos(
         ]
         if candidatos_del_corte or not permitir_otros_cortes:
             candidatos = candidatos_del_corte
+
+    material_100_pedido = detectar_material_100_pedido(texto_filtros)
+    if material_100_pedido:
+        # Filtro estricto (como solo_marca_autor): el usuario pidio "100%"
+        # explicito, no una prioridad suave -- ver filtrar_por_material_100.
+        candidatos = filtrar_por_material_100(candidatos, material_100_pedido)
 
     if color_pedido:
         # Igual filosofia que el corte: primero exacto, estricto. Solo si
@@ -862,6 +949,7 @@ def elegir_candidatos(
 def armar_resultados(
     genero, ocasion, categoria, texto_pedido, catalog, reglas, tallas_usuario=None,
     priorizar_material_natural=False, categorias_deprioritizadas=None, color_pedido=None,
+    preferencia_genero="con_unisex",
 ):
     regla = buscar_regla(genero, ocasion, reglas, {"sin_consenso"})
     if regla:
@@ -870,7 +958,7 @@ def armar_resultados(
             genero, f"{texto_pedido} {texto_extra}", catalog, cantidad=3, categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
-            texto_pedido_filtros=texto_pedido,
+            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero,
         )
         razon = (
             f'Sin consenso claro para este caso todavia: {regla.get("nota", "")} '
@@ -886,7 +974,7 @@ def armar_resultados(
             genero, f"{texto_pedido} {texto_extra}", catalog, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
-            texto_pedido_filtros=texto_pedido,
+            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero,
         )
         razon = (
             f'Segun una regla validada (confianza alta) para '
@@ -898,6 +986,7 @@ def armar_resultados(
         genero, texto_pedido, catalog, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria,
         priorizar_material_natural=priorizar_material_natural,
         categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
+        preferencia_genero=preferencia_genero,
     )
     return [
         formatear_producto(
@@ -914,7 +1003,7 @@ def _completar_con_alternativas_de_corte(
     genero, texto_pedido, catalog, catalog_precio, categoria, tallas_usuario, ids_ya_mostrados, faltan,
     razon_alternativa_fn,
     priorizar_material_natural=False, categorias_deprioritizadas=None, color_pedido=None,
-    precio_pedido=None, ocasion=None,
+    precio_pedido=None, ocasion=None, preferencia_genero="con_unisex",
 ):
     corte_pedido = detectar_corte_pedido(texto_pedido)
     tiene_precio = bool((precio_pedido or "").strip())
@@ -972,7 +1061,7 @@ def _completar_con_alternativas_de_corte(
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas,
             color_pedido=color_pedido, permitir_colores_similares=permitir_colores_similares,
-            ocasion=ocasion,
+            ocasion=ocasion, preferencia_genero=preferencia_genero,
         )
         if candidatos:
             encontrados.extend(candidatos)
@@ -1005,7 +1094,7 @@ def _completar_con_alternativas_de_corte(
 def buscar_plan_b(
     genero, ocasion, categoria, texto_pedido, catalog, reglas, tallas_usuario=None,
     priorizar_material_natural=False, categorias_deprioritizadas=None, color_pedido=None,
-    precio_pedido=None, ids_excluir=None,
+    precio_pedido=None, ids_excluir=None, preferencia_genero="con_unisex",
 ):
     # ids_excluir: productos ya mostrados en esta busqueda (resultado inicial
     # + clics previos de "mostrar mas opciones"). Sin esto, cada clic repetia
@@ -1031,7 +1120,7 @@ def buscar_plan_b(
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas,
             color_pedido=color_pedido, permitir_colores_similares=True, ocasion=ocasion,
-            texto_pedido_filtros=texto_pedido,
+            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero,
         )
         razon = (
             f'Opcion alternativa (confianza media) para '
@@ -1043,6 +1132,7 @@ def buscar_plan_b(
         genero, texto_pedido, catalog_precio, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria,
         priorizar_material_natural=priorizar_material_natural,
         categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
+        preferencia_genero=preferencia_genero,
     )
     ids_ya_mostrados = {p["id"] for p in primarios}
 
@@ -1052,6 +1142,7 @@ def buscar_plan_b(
             genero, texto_pedido, catalog_precio, cantidad=len(catalog_precio), categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
+            preferencia_genero=preferencia_genero,
         )
         if p["id"] not in ids_ya_mostrados
     ][:CANTIDAD_RESULTADOS]
@@ -1074,6 +1165,6 @@ def buscar_plan_b(
         CANTIDAD_RESULTADOS - len(exactos), razon_alternativa,
         priorizar_material_natural=priorizar_material_natural,
         categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido,
-        precio_pedido=precio_pedido, ocasion=ocasion,
+        precio_pedido=precio_pedido, ocasion=ocasion, preferencia_genero=preferencia_genero,
     )
     return [formatear_producto(p, razon_exacta(p), tallas_usuario) for p in exactos], alternativas, aviso

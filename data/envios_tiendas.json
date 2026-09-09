@@ -3,6 +3,27 @@
     "descripcion": "Politica de envio por tienda, revisada a mano entrando al sitio real de cada una. Usado para 'Llegan rapido a ti' (comparar comuna del usuario vs RM/regiones/retiro en tienda). Si una tienda no publica el dato claramente, se deja como 'no especificado' en vez de asumir.",
     "ultima_revision": "2026-08-27"
   },
+  "StreetVibe": {
+    "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://www.streetvibe.cl/ (home y ficha de producto revisadas, 2026-09-08)",
+    "notas": "El sitio no tiene pagina de politicas de envio publicada ni menciona plazos/regiones en home o ficha de producto -- no hay dato publico que registrar sin inventarlo."
+  },
+  "Sioux": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://siouxjeans.cl/ (banner del sitio: \"DESPACHO GRATIS por compras superiores a 49.990 (solo en Region Metropolitana)\", revisado 2026-09-08)",
+    "notas": "Confirma despacho a RM (con umbral de envio gratis) pero no publica plazo en dias habiles. No confirma explicitamente envio a regiones ni retiro en tienda fisica -- se deja 'no especificado' en vez de asumir."
+  },
+  "KronoLex": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://kronolex.cl/ (banner del sitio: \"ENVIO GRATIS POR COMPRAS SOBRE $50.000 A TODO CHILE\", revisado 2026-09-08)",
+    "notas": "\"Todo Chile\" confirma RM y regiones, pero no publica plazo en dias habiles ni pagina de politicas de envio dedicada (solo privacy/refund/terms). No menciona retiro en tienda fisica."
+  },
   "WAV": {
     "envio_rm": {"disponible": true, "dias_habiles": "2 a 7 dias habiles, desde $5.170"},
     "envio_regiones": {"disponible": true, "dias_habiles": "hasta 7-12 dias habiles en regiones extremas, costo calculado en el pago (gratis sobre $100.000)"},

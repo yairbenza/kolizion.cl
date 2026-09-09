@@ -266,6 +266,15 @@ Pedido del usuario: "REGLA, si hay muchas prendas disponibles para tal opción, 
 - **Fix:** `elegir_candidatos()` ahora agrupa los candidatos por nivel de relevancia REAL (mismos `nivel_hobby`/`nivel_corte_ancho`/`nivel_subtipo_ocasion`/`puntaje_palabras`/`nivel_forma_gorro` -- todo el `puntaje()` menos el desempate neutral del final, que es un hash único por producto y nunca debía contar como "nivel" real) antes de pasarle la lista a `_diversificar_por_tienda()`. La diversificación por tienda ahora SOLO puede reordenar productos dentro de un mismo nivel -- nunca deja pasar uno de un nivel más bajo antes de agotar los de nivel más alto, sin importar cuántas prendas de la misma tienda haya arriba. Reverificado con el mismo caso de prueba: ahora sale A1, A2, A3, B1, B2 (orden estrictamente por nivel), y la diversificación dentro de un mismo nivel (empate real) sigue funcionando igual que antes.
 - No se tocó ninguna otra parte del ranking (prioridad de subtipo, corte ancho, forma de gorro, exclusiones de ocasión, etc.) -- solo la función de diversificación y cómo se arman los grupos que recibe.
 
+## Color: accesorios chicos no cuentan como el color de la prenda (bug corregido, 2026-09-08)
+
+Pedido/reporte del usuario: buscando "polerón negro boxy fit" salió primero un hoodie **amarillo** ("FIVE STARS ONLY HOODIE", La Maria Dolores).
+
+- Causa real: la descripción de ese producto declara el color en prosa ("confeccionado en tono amarillo mantequilla"), sin el campo `"Color : X"` que `_color_declarado()` ya sabe leer -- así que `_color_coincide_exacto()`/`_color_coincide_similar()` caían al fallback de texto completo. Esa misma descripción menciona más abajo "parche **negro** de 4,5 x 4,5cm en manga" (un detalle chico, no el color de la prenda) -- el fallback lo contaba igual como si "negro" fuera el color pedido.
+- Mismo espíritu que la protección que ya existía para "Color: Negro ... detalle ... color azul" (ver `_color_declarado()` arriba) -- pero esa protección solo aplica cuando SÍ existe el campo `"Color :"` explícito; acá no existía.
+- **Fix:** `_texto_sin_accesorios_color()` (`motor_recomendacion.py`) saca las menciones de `"parche <color>"`/`"detalle(s) <color>"` del texto ANTES de buscar la palabra de color pedida -- esas construcciones siempre describen un accesorio chico, nunca el color real. Solo se usa en el fallback de texto completo (cuando no hay `color_dominante` ni `"Color :"` declarado); si el color real de la prenda coincide en otra parte del texto (ej. "negro" aparece también fuera del parche), sigue matcheando bien.
+- Verificado con el producto real (ya no matchea "negro", sí matchea "amarillo") y con 2 casos sintéticos: una prenda negra con parche también negro sigue matcheando "negro" (no se rompió el caso legítimo), y la prenda amarilla con parche negro ya no matchea "negro" pero sí "amarillo".
+
 ## Datos de referencia sin usar
 
 `data/referencia_no_oficial.json` guarda dos respuestas de Mica (carrete/fiesta, universidad/polerón) que calzan con el enfoque streetwear pero NO son reglas oficiales validadas. Solo contexto extra.

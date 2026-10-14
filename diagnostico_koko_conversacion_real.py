@@ -1,13 +1,21 @@
 """Reproduce la conversacion REAL guardada en data/chats_koko.json para
-yairbenza@gmail.com hasta el punto exacto donde fallo ("ok" -> "no encontre
+el correo de KOLIZION_DIAG_EMAIL (.env) hasta el punto exacto donde fallo ("ok" -> "no encontre
 nada"), y muestra CADA paso interno (sugerencia cruda del modelo, deteccion
 de tipo_prenda/corte sobre toda la conversacion, sugerencia corregida, y el
 resultado de _sugerencia_calza_con_catalogo con su porque) -- para encontrar
 la causa real en vez de asumir. Contra la API real (mismo texto exacto)."""
 import json
+import os
 
 import anthropic
 import app as m
+
+
+# Correo cuya conversacion real (data/chats_koko.json) se reproduce -- vive en
+# .env (KOLIZION_DIAG_EMAIL), no en el codigo, porque es un dato personal.
+EMAIL_REAL = os.environ.get("KOLIZION_DIAG_EMAIL", "")
+if not EMAIL_REAL:
+    raise SystemExit("Falta KOLIZION_DIAG_EMAIL en .env (correo cuya conversacion real se reproduce)")
 
 
 def imprimir(texto):
@@ -16,7 +24,7 @@ def imprimir(texto):
 
 # Conversacion real, tal cual quedo guardada, hasta el mensaje "ok" incluido
 # (el primer punto donde Koko respondio con el mensaje de fallo).
-historial_real = json.load(open("data/chats_koko.json", encoding="utf-8"))["yairbenza@gmail.com"]
+historial_real = json.load(open("data/chats_koko.json", encoding="utf-8"))[EMAIL_REAL]
 idx_ok = next(i for i, m_ in enumerate(historial_real) if m_["texto"].strip().lower() == "ok")
 conversacion_hasta_ok = historial_real[: idx_ok + 1]
 
@@ -28,7 +36,7 @@ mensajes_api = [
 imprimir(f"Conversacion reproducida: {len(mensajes_api)} mensajes (hasta el 'ok' del usuario)")
 
 reglas = m.load_json(m.REGLAS_PATH)
-system_prompt = m.construir_system_prompt_koko("yairbenza@gmail.com", reglas)
+system_prompt = m.construir_system_prompt_koko(EMAIL_REAL, reglas)
 
 cliente = anthropic.Anthropic(api_key=m.ANTHROPIC_API_KEY)
 respuesta = cliente.messages.create(

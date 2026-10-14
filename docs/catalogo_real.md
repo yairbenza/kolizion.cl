@@ -1,5 +1,116 @@
 # Catalogo real
 
+## Old Tree y Hooked -- ultimas 2 tiendas antes del lanzamiento (2026-09-10)
+
+Pedido explicito del usuario: enfasis especial en prendas inferiores
+(pantalon/jeans/shorts) con corte/subtipo/material sin ningun campo vacio
+ni ambiguedad, usando texto + foto (nunca solo el nombre), y tratando
+material/subtipo como atributos independientes y combinables (ver seccion
+"Tela jean/denim y subtipo cargo" en `docs/buscador.md`).
+
+**Old Tree (oldtree.cl):** WordPress/WooCommerce con Store API publica
+(`wp-json/wc/store/v1/products`, igual patron que ZAMU/StreetVibe/Sioux) --
+104 productos reales, **99 cargados**. 5 excluidos: 2 shoulder bag + 1 tote
+bag + 1 par de calcetas (fuera del alcance de la app, mismo criterio que
+bolsos/anillos de WAV) + 1 "Producto de prueba" literal de la propia
+tienda. Descripciones vienen en bullets muy completos y consistentes
+("100% Algodón", "Baggy Fit", "Tela Denim", "Color X", "Cierre YKK") --
+usados tal cual para corte/material/color, con foto revisada a mano para
+los ~14 casos sin bullet de corte (chaqueta "Classic Fit", hoodies sin
+fit declarado, poleras "Fit Holgado", 1 jort sin la palabra en el nombre).
+`cargar_oldtree_cache()`/`cargar_hooked_cache()` (`construir_catalogo_real.py`).
+
+**Tallas numericas (jeans/jorts/carpenter/cargo pant, talla de cintura 36
+a 60):** Old Tree no publica tabla de equivalencia a S/M/L/XL (solo un
+cuadro de medidas en cm sin letra) -- pedido explicito del usuario:
+reusar la tabla real que ya existe para Sioux (`TALLAS_NUMERICAS_
+PANTALON_POR_GENERO`, constantes.py) en vez de inventar una nueva, con
+"unisex" como genero (100% de las 104 fichas, ninguna dice "hombre"/
+"mujer" -- ver `TIENDAS_GENERO_COMPLETO`). Numeros fuera de esa tabla
+(36, 38, 52+) quedan sin letra equivalente, mismo limite ya aceptado para
+Sioux -- no rompe la busqueda por categoria/corte, solo no participa de
+la recomendacion automatica por altura/peso.
+
+**Stock en vivo:** Old Tree tiene la misma Store API publica que ZAMU --
+`_verificar_zamu()` se generalizo a `_verificar_woocommerce_store_api()`
+en `servicio_stock_live.py` (parametrizada por dominio) para reusarla en
+las 2 tiendas sin duplicar codigo. Hooked es Shopify real -- entra solo al
+refresco de fondo cada 20 min (`/products.json`), sin tocar nada.
+
+**Hooked (hookedbrand.cl):** Shopify real (`products.json` publico), 65
+productos, **todos cargados**. Ningun nombre de producto trae el corte
+(genericos, ej. "NAVY BLUE HOODIE") -- el corte real esta en el `body_html`
+("Oversized fit", "Drop shoulder fit", "Boxy Fit", "straight-leg fit") o
+confirmado por foto en bloque (8 fotos revisadas a mano, misma silueta
+dropshoulder/oversized consistente en toda la linea) para las ~15 fichas
+sin fit en el texto -- por eso el corte por defecto de la tienda es
+"oversize", con excepciones puntuales por HANDLE (`corte_override`) para
+las 2 "Baloon Pants" (baggy), los 4 shorts denim (straight) y las 5 poleras
+"boxy fit" reales. `product_type` real de Shopify (`jeans`/`SHORT`/
+`hoodie`/`knit`) se usa como `categoria_override` cuando el nombre no trae
+ninguna palabra clave (ej. "SWIMPANTS" no dice "short").
+
+**Jean + cargo combinados de verdad (el caso que motivo el fix de
+`es_jean`, ver `docs/buscador.md`):** "Jeans Hombre Balloon Carpintero
+Negro" (Sioux, ya en catalogo), las "Jeans Carpenter Baggy..." de Old Tree
+y las 2 "Baloon Pants" de Hooked (bolsillo cargo real en la pierna) quedan
+con `subtipo: "cargo"` Y `es_jean: true` a la vez -- buscar "pantalon
+jeans" los trae a todos, buscar "pantalon cargo" tambien, sin duplicar
+logica por tienda.
+
+**Corte "balloon"/variantes de ortografia:** "balloon" (Sioux), "baloon"
+(Hooked, falta una "l") y "ballong" son todas variantes reales de la misma
+palabra encontradas en distintas tiendas -- las 3 se tratan como sinonimo
+de "baggy" (`CORTES_CONOCIDOS["baggy"]`, constantes.py + `detectar_corte()`),
+nunca como corte aparte (ver `docs/buscador.md`).
+
+**Color real extraido de la ficha, no solo del nombre:** Old Tree declara
+el color en su propio bullet ("Color Negro con hilo blanco") en 2 formatos
+HTML reales distintos (`<li>` y `<p>`/`<br>` con guion) -- ambos se parsean
+en `cargar_oldtree_cache()` antes de aplanar la descripcion a texto
+corrido (una vez unida, ya no se puede saber donde termina el bullet de
+color). Encontrados y corregidos de paso 2 huecos reales en el
+diccionario de sinonimos de color por nombre (`_COLOR_PALABRAS_NOMBRE`):
+"burdeo"/"mostaza"/"caramel"/"mocha"/"saddle"/"khaki"/"shadow"/"melange"/
+"cement"/"oatmeal" (ingles/jerga real de fichas de Hooked, sin sinonimo
+todavia). Unico color sin resolver, a proposito: "Jeans Carpenter Baggy
+Real Tree Old Tree" es un patron de camuflaje real (Realtree, foto
+confirmada por el nombre de archivo "...-camo.jpg"), no un color solido --
+forzarlo a un solo color de los 13 conocidos seria inventar un dato que
+la ficha no da.
+
+**5 Panel (gorro) y jorts=denim:** "5 panel" se sumo como sinonimo de
+categoria gorro + forma "plano" (`clasificar_prenda()`), y "jort" se sumo
+como disparador de `es_jean=True` (un jort es por definicion tela denim,
+ver `docs/buscador.md`) sin cambiar su subtipo "jorts" -- ambos gaps reales
+encontrados cargando Old Tree, generalizados para cualquier tienda futura.
+
+**Revision final del resto del catalogo (pedido explicito del usuario,
+"aplica el mismo criterio como revision final de todo lo demas"):**
+encontrado un bug real de precedencia en `elegir_candidatos()` -- el fix
+de `es_jean` (recien agregado) hubiera hecho que buscar "short de jeans"
+tambien trajera jorts (ya que un jort es `es_jean=True` por definicion),
+revirtiendo silenciosamente la separacion jorts/jeans que el usuario ya
+habia pedido mantener separada -- corregido excluyendo `subtipo=="jorts"`
+del OR con `es_jean` (solo aplica a pantalon, shorts jorts quedan afuera).
+Pendiente, NO resuelto en esta tanda (fuera del alcance de "Old Tree y
+Hooked" pedido hoy, encontrado igual durante la revision): **16 pantalones/
+shorts de tiendas ya cargadas (Addictve, 1Libra, Kotonaru Store, Blazze,
+By Adrián Sánchez) sin NINGUN corte** (ni siquiera "sin corte definido"
+explicito) y **26 sin subtipo** (Floating, Doslobos, Addictve, 1Libra,
+Haze Concept, Kotonaru Store, BEEWAY, ZAMU, KronoLex) -- huecos historicos
+de antes de esta sesion, no tocados hoy para no mezclar tandas de trabajo
+distintas sin que el usuario lo pida explicitamente.
+
+**Catalogo tras esto:** 99 (Old Tree) + 65 (Hooked) productos nuevos,
+ambas 100% oficiales (venta in-app). Verificado con
+`test_integracion_streetvibe_sioux_kronolex.py` (16/16 OK) y pruebas
+directas de `elegir_candidatos()`/`verificar_stock_producto()` contra las
+2 tiendas nuevas. Envio real agregado a `data/envios_tiendas.json` (Old
+Tree: gratis sobre $50.000 a todo Chile via Bluexpress + retiro en
+Providencia; Hooked: gratis sobre $60.000, RM 5 dias habiles) y ambas
+registradas en `data/tiendas.json`.
+
 ## Interes "anime" en Kotonaru Store + IPREX (2026-08-30)
 
 Mismo mecanismo que `interes_musica`/`interes_arte` (ver seccion de abajo): `construir_producto()` ahora acepta tambien `interes_anime`/`franquicia_anime`, agregados a `tags` como `"anime"` + el nombre de la franquicia en minuscula. Revisados nombre + descripcion + tags de TODO Kotonaru (36 productos) e IPREX (62), mas imagen principal de los candidatos donde el texto no alcanzaba para confirmar.

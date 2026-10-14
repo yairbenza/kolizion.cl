@@ -87,6 +87,9 @@ def obtener_favoritos(email):
     return cargar_favoritos().get(email, [])
 
 
+MAX_FAVORITOS_POR_PERSONA = 300
+
+
 def alternar_favorito(email, producto):
     email = _normalizar_email(email)
     nombre = _texto_seguro(producto.get("nombre", ""))
@@ -100,6 +103,11 @@ def alternar_favorito(email, producto):
     if existente:
         lista.remove(existente)
         guardar_favoritos(favoritos)
+        return False
+
+    # Auditoria de seguridad 2026-10-13: tope por persona, para que nadie
+    # pueda inflar data/favoritos.json sin limite mandando requests a mano.
+    if len(lista) >= MAX_FAVORITOS_POR_PERSONA:
         return False
 
     lista.append({

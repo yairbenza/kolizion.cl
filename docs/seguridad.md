@@ -35,3 +35,25 @@ Ver `docs/cuentas.md` para el diseño completo. Resumen de seguridad de lo agreg
 - **`siguiente` (a dónde volver tras loguearse)**: validado con `_siguiente_seguro()` -- debe ser una ruta interna (`/...`), nunca una URL externa, mismo criterio que ya tenía `/admin/login`.
 - **SQL injection**: cubierto en el punto 3 de la revisión de 2026-08-11 arriba (actualizado) -- todas las consultas parametrizadas con `?`.
 - **Subida de foto de perfil**: nombre de archivo en disco siempre construido desde el `usuario_id` autenticado (nunca desde el nombre que mandó el navegador) -- elimina path traversal por construcción, sin depender de sanitizar el nombre. Extensión y tamaño (3MB) validados antes de guardar. **Gap aceptado**: no se reprocesa la imagen (ej. con Pillow) como capa extra contra archivos disfrazados -- ver `docs/cuentas.md`.
+
+## Auditoría de seguridad completa (2026-10-13)
+
+Pedido explícito del usuario (checklist de 7 puntos). Aplicado igual en app-moda-ia (producción, kolizion.cl) y app-moda-preview. Prueba repetible: `diagnostico_auditoria_seguridad.py` (usa una carpeta de datos temporal, nunca toca `kolizion.db` ni los JSON reales).
+
+**Qué NO aplica / ya estaba bien (verificado, no de memoria):**
+- Sin claves en el cliente: no hay bundler (ni Next/Vite, ni variables `NEXT_PUBLIC_`/`VITE_`), el JS de `static/` está escrito a mano. Grep de `ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_SECRET`, `ADMIN_PASSWORD`, `FLASK_SECRET_KEY`, `sk-ant-`, `GOCSPX-` en `static/` y `templates/`: cero. Ninguna clave real en el repo ni en el historial de git. Koko (Anthropic) y el login de Google ya se llamaban solo desde el servidor.
+- Sin source maps (`*.map`) en `static/`. Flask solo sirve la carpeta `static/`: `/.env`, `/app.py`, `/.git/config`, `/data/*`, `/kolizion.db` y los intentos con `../` devuelven 404 (probado).
+- Sin Supabase/Firebase: la base es SQLite local (`kolizion.db`), no accesible por URL, con consultas parametrizadas (ver más arriba). No hay RLS que configurar.
+- Ya existían: saneo de entrada (`_texto_seguro`), `MAX_CONTENT_LENGTH` de 3 MB (probado: 4 MB -> 413), headers de seguridad, cookies `HttpOnly`/`Secure`/`SameSite=Lax`.
+
+**Hallazgos reales, corregidos:**
+1. **Los límites "por IP" eran en realidad uno solo para todo el sitio (grave).** En producción todo entra por Cloudflare (Render lo pone delante: `Server: cloudflare` en kolizion.cl), así que `request.remote_addr` era la IP del proxy, la misma para todos. Consecuencias: 10 personas usando Koko en el mismo minuto bloqueaban a todas las demás, y cualquiera podía dejar `/login` bloqueado para todos con 6 intentos. Arreglo: `ip_cliente()` en `extensions.py` usa `CF-Connecting-IP` (Cloudflare pone ahí la IP real y pisa lo que mande el navegador, no se puede falsificar); sin ese header (local) usa la IP directa.
+2. **Tope de Koko en 1000 mensajes/día por persona** desde una prueba del 2026-08-26 (la nota decía "volver a 15 antes de sacar la app real") y se saltaba cambiando de correo. Ahora hay 3 topes, configurables por variable de entorno sin tocar código (`tope_koko()` en `constantes.py`): por persona/correo 15 (`KOKO_LIMITE_DIA_POR_PERSONA`), por IP 100/día (`KOKO_LIMITE_DIA_POR_IP`, frena a quien cambia de correo) y **global del sitio** 1500/día (`KOKO_LIMITE_DIA_GLOBAL`, techo de gasto: contador en `DATA_DIR/limite_koko_global.json`).
+3. **Koko le mostraba al usuario el texto crudo del error de la API** (`f"... ({exc})"`). Ahora el mensaje es genérico y el detalle queda solo en el log del servidor.
+4. **Rutas sin ningún límite** (favoritos, perfil, subperfiles, `/api/koko/interes`, `/api/koko/reiniciar`, `/api/clic_instagram`...). Nuevo límite general por IP para TODAS las rutas (`default_limits`: 300/min, 5000/hora, holgado a propósito) más límites propios en las que escriben datos. Tope de 300 favoritos por correo (`MAX_FAVORITOS_POR_PERSONA`), para que nadie pueda inflar `favoritos.json` sin límite.
+5. **Formularios de login/registro:** campo trampa anti-bots (honeypot `kz_web`, invisible para personas), validación real del correo del lado del servidor (antes bastaba con tener una "@") y largo máximo de contraseña (256). Se eligió honeypot en vez de captcha porque no necesita cuentas ni claves de terceros. Si llega spam igual, el siguiente paso es Cloudflare Turnstile.
+
+**Riesgos conocidos que siguen abiertos (decisión del usuario, no se tocaron):**
+- Invitados sin cuenta: favoritos e historial de chat de Koko se identifican por el correo que manda el navegador (ver `docs/cuentas.md`), así que quien sepa el correo de un invitado puede leerlos. Con sesión real ya está protegido.
+- El conteo del rate limiting vive en memoria por proceso: se reinicia en cada deploy y, si gunicorn corre con varios workers, cada uno cuenta por separado. El tope global de Koko NO tiene este problema (va a disco).
+- Las redes móviles chilenas comparten IP entre muchos clientes (CGNAT): si aparecen bloqueos de gente real, subir `KOKO_LIMITE_DIA_POR_IP`.

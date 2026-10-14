@@ -3,15 +3,23 @@ guardada (hasta el 'ok' que antes fallaba) contra /api/koko/chat de verdad,
 y despues /api/recommend con la sugerencia que devuelve -- para confirmar
 con una corrida real y exitosa, no solo en teoria."""
 import json
+import os
 
 import app as m
+
+
+# Correo cuya conversacion real (data/chats_koko.json) se reproduce -- vive en
+# .env (KOLIZION_DIAG_EMAIL), no en el codigo, porque es un dato personal.
+EMAIL_REAL = os.environ.get("KOLIZION_DIAG_EMAIL", "")
+if not EMAIL_REAL:
+    raise SystemExit("Falta KOLIZION_DIAG_EMAIL en .env (correo cuya conversacion real se reproduce)")
 
 
 def imprimir(texto):
     print(str(texto).encode("ascii", errors="replace").decode("ascii"))
 
 
-historial_real = json.load(open("data/chats_koko.json", encoding="utf-8"))["yairbenza@gmail.com"]
+historial_real = json.load(open("data/chats_koko.json", encoding="utf-8"))[EMAIL_REAL]
 idx_ok = next(i for i, mm in enumerate(historial_real) if mm["texto"].strip().lower() == "ok")
 conversacion = historial_real[: idx_ok + 1]
 
@@ -19,7 +27,7 @@ cliente = m.app.test_client()
 resp = cliente.post(
     "/api/koko/chat",
     json={
-        "email": "yairbenza-diagnostico@gmail.com",  # email de prueba aparte, no toca el historial real
+        "email": "diag-conversacion-real@test.cl",  # email de prueba aparte, no toca el historial real
         "perfil": {"genero": "Hombre", "edad": 22, "altura": "1.75m", "peso": "70kg", "hobbie": "skate"},
         "mensajes": conversacion,
     },
@@ -35,7 +43,7 @@ assert data["sugerencia"]["corte"] == "oversize", f"esperaba oversize, salio {da
 
 sug = data["sugerencia"]
 payload = {
-    "modo": "yo", "email": "yairbenza-diagnostico@gmail.com",
+    "modo": "yo", "email": "diag-conversacion-real@test.cl",
     "perfil": {"genero": "Hombre", "edad": 22, "altura": "1.75m", "peso": "70kg", "hobbie": "skate"},
     "categoria": sug.get("categoria", ""), "tipo_prenda": sug.get("tipo_prenda", ""),
     "subtipo": "", "largo": "", "manga": "", "capucha": "", "cierre": "",

@@ -153,6 +153,7 @@ const ETIQUETAS_GENERO_MUSICAL = {
 };
 const ETIQUETAS_DEPORTE = {
   gym: "Gym", futbol: "Fútbol", baseball: "Baseball", ski: "Ski",
+  artes_marciales: "Artes marciales", skate: "Skate",
 };
 
 // Hobbies con un segundo grupo de sub-opciones -- mismo listado que

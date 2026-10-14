@@ -106,7 +106,10 @@ function productoTieneStock(rec) {
 
 function botonAccionProductoHtml(rec) {
   if (!rec.oficial) {
-    return `<a href="${rec.link}" target="_blank" rel="noopener">${esImagenIlustrativa(rec.imagen) ? "Ver producto (ejemplo)" : "Ver producto"}</a>`;
+    return `<a href="${rec.link}" target="_blank" rel="noopener" class="btn-llevame-tienda">
+      <img src="/static/img/koko/koko.png" alt="" class="btn-llevame-koko">
+      ¡Llévame a ${rec.tienda}!
+    </a>`;
   }
   if (!productoTieneStock(rec)) {
     return `<span class="boton-proximamente" aria-disabled="true">Próximamente</span>`;
@@ -529,11 +532,20 @@ function _renderChipsTalla(rec) {
       const clases = ["vp-chip", o.disponible ? "" : "agotada", esDestacada ? "activa sugerida" : ""]
         .filter(Boolean)
         .join(" ");
-      const etiqueta = esDestacada ? `${o.talla} · recomendada` : o.talla;
-      return `<button type="button" class="${clases}" data-talla="${o.talla}" ${o.disponible ? "" : "disabled"}>${etiqueta}</button>`;
+      // Tiendas con talla numerica real (ej. StreetVibe/Sioux, cintura en
+      // cm) mandan "talla_real" ademas de "talla" (la letra S/M/L/XL
+      // equivalente, ver _tallas_variantes_con_numero en construir_
+      // catalogo_real.py) -- pedido explicito del usuario (2026-09-08):
+      // mostrar el numero real de la tienda con la letra estimada al lado,
+      // ej. "32 (M)", en vez de solo la letra. "data-talla" usa el numero
+      // real cuando existe (es lo que de verdad se compra en la tienda).
+      const valorReal = o.talla_real || o.talla;
+      const etiquetaBase = o.talla_real ? `${o.talla_real} (${o.talla})` : o.talla;
+      const etiqueta = esDestacada ? `${etiquetaBase} · recomendada` : etiquetaBase;
+      return `<button type="button" class="${clases}" data-talla="${valorReal}" ${o.disponible ? "" : "disabled"}>${etiqueta}</button>`;
     })
     .join("");
-  if (destacada) vpTallaElegida = destacada.talla;
+  if (destacada) vpTallaElegida = destacada.talla_real || destacada.talla;
   cont.querySelectorAll(".vp-chip:not(.agotada)").forEach((btn) => {
     btn.addEventListener("click", () => {
       cont.querySelectorAll(".vp-chip").forEach((b) => b.classList.remove("activa"));
@@ -741,18 +753,13 @@ const REDIRECCION_PASOS = ["3", "2", "1", "¡Vamos! 🐶"];
 const REDIRECCION_PASO_MS = 280;
 
 function abrirEnlaceConAnimacion(url, nombreTienda) {
-  // Cuenta obligatoria para "comprar" (2026-08-24, ver docs/cuentas.md) --
-  // este es el punto unico por donde pasan las 3 tarjetas de producto del
-  // catalogo mock (resultados, vitrina, vista previa rapida). El otro
-  // punto (tiendas piloto reales, /ir/<tienda_id>) se bloquea del lado del
-  // servidor porque ese link no pasa por aca. window.KOLIZION_LOGUEADO lo
-  // define _barra_nav.html en cada pagina.
-  if (!window.KOLIZION_LOGUEADO) {
-    const destino = window.location.pathname + window.location.search;
-    window.location.href = `/login?siguiente=${encodeURIComponent(destino)}`;
-    return;
-  }
-
+  // 2026-09-22, pedido explicito del usuario: se saco la cuenta obligatoria
+  // para ir a la tienda (antes vivia aca, ver docs/cuentas.md) -- exigir
+  // login antes de este punto hacia que el clic de gente sin cuenta nunca
+  // llegara a abrir la tienda real, y ese mismo criterio en el servidor
+  // (/ir/<tienda_id>) tambien hacia que esos clics no se registraran en
+  // clics_tiendas.json -- ver la Tendencias de /vitrina, que sale de ese
+  // conteo.
   const modal = document.getElementById("modal-redireccion");
   if (!modal || !url || url === "#") {
     // Defensivo: si la pagina no incluye el modal, o no hay link real, se

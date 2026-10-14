@@ -1075,6 +1075,49 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
 }
 .tour-punto.activo { background: var(--accent); }
 
+/* Menu de tarjetas de categoria en Descubre (2026-09-11) -- 2 columnas,
+   mismo alto (grid + flex-column empuja el boton siempre abajo). */
+.grid-categorias-descubre {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+.tarjeta-categoria {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.tarjeta-categoria h3 {
+  margin: 0;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tarjeta-categoria-emoji { font-size: 1.25rem; }
+.tarjeta-categoria p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text);
+  opacity: 0.75;
+  flex-grow: 1;
+}
+.btn-tarjeta-categoria {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .btn-no-entendi {
   display: block;
   margin: 0.6rem auto 0;
@@ -1942,6 +1985,33 @@ a.volver, #link-editar-perfil, a.limpiar-filtros {
 .tarjeta-vitrina .marca { font-size: 0.72rem; }
 .tarjeta-vitrina .razon { font-size: 0.72rem; margin: 0.35rem 0 0; }
 .tarjeta-vitrina a { font-size: 0.8rem; }
+
+/* Boton "Llevame a la tienda" (2026-09-11, pedido del usuario: el link
+   subrayado se veia aburrido) -- mismo rojo/blanco que el CTA de la ficha
+   completa (.vp-cta), con la carita de Koko chica al lado. Compartido via
+   botonAccionProductoHtml() en comun.js. */
+.btn-llevame-tienda {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 0.6rem 0.8rem;
+  margin-top: 0.4rem;
+  text-align: center;
+}
+.btn-llevame-koko {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
 
 /* "Llegan rápido a ti" (2026-08-25): ya no es una fila del feed ni un
    boton inline -- ahora es un icono fijo arriba, mismo tamaño/estilo

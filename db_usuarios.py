@@ -10,12 +10,21 @@
 # es lo que mantiene cierto que este proyecto no tiene SQL injection (ver
 # docs/seguridad.md).
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
-DB_PATH = BASE_DIR / "data" / "kolizion.db"
+
+# 2026-09-22: mismo criterio que el resto de data/*.json que se reescriben
+# en caliente (ver constantes.py) -- en Render el disco de la app es
+# efimero, se borra en cada reinicio/redeploy. KOLIZION_DATA_DIR (si esta
+# seteada) apunta a un disco persistente montado aparte (ej. /var/data) que
+# sobrevive a eso. Si no esta seteada (desarrollo local, o antes de agregar
+# el disco en Render), cae en data/ dentro del proyecto como siempre.
+DATA_DIR = Path(os.environ.get("KOLIZION_DATA_DIR") or (BASE_DIR / "data"))
+DB_PATH = DATA_DIR / "kolizion.db"
 
 # Campos de perfil que ya existian en localStorage (ver comun.js
 # getPerfil/guardarPerfil) -- se reusan tal cual como columnas, para que

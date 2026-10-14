@@ -265,6 +265,56 @@ function actualizarSelectDependiente(valorCategoria, opcionesPorCategoria, campo
   }
 }
 
+// Corte funciona con casilleros (elegir varios a la vez, igual que color),
+// no con un <select> -- a diferencia de tipo de prenda, que sigue siendo de
+// una sola opcion. "Me da igual" no se ofrece como casillero: no marcar
+// ninguno ya significa "no filtrar por corte", mismo criterio que color.
+function poblarCheckboxesCorte(contenedor, opciones) {
+  contenedor.innerHTML = "";
+  for (const opcion of opciones) {
+    const [texto, definicion] = Array.isArray(opcion) ? opcion : [opcion, null];
+    if (texto.toLowerCase() === "me da igual") continue;
+    const label = document.createElement("label");
+    label.className = "checkbox-inline";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.value = texto.toLowerCase();
+    label.appendChild(input);
+    label.append(" " + (definicion ? `${texto} (${definicion})` : texto));
+    contenedor.appendChild(label);
+  }
+}
+
+// Version de actualizarSelectDependiente() para el corte con casilleros:
+// repuebla el contenedor segun la categoria, vuelve a activar el limite de
+// 3 seleccionados, y conecta el casillero "Otro" con su campo de texto libre.
+function actualizarCorteCheckboxes(valorCategoria, campo, contenedor, otroCampo, otroInput) {
+  otroCampo.classList.add("oculto");
+  otroInput.required = false;
+  otroInput.value = "";
+
+  const opciones = CORTE_OPCIONES[valorCategoria];
+  if (!opciones) {
+    campo.classList.add("oculto");
+    contenedor.innerHTML = "";
+    return;
+  }
+  campo.classList.remove("oculto");
+  poblarCheckboxesCorte(contenedor, opciones);
+
+  const otroCheckbox = Array.from(contenedor.querySelectorAll('input[type="checkbox"]')).find(
+    (cb) => cb.value === "otro"
+  );
+  if (otroCheckbox) {
+    otroCheckbox.addEventListener("change", () => {
+      otroCampo.classList.toggle("oculto", !otroCheckbox.checked);
+      otroInput.required = otroCheckbox.checked;
+      if (!otroCheckbox.checked) otroInput.value = "";
+    });
+  }
+  limitarSeleccionCheckboxes(contenedor.id, 3);
+}
+
 // Muestra/oculta un select dependiente que no necesita campo de texto libre
 // (ej: subtipo de pantalon/shorts), segun el valor del select del que
 // depende.
@@ -340,7 +390,7 @@ function configurarBusquedaPrenda(prefix) {
   const cierreSelect = document.getElementById(`cierre-${prefix}`);
 
   const corteCampo = document.getElementById(`campo-corte-${prefix}`);
-  const corteSelect = document.getElementById(`corte-${prefix}`);
+  const corteContenedor = document.getElementById(`corte-${prefix}`);
   const corteOtroCampo = document.getElementById(`campo-corte-otro-${prefix}`);
   const corteOtroInput = corteOtroCampo.querySelector("input");
 
@@ -380,9 +430,7 @@ function configurarBusquedaPrenda(prefix) {
     actualizarSelectDependiente(
       valor, opcionesTipoPrendaFiltradas(prefix), tipoPrendaCampo, tipoPrendaSelect, tipoPrendaOtroCampo, tipoPrendaOtroInput
     );
-    actualizarSelectDependiente(
-      valor, CORTE_OPCIONES, corteCampo, corteSelect, corteOtroCampo, corteOtroInput
-    );
+    actualizarCorteCheckboxes(valor, corteCampo, corteContenedor, corteOtroCampo, corteOtroInput);
     // El tipo de prenda se acaba de repoblar y el navegador deja
     // seleccionada su primera opcion sola, sin disparar "change" -- por eso
     // refrescarCamposDependientesDeTipo lee tipoPrendaSelect.value directo
@@ -412,12 +460,6 @@ function configurarBusquedaPrenda(prefix) {
       refrescarCamposDependientesDeTipo();
     });
   }
-
-  corteSelect.addEventListener("change", () => {
-    const esOtro = corteSelect.value === "otro";
-    corteOtroCampo.classList.toggle("oculto", !esOtro);
-    corteOtroInput.required = esOtro;
-  });
 
   ocasionSelect.addEventListener("change", () => {
     const esOtro = ocasionSelect.value === "otro";
@@ -457,6 +499,23 @@ function valorFinal(select, otroCampo) {
   return select.value;
 }
 
+// Lee los casilleros de corte marcados. Si "otro" esta marcado, se
+// reemplaza por el texto libre que haya escrito el usuario (igual criterio
+// que valorFinal() para los selects: "otro" nunca se manda tal cual).
+function leerCasillerosCorte(prefix) {
+  const marcados = Array.from(
+    document.querySelectorAll(`#corte-${prefix} input[type="checkbox"]:checked`)
+  ).map((el) => el.value);
+  const idxOtro = marcados.indexOf("otro");
+  if (idxOtro !== -1) {
+    const texto = document
+      .getElementById(`campo-corte-otro-${prefix}`)
+      .querySelector("input").value;
+    marcados[idxOtro] = texto;
+  }
+  return marcados.filter(Boolean);
+}
+
 function leerBusquedaPrenda(prefix) {
   return {
     categoria: valorFinal(
@@ -472,10 +531,7 @@ function leerBusquedaPrenda(prefix) {
     manga: document.getElementById(`manga-${prefix}`).value,
     capucha: document.getElementById(`capucha-${prefix}`).value,
     cierre: document.getElementById(`cierre-${prefix}`).value,
-    corte: valorFinal(
-      document.getElementById(`corte-${prefix}`),
-      document.getElementById(`campo-corte-otro-${prefix}`)
-    ),
+    cortes: leerCasillerosCorte(prefix),
     colores: Array.from(
       document.querySelectorAll(`#campo-color-${prefix} input[type="checkbox"]:checked`)
     ).map((el) => el.value),
@@ -569,10 +625,28 @@ function restaurarFiltros(prefix, payload) {
   const cierreSelect = document.getElementById(`cierre-${prefix}`);
   if (payload.cierre) cierreSelect.value = payload.cierre;
 
-  const corteSelect = document.getElementById(`corte-${prefix}`);
-  const corteOtroCampo = document.getElementById(`campo-corte-otro-${prefix}`);
-  const corteOtroInput = corteOtroCampo.querySelector("input");
-  restaurarSelectConOtro(corteSelect, corteOtroCampo, corteOtroInput, payload.corte);
+  const corteCheckboxes = Array.from(
+    document.querySelectorAll(`#corte-${prefix} input[type="checkbox"]`)
+  );
+  if (Array.isArray(payload.cortes)) {
+    const otroCheckbox = corteCheckboxes.find((cb) => cb.value === "otro");
+    const corteOtroCampo = document.getElementById(`campo-corte-otro-${prefix}`);
+    const corteOtroInput = corteOtroCampo.querySelector("input");
+    const valoresConocidos = corteCheckboxes.map((cb) => cb.value);
+    const sobrante = payload.cortes.find((v) => !valoresConocidos.includes(v.toLowerCase()));
+    corteCheckboxes.forEach((cb) => {
+      cb.checked = payload.cortes.some((v) => v.toLowerCase() === cb.value);
+    });
+    if (sobrante && otroCheckbox) {
+      otroCheckbox.checked = true;
+      corteOtroCampo.classList.remove("oculto");
+      corteOtroInput.required = true;
+      corteOtroInput.value = sobrante;
+    }
+  }
+  // Igual que con color: recalcula el limite de 3 y muestra/oculta el
+  // campo de texto libre de "Otro" (restaurar no dispara "change" solo).
+  if (corteCheckboxes[0]) corteCheckboxes[0].dispatchEvent(new Event("change"));
 
   const colorCheckboxes = document.querySelectorAll(`#campo-color-${prefix} input[type="checkbox"]`);
   if (Array.isArray(payload.colores)) {
@@ -612,8 +686,9 @@ function restaurarFiltros(prefix, payload) {
 function limpiarFiltros(prefix) {
   const form = document.getElementById(`form-busqueda-${prefix}`);
   form.reset();
+  // El "change" de categoria ya repuebla los casilleros de corte solos
+  // (actualizarCorteCheckboxes), asi que no hace falta dispararlo aparte.
   document.getElementById(`categoria-${prefix}`).dispatchEvent(new Event("change"));
-  document.getElementById(`corte-${prefix}`).dispatchEvent(new Event("change"));
   document.getElementById(`ocasion-${prefix}`).dispatchEvent(new Event("change"));
   // form.reset() no reactiva los checkboxes de color que hayan quedado
   // bloqueados por el limite de 3 (ver limitarSeleccionCheckboxes).

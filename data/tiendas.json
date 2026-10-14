@@ -1,4 +1,14 @@
 {
+  "old-tree": {
+    "nombre": "Old Tree",
+    "tipo": "sin_sitio_web",
+    "comuna": "Providencia",
+    "region": "Metropolitana"
+  },
+  "hooked": {
+    "nombre": "Hooked",
+    "tipo": "sin_sitio_web"
+  },
   "doslobos": {
     "nombre": "Doslobos",
     "tipo": "sin_sitio_web",

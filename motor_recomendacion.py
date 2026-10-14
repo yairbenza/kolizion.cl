@@ -715,7 +715,7 @@ def elegir_candidatos(
     permitir_otro_subtipo=False,
     priorizar_material_natural=False, categorias_deprioritizadas=None,
     color_pedido=None, permitir_colores_similares=False, ocasion=None,
-    texto_pedido_filtros=None, preferencia_genero="con_unisex",
+    texto_pedido_filtros=None, preferencia_genero="con_unisex", corte_pedido=None,
 ):
     # Bug real (2026-09-07, reportado por el usuario): buscando "poleron
     # regular fit" para Hombre + concierto/festival aparecio "Polera Crystal
@@ -793,7 +793,28 @@ def elegir_candidatos(
     if tipo_prenda in SUBTIPOS_POR_TIPO_PRENDA:
         subtipo_pedido = detectar_subtipo_pedido(texto_filtros, tipo_prenda)
         if subtipo_pedido:
-            candidatos_del_subtipo = [p for p in candidatos if p.get("subtipo", "").lower() == subtipo_pedido]
+            # material y subtipo son atributos independientes que se combinan,
+            # no categorias mutuamente excluyentes (pedido explicito del
+            # usuario, 2026-09-10): un pantalon/short puede ser tela jean Y
+            # subtipo cargo a la vez (ej. "Jeans Hombre Balloon Carpintero
+            # Negro" -- subtipo "cargo" por los bolsillos, pero es_jean=True
+            # por la tela). Buscar "jeans" debe traer TODOS los que sean tela
+            # jean/denim (subtipo "jeans" O es_jean=True), incluidos los
+            # cargo -- buscar "cargo" sigue siendo solo por subtipo, sea cual
+            # sea la tela, asi que no se toca ese caso.
+            if subtipo_pedido == "jeans":
+                # Jorts quedan afuera de este OR aunque tambien sean
+                # es_jean=True (todo jort es tela denim por definicion) --
+                # el usuario ya eligio explicitamente (2026-09-10) que
+                # "short de jeans" y "jorts" sigan siendo busquedas
+                # separadas, no fusionarlas por esto.
+                candidatos_del_subtipo = [
+                    p for p in candidatos
+                    if p.get("subtipo", "").lower() == "jeans"
+                    or (p.get("es_jean") and p.get("subtipo", "").lower() != "jorts")
+                ]
+            else:
+                candidatos_del_subtipo = [p for p in candidatos if p.get("subtipo", "").lower() == subtipo_pedido]
             if candidatos_del_subtipo or not permitir_otro_subtipo:
                 candidatos = candidatos_del_subtipo
 
@@ -815,14 +836,46 @@ def elegir_candidatos(
         if cierre_pedido:
             candidatos = [p for p in candidatos if p.get("cierre", "").lower() == cierre_pedido]
 
-    corte_pedido = detectar_corte_pedido(texto_filtros)
+    # Corte (2026-09-09, pedido del usuario): ahora se puede elegir mas de
+    # uno a la vez en el buscador (checkboxes, hasta 3 -- mismo mecanismo
+    # que color_pedido). corte_pedido llega como lista real desde el
+    # formulario; Koko todavia manda un solo corte como texto libre dentro
+    # de texto_pedido, asi que si no llega la lista se usa el detector de
+    # texto de siempre (compatibilidad hacia atras, sin romper Koko).
+    corte_fue_pedido = False
     if corte_pedido:
-        variantes = CORTES_CONOCIDOS[corte_pedido]
-        candidatos_del_corte = [
-            p for p in candidatos if any(_contiene_palabra(texto_producto(p), v) for v in variantes)
-        ]
+        cortes_seleccionados = corte_pedido if isinstance(corte_pedido, (list, tuple, set)) else [corte_pedido]
+        cortes_seleccionados = [c for c in cortes_seleccionados if c]
+    else:
+        cortes_seleccionados = []
+    if cortes_seleccionados:
+        corte_fue_pedido = True
+
+        def _corte_coincide(p, seleccion):
+            # Si la seleccion calza con un corte conocido (ej. "oversized"
+            # -> "oversize"), se compara contra el campo real ya tageado del
+            # producto -- mas preciso que buscar la palabra en el texto
+            # libre. Si no calza con ninguno (corte "Otro", texto libre del
+            # usuario), se mantiene el criterio de siempre: buscar esa
+            # palabra en el texto del producto.
+            canonico = _detectar(seleccion, CORTES_CONOCIDOS)
+            if canonico:
+                return (p.get("corte") or "").lower() == canonico
+            return _contiene_palabra(_quitar_tildes(texto_producto(p)), _quitar_tildes(seleccion.lower()))
+
+        candidatos_del_corte = [p for p in candidatos if any(_corte_coincide(p, c) for c in cortes_seleccionados)]
         if candidatos_del_corte or not permitir_otros_cortes:
             candidatos = candidatos_del_corte
+    else:
+        corte_pedido_texto = detectar_corte_pedido(texto_filtros)
+        if corte_pedido_texto:
+            corte_fue_pedido = True
+            variantes = CORTES_CONOCIDOS[corte_pedido_texto]
+            candidatos_del_corte = [
+                p for p in candidatos if any(_contiene_palabra(texto_producto(p), v) for v in variantes)
+            ]
+            if candidatos_del_corte or not permitir_otros_cortes:
+                candidatos = candidatos_del_corte
 
     material_100_pedido = detectar_material_100_pedido(texto_filtros)
     if material_100_pedido:
@@ -858,7 +911,7 @@ def elegir_candidatos(
     # suave (reordena el puntaje), nunca un filtro duro: si no hay nada
     # baggy, igual se muestra lo que haya, solo mas abajo en la lista.
     corte_ancho_prioridad = None
-    if not corte_pedido and tipo_prenda == "pantalon":
+    if not corte_fue_pedido and tipo_prenda == "pantalon":
         ocasion_norm = _quitar_tildes((ocasion or "").strip().lower())
         if ocasion_norm in {"deporte", "junta social"}:
             corte_ancho_prioridad = CORTE_ANCHO_PRIORIDAD_PANTALON
@@ -949,7 +1002,7 @@ def elegir_candidatos(
 def armar_resultados(
     genero, ocasion, categoria, texto_pedido, catalog, reglas, tallas_usuario=None,
     priorizar_material_natural=False, categorias_deprioritizadas=None, color_pedido=None,
-    preferencia_genero="con_unisex",
+    preferencia_genero="con_unisex", corte_pedido=None,
 ):
     regla = buscar_regla(genero, ocasion, reglas, {"sin_consenso"})
     if regla:
@@ -958,7 +1011,7 @@ def armar_resultados(
             genero, f"{texto_pedido} {texto_extra}", catalog, cantidad=3, categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
-            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero,
+            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero, corte_pedido=corte_pedido,
         )
         razon = (
             f'Sin consenso claro para este caso todavia: {regla.get("nota", "")} '
@@ -974,7 +1027,7 @@ def armar_resultados(
             genero, f"{texto_pedido} {texto_extra}", catalog, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
-            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero,
+            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero, corte_pedido=corte_pedido,
         )
         razon = (
             f'Segun una regla validada (confianza alta) para '
@@ -986,7 +1039,7 @@ def armar_resultados(
         genero, texto_pedido, catalog, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria,
         priorizar_material_natural=priorizar_material_natural,
         categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
-        preferencia_genero=preferencia_genero,
+        preferencia_genero=preferencia_genero, corte_pedido=corte_pedido,
     )
     return [
         formatear_producto(
@@ -1003,28 +1056,19 @@ def _completar_con_alternativas_de_corte(
     genero, texto_pedido, catalog, catalog_precio, categoria, tallas_usuario, ids_ya_mostrados, faltan,
     razon_alternativa_fn,
     priorizar_material_natural=False, categorias_deprioritizadas=None, color_pedido=None,
-    precio_pedido=None, ocasion=None, preferencia_genero="con_unisex",
+    precio_pedido=None, ocasion=None, preferencia_genero="con_unisex", corte_pedido=None,
 ):
-    corte_pedido = detectar_corte_pedido(texto_pedido)
+    # Corte ahora llega como lista real (2026-09-09, elegir corte multiple) en
+    # vez de detectarse del texto libre -- para la etapa "corte totalmente
+    # libre" ya no hace falta sacarle la palabra al texto (como antes con
+    # texto_corte_libre): basta con no pasar corte_pedido a elegir_candidatos
+    # para esa llamada puntual, y como corte ya no viaja dentro de
+    # texto_pedido, el filtro de corte simplemente no se aplica ahi.
+    cortes_pedidos = corte_pedido if isinstance(corte_pedido, (list, tuple, set)) else ([corte_pedido] if corte_pedido else [])
+    cortes_pedidos = [c for c in cortes_pedidos if c]
     tiene_precio = bool((precio_pedido or "").strip())
-    if faltan <= 0 or not (corte_pedido or color_pedido or tiene_precio):
+    if faltan <= 0 or not (cortes_pedidos or color_pedido or tiene_precio):
         return [], None
-
-    # "permitir_otros_cortes" de elegir_candidatos solo abre el corte si el
-    # corte EXACTO no calzo con NADA -- pero a esta altura ya sacamos del
-    # catalogo restante todo lo que era exacto en corte+color a la vez (paso
-    # "exactos" de buscar_plan_b), asi que casi siempre queda algo con el
-    # corte exacto pero color equivocado, y eso "atrapa" el filtro sin dejar
-    # abrir el corte. Por eso, para las etapas donde el corte debe quedar
-    # totalmente libre, se le saca la palabra del corte al texto pedido --
-    # asi elegir_candidatos ni siquiera detecta que se pidio un corte.
-    texto_corte_libre = texto_pedido
-    if corte_pedido:
-        patron_corte = re.compile(
-            r"\b(?:" + "|".join(re.escape(v) for v in CORTES_CONOCIDOS[corte_pedido]) + r")(?:es|s)?\b",
-            re.IGNORECASE,
-        )
-        texto_corte_libre = patron_corte.sub("", texto_pedido)
 
     # Relajacion en cascada, UN requisito a la vez -- nunca se combinan 2
     # relajaciones de una (pedido explicito del usuario, 2026-08-27: "nunca
@@ -1037,31 +1081,31 @@ def _completar_con_alternativas_de_corte(
     etapas = []
     if color_pedido:
         # corte y precio siguen exactos
-        etapas.append((texto_pedido, False, True, False, "color"))
+        etapas.append((corte_pedido, False, True, False, "color"))
     if tiene_precio:
         # corte y color siguen exactos, se usa el catalogo sin filtrar por precio
-        etapas.append((texto_pedido, False, False, True, "precio"))
-    if corte_pedido:
-        # corte totalmente libre (la palabra ya no esta en el texto), color y precio exactos
-        etapas.append((texto_corte_libre, True, False, False, "corte"))
-    if corte_pedido and color_pedido:
-        etapas.append((texto_corte_libre, True, True, False, "ambos"))
+        etapas.append((corte_pedido, False, False, True, "precio"))
+    if cortes_pedidos:
+        # corte totalmente libre (no se pasa corte_pedido), color y precio exactos
+        etapas.append((None, True, False, False, "corte"))
+    if cortes_pedidos and color_pedido:
+        etapas.append((None, True, True, False, "ambos"))
 
     ids_excluidos = set(ids_ya_mostrados)
     encontrados = []
     etapa_con_resultados = None
-    for texto_etapa, permitir_otros_cortes, permitir_colores_similares, relajar_precio, nombre_etapa in etapas:
+    for corte_etapa, permitir_otros_cortes, permitir_colores_similares, relajar_precio, nombre_etapa in etapas:
         if len(encontrados) >= faltan:
             break
         catalog_base = catalog if relajar_precio else catalog_precio
         catalog_restante = [p for p in catalog_base if p["id"] not in ids_excluidos]
         candidatos = elegir_candidatos(
-            genero, texto_etapa, catalog_restante, cantidad=faltan - len(encontrados),
+            genero, texto_pedido, catalog_restante, cantidad=faltan - len(encontrados),
             categoria_pedida=categoria, permitir_otros_cortes=permitir_otros_cortes,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas,
             color_pedido=color_pedido, permitir_colores_similares=permitir_colores_similares,
-            ocasion=ocasion, preferencia_genero=preferencia_genero,
+            ocasion=ocasion, preferencia_genero=preferencia_genero, corte_pedido=corte_etapa,
         )
         if candidatos:
             encontrados.extend(candidatos)
@@ -1084,7 +1128,7 @@ def _completar_con_alternativas_de_corte(
         )
     else:
         aviso = (
-            f'No encontramos mas opciones en "{corte_pedido}", pero esto tambien podria '
+            f'No encontramos mas opciones en "{", ".join(cortes_pedidos)}", pero esto tambien podria '
             "interesarte (mismo tipo de prenda, otro corte):"
         )
     alternativas = [formatear_producto(p, razon_alternativa_fn(p), tallas_usuario) for p in encontrados]
@@ -1094,7 +1138,7 @@ def _completar_con_alternativas_de_corte(
 def buscar_plan_b(
     genero, ocasion, categoria, texto_pedido, catalog, reglas, tallas_usuario=None,
     priorizar_material_natural=False, categorias_deprioritizadas=None, color_pedido=None,
-    precio_pedido=None, ids_excluir=None, preferencia_genero="con_unisex",
+    precio_pedido=None, ids_excluir=None, preferencia_genero="con_unisex", corte_pedido=None,
 ):
     # ids_excluir: productos ya mostrados en esta busqueda (resultado inicial
     # + clics previos de "mostrar mas opciones"). Sin esto, cada clic repetia
@@ -1120,7 +1164,7 @@ def buscar_plan_b(
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas,
             color_pedido=color_pedido, permitir_colores_similares=True, ocasion=ocasion,
-            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero,
+            texto_pedido_filtros=texto_pedido, preferencia_genero=preferencia_genero, corte_pedido=corte_pedido,
         )
         razon = (
             f'Opcion alternativa (confianza media) para '
@@ -1132,7 +1176,7 @@ def buscar_plan_b(
         genero, texto_pedido, catalog_precio, cantidad=CANTIDAD_RESULTADOS, categoria_pedida=categoria,
         priorizar_material_natural=priorizar_material_natural,
         categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
-        preferencia_genero=preferencia_genero,
+        preferencia_genero=preferencia_genero, corte_pedido=corte_pedido,
     )
     ids_ya_mostrados = {p["id"] for p in primarios}
 
@@ -1142,7 +1186,7 @@ def buscar_plan_b(
             genero, texto_pedido, catalog_precio, cantidad=len(catalog_precio), categoria_pedida=categoria,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido, ocasion=ocasion,
-            preferencia_genero=preferencia_genero,
+            preferencia_genero=preferencia_genero, corte_pedido=corte_pedido,
         )
         if p["id"] not in ids_ya_mostrados
     ][:CANTIDAD_RESULTADOS]
@@ -1166,5 +1210,6 @@ def buscar_plan_b(
         priorizar_material_natural=priorizar_material_natural,
         categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=color_pedido,
         precio_pedido=precio_pedido, ocasion=ocasion, preferencia_genero=preferencia_genero,
+        corte_pedido=corte_pedido,
     )
     return [formatear_producto(p, razon_exacta(p), tallas_usuario) for p in exactos], alternativas, aviso

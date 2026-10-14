@@ -161,6 +161,11 @@ def verificar_stock_producto(producto):
         return _verificar_iprex(link)
     if "zamu.cl" in dominio:
         return _verificar_zamu(link)
+    if "oldtree.cl" in dominio:
+        # Old Tree (2026-09-10): mismo WooCommerce Store API publico que
+        # ZAMU, mismo limite (variantes no vienen en 1 sola llamada) -- se
+        # reusa el mismo mecanismo con el dominio real de esta tienda.
+        return _verificar_woocommerce_store_api(link, "oldtree.cl")
 
     # Shopify se prueba para el resto -- <link>.js responde 404/HTML de
     # error en cualquier tienda que no sea Shopify, asi que esto ya actua
@@ -215,18 +220,23 @@ def _verificar_iprex(link):
 
 
 def _verificar_zamu(link):
-    """ZAMU (WooCommerce) SI tiene API publica (Store API), pero a
-    diferencia de Shopify no da stock por variante/talla en una sola
-    llamada -- las variantes son sub-recursos aparte (products/<id>/
-    variations no existe en esta version de la API, y cada variacion
-    necesitaria su propia request). Con solo 9 productos en el catalogo no
-    compensa pedir N variantes por producto (mismo criterio de "no hacer
-    requests innecesarios" del refresco en bloque) -- se usa el stock
-    agregado del producto completo (is_in_stock + is_purchasable), igual
-    granularidad que IPREX."""
+    return _verificar_woocommerce_store_api(link, "zamu.cl")
+
+
+def _verificar_woocommerce_store_api(link, dominio_api):
+    """WooCommerce Store API publica (ZAMU, Old Tree) -- a diferencia de
+    Shopify no da stock por variante/talla en una sola llamada -- las
+    variantes son sub-recursos aparte (products/<id>/variations no existe
+    en esta version de la API, y cada variacion necesitaria su propia
+    request). Con pocos productos por tienda no compensa pedir N variantes
+    por producto (mismo criterio de "no hacer requests innecesarios" del
+    refresco en bloque) -- se usa el stock agregado del producto completo
+    (is_in_stock + is_purchasable), igual granularidad que IPREX.
+    dominio_api es el dominio real de la tienda (cada una consulta su
+    propia Store API, nunca la de otra)."""
     slug = _handle_de_link(link)
     try:
-        data = json.loads(_get_texto(f"https://zamu.cl/wp-json/wc/store/v1/products?slug={slug}"))
+        data = json.loads(_get_texto(f"https://{dominio_api}/wp-json/wc/store/v1/products?slug={slug}"))
     except (urllib.error.URLError, TimeoutError, ValueError, OSError):
         return {"fuente": None, "variantes": None, "disponible_general": None}
     if not isinstance(data, list):
@@ -235,7 +245,7 @@ def _verificar_zamu(link):
     if not producto_padre:
         return {"fuente": None, "variantes": None, "disponible_general": None}
     disponible = bool(producto_padre.get("is_in_stock") and producto_padre.get("is_purchasable"))
-    return {"fuente": "zamu", "variantes": None, "disponible_general": disponible}
+    return {"fuente": "woocommerce", "variantes": None, "disponible_general": disponible}
 
 
 # --- Refresco de fondo (Shopify, cada N minutos) ----------------------------

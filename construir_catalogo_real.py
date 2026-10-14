@@ -36,6 +36,7 @@ Corre una sola vez a mano (igual que agregar_materiales.py, etc.) --
 NO se re-corre solo. Hace un respaldo del catalogo mock antes de
 reemplazarlo.
 """
+import ast
 import html
 import json
 import re
@@ -43,7 +44,10 @@ import unicodedata
 from pathlib import Path
 
 from data.catalogo_manual_viloria import VILORIA_PRODUCTOS
-from constantes import ENVIOS_TIENDAS_PATH, parsear_composicion, es_composicion_100_pura
+from constantes import (
+    ENVIOS_TIENDAS_PATH, parsear_composicion, es_composicion_100_pura,
+    TALLAS_NUMERICAS_PANTALON_POR_GENERO,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 CATALOG_PATH = BASE_DIR / "data" / "catalog.json"
@@ -74,20 +78,99 @@ OCASIONES_DEFAULT = ["carrete", "universidad", "junta social", "junta de amigos/
 # conocidos), se marca literal "sin corte definido" en vez de adivinar --
 # pedido explicito del usuario, ver lista aparte que se imprime al final.
 VERIFICADO_A_MANO = {
+    # --- Chaquetas (2026-09-09), Paso 2 segunda pasada -- items que ya
+    # estaban resueltos por texto/medidas pero se me habian quedado sin
+    # escribir en la primera pasada.
+    "CHAQUETA EMOTION \"ÁNGEL\"": {"corte": "boxy fit", "subtipo": "mezclilla"},
+    "Chaqueta Cortavientos Tommy Hilfiger": {"subtipo": "cortavientos"},
+    # --- Chaquetas (2026-09-09), Paso 2 pedido por el usuario tras el
+    # reporte de Paso 1: corte via ancho/calce real (texto/medidas/foto
+    # revisada a mano) y subtipo nuevo (bomber/cuero/parka/cortavientos/
+    # mezclilla/puffer/corduroy/blazer/otro). "Otro" cuando el estilo real
+    # no calza en ninguna categoria (ej. chore jackets workwear, chaquetas
+    # de motorsport) -- nunca forzado a una categoria que no corresponde.
+    "Chaqueta Sherpa Urban": {"corte": "regular fit", "subtipo": "Otro"},
+    "Chaqueta Ferrari cuero franja blanca": {"corte": "oversize"},
+    "Chaqueta Ferrari negra": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Ferrari Roja": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Ferrari Rosa": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Ferrari Rosado Cuero": {"corte": "oversize"},
+    "Chaqueta Ford azul": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta  Nascar Ford negra": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Nascar Subaru negra": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Red Bull": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Subaru Azul": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Workwear Café": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Workwear Verde": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Workwear Negra": {"corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Workwear Azul": {"corte": "oversize", "subtipo": "Otro"},
+    "CROCODILE SMOKE JACKET.": {"corte": "slim fit", "subtipo": "cuero"},
+    "Chaqueta Hombre Acolchada Con Gorro Verde Sioux": {"corte": "regular fit", "subtipo": "puffer"},
+    "Chaqueta Hombre Bordados Death Negro": {"corte": "regular fit", "subtipo": "Otro"},
+    "Chaqueta Hombre Técnica Cierre Negro": {"corte": "regular fit", "subtipo": "cortavientos"},
+    "Chaqueta Mujer Aviadora Piel Burdeo Sioux": {"corte": "slim fit", "subtipo": "cuero"},
+    "Chaqueta Mujer Bolsillos Delanteros Burdeo Sioux": {"corte": "regular fit", "subtipo": "Otro"},
+    "Chaqueta Mujer Bolsillos Delanteros Verde Sioux": {"corte": "regular fit", "subtipo": "Otro"},
+    "Chaqueta Mujer Raw Denim Worker Azul Sioux": {"corte": "oversize"},
+    "Chaqueta Mujer Sin Manga Piel Beige Sioux": {"corte": "regular fit", "subtipo": "cuero"},
+    "Chaqueta Mujer Trench Corto Verde": {"corte": "slim fit", "subtipo": "Otro"},
+    "Cortaviento Mujer Retro Varsity Azul": {"corte": "regular fit", "subtipo": "cortavientos"},
+    "Parka Hombre Basica Con Gorro Gris Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Hombre Basica Lineas Azul Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Hombre Básica Negro Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Hombre Básica Rojo Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Hombre Básica Verde Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Hombre Puffa Beige Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Hombre Sin Mangas Negro Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Mujer Basic Puffa Verde Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Mujer Cuello Chiporro Negro Sioux": {"corte": "regular fit", "subtipo": "parka"},
+    "Parka Mujer Ecocuero Larga Negro Sioux": {"corte": "regular fit"},
+    "Chaqueta Carhartt Vintage Blanket Lined Canvas": {"subtipo": "Otro"},
+    "Chaqueta Carhartt Bankston": {"subtipo": "Otro"},
+    "Chaqueta Carhartt Insulated Storm Defender": {"subtipo": "Otro"},
+    "Chaqueta Levis": {"subtipo": "Otro"},
+    "Chaqueta Workwear Schmidt": {"subtipo": "Otro"},
+    "Chaqueta Carhartt Duck Active": {"subtipo": "Otro"},
+    "Chaqueta Vintage Duck Active": {"subtipo": "Otro"},
+    "Chaqueta Wrangler Detroit": {"subtipo": "Otro"},
+    "Chaqueta Carhartt Duck Active J130CR": {"subtipo": "Otro"},
+    "Chaqueta Sin Mangas  The North Face": {"subtipo": "Otro"},
+    "Chaqueta Sin Mangas Carhartt": {"subtipo": "Otro"},
+    "Chaqueta Duck Active Lee": {"subtipo": "Otro"},
+    "Chaqueta Carhartt Arctic": {"subtipo": "Otro"},
+    "Chaqueta Carhartt Santa Fe Vintage": {"subtipo": "Otro"},
+    "Chaqueta Duck Active Walls": {"subtipo": "Otro"},
+    "Chaqueta Sin Mangas Wrangler": {"subtipo": "Otro"},
+    # 2026-09-09 -- bug real reportado por el usuario: el nombre dice "Buzo"
+    # y el sistema lo cargaba como poleron, pero la ficha real dice literal
+    # "Calce wide leg unisex", "cintura elasticada", "cordon ajustable" y
+    # "dos bolsillos laterales" -- es un PANTALON, no una prenda superior
+    # (mismo patron ya encontrado antes en BUZO BAGGY de OVA/BEEWAY/ZAMU/
+    # KronoLex). "wide leg" pisa el "straight" que detectaba antes por
+    # nombre (matcheaba "Recto" -> straight, pero la ficha real dice otra
+    # cosa). capucha/cierre quedan sin sentido en un pantalon, se sacan.
+    "Buzo Recto Negro 200GRS Algodón - LIQUIDACIÓN": {"categoria": "pantalon", "corte": "wide leg"},
+    # --- Shatters (2026-09-09, Fase 2 por foto): toda la linea usa la misma
+    # foto de espalda (sin vista frontal disponible), silueta ancha con
+    # hombro caido consistente en las 8 -- cierre queda "no especificado"
+    # porque ninguna foto muestra el frente (no se puede confirmar zipper).
+    "Shatters Cloud Hoodie": {"corte": "oversize"},
+    "Smoke Hoodie": {"corte": "oversize"},
+    "Newland Hoodie": {"corte": "oversize"},
+    "SS Black Hoodie": {"corte": "oversize"},
+    "Star Wash Hoodie": {"corte": "oversize"},
+    "Newland Black Hoodie": {"corte": "oversize"},
+    "Winter Sky Hoodie": {"corte": "oversize"},
+    "Pink Motion Hoodie": {"corte": "oversize"},
     # --- Club 33 (2026-08-27) --- corte/material/gramaje NO vienen en el
     # products.json (body_html vacio para los 5 productos) -- se sacaron de
     # la pagina real de cada producto (WebFetch), que si tiene esta info en
     # una seccion de specs aparte: "Calce boxy fit medio" (literal, no
     # inferido de foto) + "Composicion: Algodon 100%" + gramaje literal.
-    'T-SHIRT "PACIFIC SUN"': {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 280},
-    'T-SHIRT "LEMON PALETA"': {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 280},
     'HOODIE "C33" SS26.': {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 900},
 
     # --- Rapt (2026-08-27) --- corte real sacado de la descripcion real de
     # la ficha (og:description, ver DATOS_SHOPIFY_UPGRADE["Rapt"]).
-    "RAW DENIM JACKET": {"corte": "boxy fit"},
-    "FOUNDATION TROUSER": {"corte": "baggy"},
-    "FOUNDATION TROUSER BLACK": {"corte": "baggy"},
     # Tanda 2 (2026-08-28): mismo criterio -- nombre no dice "boxy" pero la
     # ficha real si ("fit boxy" / "polerón boxy" literal).
     "HOODIE THIRD WAVE CLASSIC / PRE-ORDER": {"corte": "boxy fit"},
@@ -109,9 +192,7 @@ VERIFICADO_A_MANO = {
     # ya trae "oversized" en el nombre (detectar_corte lo toma solo), pero
     # el material "100% algodon" no viene en el nombre asi que se agrega
     # a mano.
-    "TOADALLY FRESH": {"corte": "regular fit"},
     "Chaqueta denim - DANGEROUS": {"corte": "oversize"},
-    "BANE - Oversized": {"material": "algodon_100"},
     # --- Enila (2026-08-30) --- "bomber" solo no dispara la categoria
     # chaqueta en clasificar_prenda() (necesita "chaqueta"/"jacket" en el
     # nombre), asi que las 5 bomber quedan a mano. Colores: declarados por
@@ -127,24 +208,6 @@ VERIFICADO_A_MANO = {
     # Granate" declara "10% Lana y 90% poliester" -> material poliester
     # (dominante). "Chaqueta Archivo" no declara color en texto, la foto
     # real muestra un gris oscuro/carbon inequivoco.
-    "Bomber Corteza": {
-        "categoria": "chaqueta", "subtipo": "bomber", "corte": "oversize",
-        "material": "algodon_100", "colores": ["Negro"],
-    },
-    "Bomber Breña": {"categoria": "chaqueta", "subtipo": "bomber", "colores": ["Verde"]},
-    "Bomber Índigo": {"categoria": "chaqueta", "subtipo": "bomber", "colores": ["Azul"]},
-    "Bomber Alba": {
-        "categoria": "chaqueta", "subtipo": "bomber", "corte": "oversize",
-        "material": "algodon_100", "colores": ["Blanco"],
-    },
-    "Bomber Granate": {
-        "categoria": "chaqueta", "subtipo": "bomber", "material": "poliester", "colores": ["Granate"],
-    },
-    "Chaqueta Vestigio": {"subtipo": "mezclilla", "material": "algodon_100", "colores": ["Negro"]},
-    "Chaqueta Archivo": {"colores": ["Gris"]},
-    "Denim Corteza Negro": {"corte": "straight", "colores": ["Negro"]},
-    "Jeans Corteza Vestigio": {"material": "algodon_100", "colores": ["Negro"]},
-    "Denim Alba": {"material": "algodon_100", "colores": ["Blanco"]},
     # --- BEEWAY (2026-08-30) ---
     # "Cropped" declara largo real pero no coincide con ninguna regla
     # automatica de largo (solo aplica a baby tee) -- se confirma a mano.
@@ -155,41 +218,28 @@ VERIFICADO_A_MANO = {
     # Resto: colores no declarados en texto, tageados por foto real.
     # "Gorra Project Expansión": la foto real es celeste, no rosa como
     # sugiere el handle -- se sigue la foto.
-    'CROPPED BEEWAY ROSA': {'largo': 'crop'},
-    'CROPPED BEEWAY BLACK': {'largo': 'crop'},
-    'CROPPED BEEWAY (BLUE)': {'largo': 'crop'},
-    'PANTS (BUZO)': {'categoria': 'pantalon', 'subtipo': 'buzo', 'colores': ['Gris']},
     'GORRA ( CAMO )': {'colores': ['Verde']},
     # "sweatshirt" (ingles) tampoco dispara la categoria poleron.
-    'RIPPED SWEATSHIRT (NEW)': {'categoria': 'poleron'},
-    'BOMBER COLOR CONCRETO': {'categoria': 'chaqueta', 'subtipo': 'bomber'},
-    'BUZO BAGGY BEEWAY': {'colores': ['Negro']},
-    'HOODIE (CAPAS) NEW': {'colores': ['Negro']},
+    'RIPPED SWEATSHIRT (NEW)': {'categoria': 'poleron', 'corte': 'oversize'},
+    "BOMBER COLOR CONCRETO": {"categoria": "chaqueta", "subtipo": "bomber", "corte": "no especificado"},
+    'BUZO BAGGY BEEWAY': {'colores': ['Negro'], 'categoria': 'pantalon'},
     '(Colab )Polera polo “$HILE 2 King’s”. CONCEPTION X BEEWAY': {'colores': ['Negro']},
     'Polera Polo 🇯🇵🇯🇵🇯🇵 Beeway  —   (since 2018) tela pique': {'colores': ['Negro']},
-    'Polera Slim fit (OG)': {'colores': ['Negro']},
     'Jockey Gamuza Shiny': {'colores': ['Negro']},
     'Jockey Trucker Hat Shiny': {'colores': ['Negro']},
-    'SHORT DOBLE PRETINA BEEWAY': {'colores': ['Gris']},
-    'SHORT BEEWAY NUBE': {'colores': ['Beige']},
     'PACK 2 T-SHIRT STAR ( BLACK Y WHITE)': {'colores': ['Negro', 'Blanco']},
     'PACK 2 POLERAS BÁSICAS BOXY FIT': {'colores': ['Negro', 'Blanco']},
     'JOCKEY REAL TREE': {'colores': ['Verde']},
     'JOCKEY CAMO': {'colores': ['Verde']},
     'JOCKEY BEEWAY': {'colores': ['Verde', 'Beige']},
-    'TANK TOP SLIM FIT (LÍNEAS CAMO )': {'colores': ['Verde']},
-    'POLERA SLIM FIT LÍNEAS CAMO': {'colores': ['Verde']},
     'PANTALON MEZCLILLA              (SUPER BAGGY )': {'colores': ['Negro']},
     'Gorra Project Expansión': {'colores': ['Azul']},
-    'HOODIE MULTIZIPER (FÉNIX)': {'colores': ['Negro']},
-    'HOODIE DOUBLE CAP (FULL ZIP)': {'colores': ['Negro']},
     # Bug real (2026-08-31, reportado por el usuario): el detector automatico
     # de color por nombre (_COLOR_PALABRAS_NOMBRE) leyo "WHITE" de "(WHITE
     # SEAMS)" como si fuera el color de la prenda -- pero "seams" es la
     # costura/detalle de contraste, la prenda es negra (confirmado con la
     # foto real). Mismo patron que el bug de la chaqueta DANGEROUS / BANE de
     # Viloria: un dato de foto real siempre pisa la deteccion automatica.
-    'HOODIE DOUBLE CAP (WHITE SEAMS)': {'colores': ['Negro']},
     # ZAMU (2026-09-03, mismo bug reportado por el usuario que Kagi arriba):
     # este producto real SI tiene 9 colores/variantes en Shopify (jersey
     # acid wash 100% algodon), pero KOLIZION solo muestra UNA foto fija por
@@ -209,25 +259,23 @@ VERIFICADO_A_MANO = {
     # antes, ver docs/catalogo_real.md), asi que sin esto cae al default
     # 'polera', que es falso para una camisa de botones real.
     'Camisa de Algodón 90% – Corte Regular': {'categoria': 'camisa'},
-    'Polerón Hoodie Acid Wash con Gorro Cuadrillé a Tono': {'categoria': 'poleron'},
-    'Poleron chocolate con gorro desgastado estrella en espalda': {'categoria': 'poleron'},
     # ZAMU (2026-09-03, bug real reportado por el usuario: aparecian como
     # "polera azul" en el buscador) -- "sweater" no tiene ninguna regla en
     # clasificar_prenda() (nunca se habia cargado uno antes), asi que caia
     # al default "polera", que es falso: un sweater es un poleron sin
     # capucha (ninguna de las 2 fichas reales menciona capucha/gorro).
     # Capucha/cierre real van en CAPUCHA_CIERRE_VERIFICADO, no aca.
-    'Sweater con Cierre Metálico Tejido en Chile | Punto Inglés Barnizado': {'categoria': 'poleron'},
     'Sweater tejido oversize punto inglés barnizado': {'categoria': 'poleron'},
+    # 2026-09-09 -- la foto real muestra un pantalon de buzo (elastico en
+    # cintura, pierna ancha), no un poleron -- bug de categoria (mismo
+    # patron que "BUZO BAGGY" de OVA/BEEWAY encontrados antes en esta
+    # misma revision).
+    'Buzo Loose Fit de Franela | Hecho en Chile': {'categoria': 'pantalon'},
     # La Maria Dolores (2026-08-31): "falda" es categoria valida en el
     # sistema (CATEGORIA_GRUPOS/TIPOS_PRENDA_CONOCIDOS en constantes.py)
     # pero clasificar_prenda() no tiene ninguna regla que la detecte (nunca
     # se habia cargado una falda real antes) -- sin este override quedarian
     # mal clasificadas como "polera" por default, que es falso.
-    'Sobrefalda tartan #1': {'categoria': 'falda'},
-    'Sobrefalda tartan #2': {'categoria': 'falda'},
-    'Sobrefalda tartan #3': {'categoria': 'falda'},
-    'Sobrefalda tartan #4': {'categoria': 'falda'},
     # Brissa (2026-09-02): "top" es categoria valida (CATEGORIA_GRUPOS/
     # SUBTIPOS_CONOCIDOS en constantes.py, ya usada por 11 productos de
     # otras tiendas) pero clasificar_prenda() nunca la detecta de un "top"
@@ -291,11 +339,16 @@ VERIFICADO_A_MANO = {
     # "gorro" en cualquier parte del nombre (mismo chequeo que gorro/beanie/
     # gorra/jockey de mas arriba), asi que sin este override quedaba mal
     # categorizado como "gorro" en vez de "poleron".
-    'Poleron con Gorro Bang concept Chocolate': {'categoria': 'poleron'},
+    'Poleron con Gorro Bang concept Chocolate': {'categoria': 'poleron', 'corte': 'regular fit'},
     'Polera Bang Concept Chistera Aracnic Negra': {'corte': 'relax fit'},
     'Polera Bang Frongo Black': {'material': 'mezcla_algodon_poliester'},
-    'Poleron Bang concept Logo Negro': {'material': 'mezcla_algodon_poliester'},
-    'Poleron Bang concepto WITZI Negro': {'material': 'mezcla_algodon_poliester'},
+    'Poleron Bang concept Logo Negro': {'material': 'mezcla_algodon_poliester', 'corte': 'regular fit'},
+    'Poleron Bang concepto WITZI Negro': {'material': 'mezcla_algodon_poliester', 'corte': 'regular fit'},
+    'Poleron Bang Frongo Negro': {'corte': 'regular fit'},
+    'Poleron Bang Vibra Black': {'corte': 'regular fit'},
+    'Poleron Bang Trash Bordado Black': {'corte': 'regular fit'},
+    'Poleron Bang Rayo Black': {'corte': 'regular fit'},
+    'Poleron Bang Focus Black': {'corte': 'regular fit'},
     # Ficha real dice "Mas Cafe" (nombre de la linea/diseño) + "Negro" (color
     # real, confirmado por la foto "mascafeporfavornegro.png") -- sin esto
     # el buscador de color detectaba "cafe" Y "negro" a la vez en el mismo
@@ -307,26 +360,14 @@ VERIFICADO_A_MANO = {
     # lo declara (nombre o descripcion) y clasificar_prenda()/detectar_corte
     # (que solo miran el NOMBRE) no lo agarraban solos -- no se aplica a
     # toda la coleccion pareja.
-    'Hoodie Not San Valentin': {'corte': 'boxy fit', 'gramaje_gsm': 330},
     'Polera Not San Valentin Negra': {'corte': 'boxy fit'},
     'Polera Not San Valentin Blanca': {'corte': 'boxy fit'},
-    'Hoodie Psycho': {'corte': 'boxy fit'},
-    'Hoodie elemental turquesa oscuro': {'corte': 'oversize'},
-    'Hoodie elemental negro': {'corte': 'regular fit'},
-    'Hoodie Elemental Rosado Pálido': {'corte': 'regular fit'},
-    'Hoodie Elemental Azul Marino': {'corte': 'regular fit'},
     'Polera elemental gris': {'corte': 'oversize'},
-    "Hoodie Don't Look Back Negro": {'corte': 'boxy fit'},
     "Polera Don't Look Back Azul Marino Heavy Weight 280 gr": {'corte': 'regular fit', 'gramaje_gsm': 280},
     "Polera Don't Look Back Blanca Heavy Weight 280 gr": {'corte': 'regular fit', 'gramaje_gsm': 280},
     "Polera Don't Look Back Beige Oversize Heavy Weight 280 gr": {'gramaje_gsm': 280},
     "Polera Don't Look Back Café Oversize Heavy Weight 280 gr": {'gramaje_gsm': 280},
     "Polera Don't Look Back Negra Oversize Heavy Weight 280 gr": {'gramaje_gsm': 280},
-    'Hoodie Style Café': {'corte': 'regular fit'},
-    'Hoodie style beige': {'corte': 'regular fit'},
-    'Hoodie style rosado': {'corte': 'regular fit'},
-    'Hoodie style turquesa': {'corte': 'regular fit'},
-    'Hoodie Style Negro': {'corte': 'regular fit'},
     'Polera básica beige': {'material': 'algodon_100'},
     'Polera básica gris azulado': {'material': 'algodon_100'},
     'Polera básica negra': {'material': 'algodon_100'},
@@ -377,11 +418,6 @@ VERIFICADO_A_MANO = {
     # donde la DESCRIPCION dice literal una de las palabras que reconoce
     # detectar_corte() (boxy/regular/slim fit) -- "bootcut" no esta en ese
     # vocabulario, no se inventa un valor nuevo para no falsear el filtro.
-    'CROCODILE BLCK (BOOTCUT)': {'categoria': 'pantalon'},
-    'SILVER NIGHT CREASE': {'categoria': 'pantalon'},
-    'NIGHT CREASE': {'categoria': 'pantalon'},
-    'PINK TIGER ll': {'categoria': 'poleron'},
-    'COURBE BLACK WAFFLE': {'categoria': 'poleron', 'corte': 'regular fit'},
     # Endless (2026-09-03): "Crop-top" no es una categoria/subtipo que
     # clasificar_prenda() detecte para "polera" (categoria correcta que ya
     # sale sola por default) -- el pedido explicito es "Poleras + atributo
@@ -390,8 +426,7 @@ VERIFICADO_A_MANO = {
     # campo nuevo. No se toca "categoria" -- ya cae en "polera" sola.
     'Polera Crop-top "Engagement Concept"': {'largo': 'crop'},
     'Polera Crop-top "Basic"': {'largo': 'crop'},
-    'CROSS DEMON HOODIE': {'corte': 'boxy fit'},
-    'DIRTY NIGHT CREASE (JACKET)': {'corte': 'slim fit'},
+    "DIRTY NIGHT CREASE (JACKET)": {"corte": "slim fit", "subtipo": "mezclilla"},
     'LONG SLEEVE STITCHING': {'corte': 'regular fit'},
     # Hush (2026-09-02): material real declarado en la ficha (body_html de
     # Shopify) -- "Polerón Básico Crewneck" NO trae ficha/descripcion (la
@@ -402,13 +437,8 @@ VERIFICADO_A_MANO = {
     'Hush Classic': {'material': 'algodon_100'},
     'Origen de Hush': {'material': 'algodon_100'},
     'Hush. Reach The Sky': {'material': 'algodon_100', 'gramaje_gsm': 300},
-    'Polera Estrella': {'material': 'algodon_100', 'gramaje_gsm': 300},
-    'Polera basica Hush': {'material': 'algodon_100', 'gramaje_gsm': 300},
     'JOCKEY CAMO (OSCURO)': {'colores': ['Verde']},
-    'HOODIE RESILIENCIE (FOCALIZADO)': {'colores': ['Negro']},
-    'SHORT METALLIC': {'colores': ['Negro']},
     'Resilience Boxy Tee': {'colores': ['Gris']},
-    'Resilience Hoodie Boxy Fit': {'colores': ['Negro']},
     # --- RRREUSED (2026-08-30) --- "crewneck"/"polar" no disparan la
     # categoria poleron en clasificar_prenda() (solo mira hoodie/poleron/
     # zip/canguro/sudadera) -- un crewneck es justo un poleron SIN cierre
@@ -418,32 +448,27 @@ VERIFICADO_A_MANO = {
     # muchos productos distintos comparten el mismo nombre generico (ej.
     # 2 "Pantalón Wrangler" de colores distintos), asi que un override por
     # nombre aca los pisaria mal.
-    "Crewneck Nike Center": {"categoria": "poleron"},
-    "Crewneck Stussy": {"categoria": "poleron"},
-    "Crewneck Russell": {"categoria": "poleron"},
-    "Crewneck Carhartt Vintage": {"categoria": "poleron"},
-    "Polar The North Face": {"categoria": "poleron"},
+    "Polar The North Face": {"categoria": "poleron", "corte": "regular fit"},
+    "Poleron Carhartt": {"categoria": "poleron", "genero": "unisex", "corte": "regular fit"},
     # "abrigo" no es palabra clave de clasificar_prenda() (solo chaqueta/
     # jacket) -- sin esto caia al default "polera". Foto real: chaqueta
     # tipo chore-coat corta, no un abrigo formal -- por eso se incluyo.
-    "Abrigo Armani Exchange": {"categoria": "chaqueta"},
+    "Abrigo Armani Exchange": {"categoria": "chaqueta", "subtipo": "Otro"},
     # --- IPREX (2026-08-30) --- typos reales de la propia tienda que
     # rompen la deteccion por palabra clave: "Poleroon" (le sobra una
     # "o", no matchea "poleron" ni tiene otra palabra gatillo) y
     # "Chaaqueta" (le sobra una "a", no matchea "chaqueta").
-    'Poleroón ninja Draco': {"categoria": "poleron"},
-    'Chaaqueta Bud Negra': {"categoria": "chaqueta"},
+    "Chaaqueta Bud Negra": {"categoria": "chaqueta", "corte": "oversize", "subtipo": "Otro"},
     # --- IPREX (2026-08-30) --- ninguna ficha declara color en
     # texto; se tageo revisando la foto principal de cada uno (linea
     # "Acid Wash"/Saddabae = tela gris jaspeada; linea "Ninja"/"full
     # zip" = negro solido; ver hojas de contacto revisadas a mano).
-    'Chaqueta BMW': {"colores": ['Negro']},
-    'Chaqueta Ferrari cuero': {"colores": ['Negro']},
-    'Chaqueta Ferrari  Tricolor': {"colores": ['Blanco']},
-    'Chaqueta Mclaren': {"colores": ['Negro']},
-    'Chaqueta Nascar Bud': {"colores": ['Rojo']},
-    'Chaqueta  Nascar Jack Daniels': {"colores": ['Negro']},
-    'Poleón full zip Mortis': {"colores": ['Negro']},
+    "Chaqueta BMW": {"colores": ["Negro"], "corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Ferrari cuero": {"colores": ["Negro"], "corte": "oversize"},
+    "Chaqueta Ferrari  Tricolor": {"colores": ["Blanco"], "corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Mclaren": {"colores": ["Negro"], "corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta Nascar Bud": {"colores": ["Rojo"], "corte": "oversize", "subtipo": "Otro"},
+    "Chaqueta  Nascar Jack Daniels": {"colores": ["Negro"], "corte": "oversize", "subtipo": "Otro"},
     'Polera Acid Wash Bestia': {"colores": ['Gris']},
     'Polera Acid Wash Exanimis': {"colores": ['Gris']},
     'Polera Acid Wash Flagitium': {"colores": ['Gris']},
@@ -453,49 +478,24 @@ VERIFICADO_A_MANO = {
     'Polera Acid Wash Spiritus': {"colores": ['Gris']},
     'Polera Acid Wash Supplicium': {"colores": ['Gris']},
     'Polera Acid Wash Tartarus': {"colores": ['Gris']},
-    'Polera Baby Tee Brasil iprex': {"colores": ['Amarillo']},
-    'Polera Minimal m2 Saddabae': {"colores": ['Gris']},
-    'polera minimal saddabae': {"colores": ['Gris']},
-    'Polera Sad Rulay Saddabae': {"colores": ['Gris']},
-    'Polera Trivial Saddabae': {"colores": ['Gris']},
-    'Polera Waifu Saddabae': {"colores": ['Gris']},
-    'Polera Waifu triviales Saddabae': {"colores": ['Gris']},
-    'Polerón Acid Wash Ignis': {"colores": ['Negro']},
-    'Polerón full zip Scelus': {"colores": ['Negro']},
-    'Polerón full zip Solitudo': {"colores": ['Negro']},
-    'Polerón full zip Timor': {"colores": ['Negro']},
-    'Polerón Full zip Tristitia': {"colores": ['Negro']},
-    'Polerón full zip trivial M2 Saddabae': {"colores": ['Negro']},
-    'Polerón full zip Trivial m3 Saddabae': {"colores": ['Negro']},
-    'Polerón full zip trivial Saddabae': {"colores": ['Negro']},
-    'Polerón Minimal m2 Saddabae': {"colores": ['Negro']},
-    'Polerón minimal Saddabae': {"colores": ['Negro']},
-    'Polerón ninja Daemon': {"colores": ['Negro']},
-    'Polerón ninja Desperatio': {"colores": ['Negro']},
-    'Polerón ninja Flagitium': {"colores": ['Negro']},
-    'Polerón ninja Flagitium': {"colores": ['Negro']},
-    'Poleron ninja Gehenna': {"colores": ['Negro']},
-    'Polerón ninja Kuromi': {"colores": ['Negro']},
-    'Polerón Ninja Maledictio': {"colores": ['Negro']},
-    'Polerón ninja Manes': {"colores": ['Negro']},
-    'Polerón ninja Venom': {"colores": ['Negro']},
-    'Polerón Ninja Vampyrus': {"colores": ['Negro']},
-    'Polerón Ninja Vastitas': {"colores": ['Negro']},
-    'Polerón personajes Saddabae': {"colores": ['Negro']},
-    'Polerón Sad Rulay Saddabae': {"colores": ['Negro']},
-    'Poleroón ninja Draco': {"colores": ['Negro']},
-    "MOTION BASIC ACERO": {"categoria": "poleron"},
-    "SPACY GRAY": {"categoria": "poleron"},
-    "MOTION ACID WASH BASIC": {"categoria": "poleron"},
-    "MOTION BASIC GBLACK": {"categoria": "poleron"},
-    "MOTION CHOCOLATE": {"categoria": "poleron"},
-    "MOTION BASIC GRAY": {"categoria": "poleron"},
-    "MOTION BASIC": {"categoria": "poleron"},
-    "SPACY BLACK": {"categoria": "poleron"},
-    "GRAPE": {"categoria": "poleron"},
-    "WORK HRD": {"categoria": "poleron"},
-    "TRUE BLACK": {"categoria": "poleron"},
-    "CHERRY BOMB": {"categoria": "poleron"},
+    'Polerón Acid Wash Ignis': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón ninja Daemon': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón Acid Wash gris Nocturnus': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón Acid Wash Rosado Timor': {"colores": ['Rosado'], "corte": "oversize"},
+    'Polerón cafe Acid Wash Profanus': {"colores": ['Café'], "corte": "oversize"},
+    'Polerón gris Acid Wash Umbrae': {"colores": ['Gris'], "corte": "oversize"},
+    'Polerón ninja Desperatio': {"colores": ['Negro'], "corte": "oversize"},
+    "Polerón ninja Flagitium": {"colores": ["Negro"], "corte": "oversize"},
+    'Poleron ninja Gehenna': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón ninja Kuromi': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón Ninja Maledictio': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón ninja Manes': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón ninja Venom': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón Ninja Vampyrus': {"colores": ['Negro'], "corte": "oversize"},
+    'Polerón Ninja Vastitas': {"colores": ['Negro'], "corte": "oversize"},
+    "Poleroón ninja Draco": {"categoria": "poleron", "colores": ["Negro"], "corte": "oversize"},
+    "SPACY GRAY": {"categoria": "poleron", "corte": "regular fit"},
+    "SPACY BLACK": {"categoria": "poleron", "corte": "boxy fit"},
     "HOODIE INSANE": {"categoria": "polera", "corte": "boxy fit"},
     # "Top elasticado" (ficha real) -- categoria "top" no tiene palabra
     # clave propia en clasificar_prenda() (solo "baby tee" cae ahi), y la
@@ -511,33 +511,14 @@ VERIFICADO_A_MANO = {
 
     # --- Feroni Studios (2026-08-27) --- corte real sacado de la
     # descripcion real de la ficha (nombre no trae la palabra clave).
-    "Long Sleeve FERONI": {"corte": "slim fit"},
     "Full Zip Hoodie Leopardo": {"corte": "boxy fit"},
 
     # --- Blazze (2026-08-27) --- ninguno de los 18 nombres trae la
     # categoria/corte (son solo codigos "Blazze 0X - Color") -- todo sacado
     # de la descripcion real de la ficha.
-    "Blazze 04 - Zip set indigo": {"categoria": "conjunto"},
-    "Blazze 04 - Button set raw": {"categoria": "conjunto"},
-    "Blazze 04 - Indigo": {"categoria": "pantalon", "subtipo": "jeans"},
-    "Blazze 04 - Raw": {"categoria": "pantalon", "subtipo": "jeans"},
-    "Blazze 04 - Black": {"categoria": "pantalon", "subtipo": "jeans"},
     # Color "Celeste" confirmado por foto real (2026-09-03, pedido usuario).
-    "Blazze 04 - Light blue": {"categoria": "pantalon", "subtipo": "jeans", "colores": ["Celeste"]},
-    "Blazze 04 - Zip jacket indigo": {"categoria": "chaqueta", "subtipo": "mezclilla"},
-    "Blazze 04 - Button jacket raw": {"categoria": "chaqueta", "subtipo": "mezclilla"},
-    "Blazze 03 - Bare Waist Black": {"categoria": "pantalon", "subtipo": "jeans"},
-    "Blazze 03 - Bare Waist Blue": {"categoria": "pantalon", "subtipo": "jeans", "colores": ["Celeste"]},
     # "pierna recta" literal en la ficha real de los 4 "Blazze 01".
-    "Blazze 01 - Blue": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
-    "Blazze 01 - Gray": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
-    "Blazze 01 - White": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
-    "Blazze 01 - Black": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight"},
     # "El short tiro bajo..." literal en la ficha real de los 4 "Blazze 02".
-    "Blazze 02 - Black": {"categoria": "shorts", "subtipo": "jeans"},
-    "Blazze 02 - White": {"categoria": "shorts", "subtipo": "jeans"},
-    "Blazze 02 - Mid blue": {"categoria": "shorts", "subtipo": "jeans"},
-    "Blazze 02 - Light blue": {"categoria": "shorts", "subtipo": "jeans"},
 
     # --- Kagi (2026-08-27) --- solo se cargaron 6 de 45 productos (pedido
     # explicito del usuario: solo jeans/polerones/poleras/chalecos/
@@ -555,8 +536,6 @@ VERIFICADO_A_MANO = {
     # propia foto real (no ambos), para que busqueda y foto mostrada calcen:
     # "TEE REGALA FLORES" = negro (confirmado por foto), "TEE FLORES, COMO
     # LLAVES" = blanco (confirmado por foto, distinto producto/foto).
-    "TEE REGALA FLORES": {"colores": ["Negro"]},
-    "TEE FLORES, COMO LLAVES": {"colores": ["Blanco"]},
 
     # --- OVA Chile ---
     # "Basics Heavyweight": 100% algodon, 280g, regular fit (ficha propia).
@@ -595,7 +574,6 @@ VERIFICADO_A_MANO = {
     # parte de arriba. Bug real detectado por el usuario (2026-08-26):
     # buscando "poleron oversize" aparecian estos "buzos" mezclados.
     # Categoria override + subtipo "buzo" (pantalon admite ese subtipo).
-    "BUZO BAGGY OVA APPAREL NEGRO (PREVENTA)": {"categoria": "pantalon", "subtipo": "buzo"},
     "BUZO BAGGY OVA APPAREL GRIS (PREVENTA)": {"categoria": "pantalon", "subtipo": "buzo"},
 
     # --- Oversaints ---
@@ -605,8 +583,6 @@ VERIFICADO_A_MANO = {
     "Knit cream": {"corte": "regular fit"},
     "Knit mint green": {"corte": "regular fit"},
     # Poleron con cierre (zipper): ficha dice "Standar fit" tambien.
-    "Poleron black zipper": {"corte": "regular fit"},
-    "Poleron pink zipper": {"corte": "regular fit"},
     "Poleron Crema Anillo": {"material": "algodon_100", "corte": "regular fit"},
     # Linea "OS" (Oversaints confirma que "OS" = Oversize en la ficha real
     # de "Poleron OS Celeste"; "Gris Stone 777" comparte el mismo slug
@@ -622,28 +598,20 @@ VERIFICADO_A_MANO = {
     # Boxy fit" para ambos tipos de prenda de esta linea.
     "COMMON HOODIE MORO": {"corte": "boxy fit"},
     "COMMON HOODIE AZURE": {"corte": "boxy fit"},
-    "COMMON HOODIE MOSS": {"corte": "boxy fit"},
-    "COMMON LONG SLEEVE MORO": {"corte": "boxy fit"},
     "COMMON LONG SLEEVE AZURE": {"corte": "boxy fit"},
     "COMMON LONG SLEEVE MOSS": {"corte": "boxy fit"},
     # Linea "Foundation": la chaqueta si declara "Fit: Boxy fit" en su
     # ficha -- el pantalon de la misma linea NO se revisa por separado
     # (prenda inferior usa otra tabla de cortes), no se generaliza.
-    "FOUNDATION JACKET": {"corte": "boxy fit"},
-    "FOUNDATION TROUSER": {"corte": "sin corte definido"},
-    "FOUNDATION TROUSER BLACK": {"corte": "sin corte definido"},
+    "FOUNDATION JACKET": {"corte": "boxy fit", "subtipo": "Otro"},
     # Linea "Shift"/"Grid" (zip, hoodie, tee, longsleeve): ficha real sin
     # ningun corte mencionado, en 2 productos representativos revisados.
     "GRID LAYER TEE MELANGE": {"corte": "sin corte definido"},
     "GRID LAYER TEE NAVY": {"corte": "sin corte definido"},
-    "GRID SHIFT ZIP MELANGE": {"corte": "sin corte definido"},
-    "GRID SHIFT ZIP NAVY": {"corte": "sin corte definido"},
     "RAW SHIFT HOODIE BLACK": {"corte": "sin corte definido"},
     "ACID SHIFT HOODIE": {"corte": "sin corte definido"},
     "DUAL SHIFT TEE SAND": {"corte": "sin corte definido"},
-    "PATCH SHIFT ZIP BLACK": {"corte": "sin corte definido"},
     "SHIFT LONGSLEEVE BLACK": {"corte": "sin corte definido"},
-    "RAW DENIM JACKET": {"corte": "sin corte definido"},
     "HOODIE ESSENCE CLASSIC II / PRE-ORDER": {"corte": "sin corte definido"},
 
     # --- Roots South ---
@@ -681,21 +649,8 @@ VERIFICADO_A_MANO = {
     # pero SIN ningun corte mencionado -- se generaliza el material (misma
     # polera base para toda la linea de estampados) pero no se inventa un
     # corte que la ficha no da.
-    "Polera Logo Verde": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera Oranwutang Logo Negra": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera Oranwutang Micro Blanca": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera Pixa-Throwup Negra": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera SheoxTatto Negra": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera TagxGiro Burdeo": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera TagxGiro Negra": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera Pixa-Throwup Mora": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera Flubber": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera Mono Hiphop 50 Años Blanca": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera SheoxTatto": {"material": "algodon_100", "corte": "sin corte definido"},
-    "Polera Logo Clásica": {"material": "algodon_100", "corte": "sin corte definido"},
     # "Canguro" (poleron con bolsillo canguro): ficha real revisada sin
     # ningun dato de corte ni material.
-    "Canguro Calaka Letras Verdes": {"corte": "sin corte definido"},
     "Canguro Sunset Mujer": {"corte": "sin corte definido"},
     # Las 4 "Sudadera" se sacaron del catalogo (ver lista SELVANEGRA_POLERAS
     # mas abajo) -- eran musculosas de liquidacion, no polerones.
@@ -751,13 +706,6 @@ VERIFICADO_A_MANO = {
     # pantalon ancho de pierna recta y caida suelta, short amplio en el
     # muslo -> baggy en los 2. Mismo corte generalizado a todos los colores
     # de la misma linea (preventa incluida), nunca entre lineas distintas.
-    "PANTALON BASICO HEAVYWEIGHT (ROSADO)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy"},
-    "PANTALON BASICO HEAVYWEIGHT (CAFE)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy"},
-    "PANTALON MARINO (HEAVYWEIGHT)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy"},
-    "PANTALON BASICO HEAVYWEIGHT NEGRO (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy"},
-    "PANTALON BASICO HEAVYWEIGHT GRIS (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy"},
-    "PANTALON BASICO HEAVYWEIGHT AZUL MARINO (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy"},
-    "PANTALON BASICO HEAVYWEIGHT BURDEO (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy"},
     "SHORT BLACKSUMMER (HEAVYWEIGHT)": {"corte": "baggy"},
     # "Polerón Básico Heavyweight": la ficha dice literal "Boxy Regular Fit"
     # -- frase ambigua (mezcla 2 cortes), asi que se reviso la foto real
@@ -786,28 +734,6 @@ VERIFICADO_A_MANO = {
     # corte por foto. "Thunder Black" no trae "jean" en el nombre -- ficha
     # real confirma que es un pantalon/jean de la misma linea (categoria
     # override).
-    "Black acid wash jeans": {"corte": "baggy"},
-    "Black bur jeans": {"corte": "baggy"},
-    "Black diamond flare jeans": {"corte": "baggy"},
-    "Black Ripped jeans": {"corte": "baggy"},
-    "Blessing VVS jeans": {"corte": "baggy"},
-    "Blue Glow VVS jeans": {"corte": "baggy"},
-    "Blue motion cargo flare jeans": {"corte": "baggy"},
-    "Cloud denim cargo jeans": {"corte": "baggy"},
-    "Denim diamond flare jeans": {"corte": "baggy"},
-    "Denim Essentials jeans": {"corte": "baggy"},
-    "Essentials Black jeans": {"corte": "baggy"},
-    "Essentials Blue jeans": {"corte": "baggy"},
-    "Iron Black jeans": {"corte": "baggy"},
-    "Iron Blue Cargo jeans": {"corte": "baggy"},
-    "Iron grey jeans": {"corte": "baggy"},
-    "Iron Ice jeans": {"corte": "baggy"},
-    "Light Ripped jeans": {"corte": "baggy"},
-    "Short blackrugged": {"corte": "baggy", "subtipo": "cargo"},
-    "Sky blue cargo jeans": {"corte": "baggy", "colores": ["Celeste"]},
-    "Sky frost jeans": {"corte": "baggy"},
-    "Thunder Black": {"corte": "baggy", "categoria": "pantalon", "subtipo": "jeans"},
-    "Thunder VVS jeans": {"corte": "baggy"},
 
     # --- Floating (2026-08-23) --- linea "Perfect Fit" (polerones): ficha
     # dice "combinacion entre boxy y oversize" (texto ambiguo, mezcla 2
@@ -823,30 +749,16 @@ VERIFICADO_A_MANO = {
     # que NO es corto/crop (a pesar del nombre) y calce "ajustado" -> slim
     # fit, largo normal (no se fuerza el largo "crop" que normalmente
     # implica el subtipo baby tee -- ver aviso en docs/catalogo_real.md).
-    "Aero pants": {"categoria": "pantalon", "corte": "baggy"},
     # "Baby tee" hace match con la regla automatica ES_BABY_TEE (categoria
     # "top", largo "crop"), pero LA FICHA REAL de este producto puntual dice
     # explicitamente "no es corto" y da medidas de largo normal -- se
     # respeta la ficha real por sobre la regla generica del nombre.
-    "Baby tee": {"corte": "slim fit", "largo": "normal"},
-    "FLTNG Zip Hoodie": {"categoria": "poleron", "corte": "oversize"},
-    "FLTNG ZIP V2": {"categoria": "poleron", "corte": "oversize"},
     "Hover Denim": {"corte": "baggy"},
     # "Noir Pulse"/"Nuit Volt": el nombre no trae ninguna palabra clave de
     # categoria (ni "hoodie"/"poleron"/"zip") -- confirmado por ficha real
     # que son polerones (franela de algodon, gorro doble forrado).
-    "Noir Pulse": {"categoria": "poleron", "corte": "oversize"},
-    "Noir Pulse - Aureum": {"categoria": "poleron", "corte": "oversize"},
-    "Noir Pulse - Emerald": {"categoria": "poleron", "corte": "oversize"},
-    "Noir Pulse - Morganite": {"categoria": "poleron", "corte": "oversize"},
     "Nomad Jort": {"categoria": "shorts", "corte": "baggy"},
-    "Nuit Volt": {"categoria": "poleron", "corte": "oversize"},
-    "Nuit Volt - Heaven": {"categoria": "poleron", "corte": "oversize"},
-    "Nuit Volt - Void": {"categoria": "poleron", "corte": "oversize"},
-    "Polera Esencial - Blanca": {"corte": "boxy fit"},
-    "Polera Esencial - Verde botella": {"corte": "boxy fit"},
     "Shadow Jorts": {"categoria": "shorts", "corte": "baggy"},
-    "Stealth Jorts": {"categoria": "shorts", "corte": "baggy"},
 
     # --- BANG GANG (2026-08-23) --- ficha real: TODAS las poleras usan
     # "fit regular unisex" (verificado en "Polera 333 Black", texto de
@@ -859,7 +771,6 @@ VERIFICADO_A_MANO = {
     # (igual que "Thunder Black" en ForceBlack) -- categoria/subtipo a
     # mano, corte "baggy" confirmado por foto (pantalon cargo ancho).
     "Polera Crystals Logo Acid Wash": {"corte": "regular fit"},
-    "Poleron Crystals Logo BG": {"corte": "boxy fit"},
     "Poleron Heavy Crystals": {"corte": "boxy fit"},
     "Poleron Crystals Logo BG": {"corte": "boxy fit"},
     "Polera Crystals Logo Heavyweight Black": {"corte": "regular fit"},
@@ -967,101 +878,49 @@ VERIFICADO_A_MANO = {
     "Hoodie Unk. Acid Green": {"corte": "oversize"},
     "Hoodie Unk. Acid Black": {"corte": "oversize"},
     "Hoodie UNK. Smile Pink": {"corte": "oversize"},
-    "Jogger Unk. Generation Black": {"categoria": "pantalon", "corte": "straight fit"},
     "Hoodie Camaleón Safary Green": {"corte": "oversize"},
     "Polerón Camaleón Skate Black": {"corte": "oversize"},
     "Polerón Camaleón Skate White": {"corte": "oversize"},
     "Polerón Unk. Black & White": {"corte": "oversize"},
-    "Polerón Unk. Focus Colors": {"corte": "oversize"},
     "Polerón Unk. Focus Orange": {"corte": "oversize"},
-    "Polar Hoodie UNK. Blue": {"corte": "oversize"},
     "Polar Hoodie UNK. Black": {"corte": "oversize"},
-    "Hoodie UNK. Tie Dye Jade": {"corte": "oversize"},
     "Hoodie UNK. Original White": {"corte": "oversize"},
     "Hoodie UNK. Original Calypso": {"corte": "oversize"},
     "Jogger UNK. Euro Gray": {"categoria": "pantalon", "corte": "straight fit"},
-    "Jogger UNK. Euro Calypso": {"categoria": "pantalon", "corte": "straight fit"},
-    "Jogger Unk. Green": {"categoria": "pantalon", "corte": "straight fit"},
-    "Hoodie Block White": {"corte": "oversize"},
-    "Hoodie Unk. Spiral Mint": {"corte": "oversize"},
-    "Jogger Unk. Dark": {"categoria": "pantalon", "corte": "straight fit"},
-    "Hoodie Unk. Spiral Blue": {"corte": "oversize"},
-    "Hoodie Unk. Old Brown": {"corte": "oversize"},
     "Hoodie Unk. Old Black": {"corte": "oversize"},
     "Hoodie UNK. Smile Mint": {"corte": "oversize"},
-    "Hoodie Unk. Peace Steel": {"corte": "oversize"},
-    "Short Unk. Tiger Gray": {"corte": "straight fit"},
     "Polera UNK. Infinity Black": {"corte": "sin corte definido"},
     "Polera UNK. Infinity Verde Amarelo": {"corte": "sin corte definido"},
     "Polera UNK. Infinity Sweet Lilac": {"corte": "sin corte definido"},
     "Polera Unk. Infinity Greensky": {"corte": "sin corte definido"},
     "Polera Unk. Infinity Shine White": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Carbon Color Print": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Blue Snow": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Sky Blue": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Crema Color Print": {"corte": "sin corte definido"},
-    "Polera Unk. New Plane Steel Green": {"corte": "sin corte definido"},
+    "Jacket Cortaviento Carbon Color Print": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Blue Snow": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Sky Blue": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Crema Color Print": {"corte": "oversize", "subtipo": "cortavientos"},
     "Polera UNK. Spiral White": {"corte": "sin corte definido"},
     "Polera UNK. Pastel White": {"corte": "sin corte definido"},
-    "Polera UNK. Head Pro Black": {"corte": "sin corte definido"},
-    "Polera UNK. Pastel Black": {"corte": "sin corte definido"},
     "Polera UNK. Head Pro Light Blue": {"corte": "sin corte definido"},
-    "Polera Camaleón Army White": {"corte": "sin corte definido"},
-    "Polera UNK. Future Green": {"corte": "sin corte definido"},
     "Polera Unk. Skate Large White": {"corte": "sin corte definido"},
-    "Polera Unk. Skate Large Black": {"corte": "sin corte definido"},
     "Polera Unk. Peace Black": {"corte": "sin corte definido"},
     "Polera Unk. Peace Orange": {"corte": "sin corte definido"},
     "Polera Unk. Hero Peach": {"corte": "sin corte definido"},
     "Polera Unk. Hero Lilac": {"corte": "sin corte definido"},
-    "Polera Unk. Large Rainbow Pink": {"corte": "sin corte definido"},
     "Polera Unk. Large Rainbow Blue": {"corte": "sin corte definido"},
-    "Jacket Unk. Peak Pink": {"corte": "sin corte definido"},
-    "Jacket Unk. Peak Orange": {"corte": "sin corte definido"},
-    "Jacket Unk. Mountain Blue": {"corte": "sin corte definido"},
-    "Polera UNK. Premium Burgundy": {"corte": "sin corte definido"},
-    "Polera UNK. Tie Dye Duo Mint": {"corte": "sin corte definido"},
-    "Polera Camaleón Tie Dye Blue": {"corte": "sin corte definido"},
-    "Jacket Unk. Mountain Brown": {"corte": "sin corte definido"},
-    "Polera Camaleón Tie Dye Burgundy": {"corte": "sin corte definido"},
-    "Polera Tie dye World Blue": {"corte": "sin corte definido"},
-    "Polera Unk. Skate Light Blue": {"corte": "sin corte definido"},
-    "Jacket Cortaviento UNK. 4k Colors": {"corte": "sin corte definido"},
-    "Jacket Cortaviento UNK. 4K Black": {"corte": "sin corte definido"},
-    "Jacket Cortaviendo unk. 4K Blue": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Unk. Crack Gray": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Unk. Rainbow Blue": {"corte": "sin corte definido"},
-    "Polera Unk. Skate Pink": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Unk. Rainbow Pink": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Monster Blue": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Monster White": {"corte": "sin corte definido"},
-    "Jacket Cortaviento UNK. Wire White": {"corte": "sin corte definido"},
+    "Jacket Unk. Peak Orange": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Unk. Mountain Blue": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Unk. Mountain Brown": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Unk. Rainbow Blue": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Monster Blue": {"corte": "oversize", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Monster White": {"corte": "oversize", "subtipo": "cortavientos"},
     "Polera UNK. Pocket Pink": {"corte": "sin corte definido"},
     "Polera UNK. Pocket Light Blue": {"corte": "sin corte definido"},
     "Polera UNK. Summer Mint": {"corte": "sin corte definido"},
-    "Polera Unk. Marley Red": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Camaleón Head Blue": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Camaleón Head Black": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Unk. Snowflake White": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Unk. Noodles Pink": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Unk. Noodles Tiffany": {"corte": "sin corte definido"},
-    "Jacket Cortaviento Unk. Fall Calypso": {"corte": "sin corte definido"},
-    "Polera Camaleón Dynamic Turquoise": {"corte": "sin corte definido"},
-    "Polera Camaleón Dynamic Coral": {"corte": "sin corte definido"},
-    "Polera Camaleón Crazy Black": {"corte": "sin corte definido"},
-    "Polera Camaleón Crazy Oil Blue": {"corte": "sin corte definido"},
-    "Polera Kmaleón Tie Dye Pink": {"corte": "sin corte definido"},
-    "Polera UNK. Tie Dye Duo Steel": {"corte": "sin corte definido"},
-    "Polera UNK. Plane Blue": {"corte": "sin corte definido"},
     "Polera UNK. Spiral Black": {"corte": "sin corte definido"},
     "Short Unk. Tiger Blue": {"corte": "straight fit"},
     "Polerón Unk. Cubox Fluor": {"corte": "oversize"},
     "Polerón Unk. Cubox Lilac": {"corte": "oversize"},
     "Jogger Unk. Rainbow Pink": {"categoria": "pantalon", "corte": "straight fit"},
-    "Jogger Unk. Rainbow blue": {"categoria": "pantalon", "corte": "straight fit"},
-    "Joggers Unk. Generation Blue": {"categoria": "pantalon", "corte": "straight fit"},
-    "Hoodie Unk. Level Orange": {"corte": "oversize"},
-    "Hoodie Camaleón Safary Blue": {"corte": "oversize"},
     # --- Doslobos (2026-08-23) --- "Hoodie"/"Poleron": ficha real dice
     # literal "Oversize-fit" (verificado en 2 productos representativos).
     # "Sweater"/"Cardigan": mismo texto "Oversize-fit", pero sin mencion
@@ -1077,237 +936,17 @@ VERIFICADO_A_MANO = {
     # "Chaquetas": generalizado a oversize verificado en 1 producto
     # representativo ("CAMO 10TH BOMBER-JACKET") -- menor certeza que el
     # resto, marcar para revisar si se quiere mas precision.
-    "NITIDO long sleeve": {"corte": "sin corte definido"},
-    "WOLVES emblem tee": {"corte": "sin corte definido"},
-    "LOGO black tee": {"corte": "sin corte definido"},
-    "NITIDO vibe hoodie": {"corte": "oversize"},
-    "LOGO dark hoodie": {"corte": "oversize"},
-    "WASHED long sleeve": {"corte": "sin corte definido"},
-    "LOBO plaid shirt": {"corte": "sin corte definido"},
-    "RESILIO plaid shirt": {"corte": "sin corte definido"},
-    "BIG LOGO RAW SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "BIG LOGO BLACK SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "+ TIME 4 LOVE SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "SUEDE VAQUERA-JACKET": {"corte": "oversize"},
-    "FEAR BLACK HOODIE": {"corte": "oversize"},
-    "SAINTWOLF HOODIE": {"corte": "oversize"},
-    "SAINT WOLF TEE": {"corte": "sin corte definido"},
-    "+ TIME 4 LOVE TEE": {"corte": "sin corte definido"},
-    "METAL GRAY HOODIE": {"corte": "oversize"},
-    "METAL GRAY PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "METAL BLACK PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "METAL BLACK HOODIE": {"corte": "oversize"},
-    "ESFINGE CATS HOODIE": {"corte": "oversize"},
-    "ESFINGE CATS TEE": {"corte": "sin corte definido"},
-    "3D CHROME HOODIE": {"corte": "oversize"},
-    "DSLS JAPO TEE": {"corte": "sin corte definido"},
-    "MANADA TOUR HOODIE": {"corte": "oversize"},
-    "MANADA TOUR BLACK TEE": {"corte": "sin corte definido"},
-    "MANADA TOUR WHITE TEE": {"corte": "sin corte definido"},
-    "BLACK MINIMAL TEE": {"corte": "sin corte definido"},
-    "BIG LOGO MINT SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "BLACK WOLF PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "LIGHT BLUE JORT": {"categoria": "shorts", "corte": "baggy"},
-    "METAL BLACK JORT": {"categoria": "shorts", "corte": "baggy"},
-    "CAMO GRAY JORT": {"categoria": "shorts", "corte": "baggy"},
-    "ICE BLUE PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "CAMO GRAY PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "BIG LOGO PINK SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "BIG LOGO GRAY SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "ANNIVERSARY 10 JAPO-TEE": {"corte": "sin corte definido"},
-    "ESFINGE PINK CATS TEE": {"corte": "sin corte definido"},
-    "BLACK LOGO 3D TEE": {"corte": "sin corte definido"},
-    "METAL CROMO BLACK HOODIE": {"corte": "oversize"},
-    "ACABÉ TRIUNFANDO HOODIE": {"corte": "oversize"},
-    "ESFINGE PINK CATS HOODIE": {"corte": "oversize"},
-    "ANNIVERSARY 10 CAMISETA": {"corte": "sin corte definido"},
-    "CAMO 10TH BOMBER-JACKET": {"corte": "oversize"},
-    "BLACK 10TH VARSITY-JACKET": {"corte": "oversize"},
     "DENIM SKULL JORT": {"categoria": "shorts", "corte": "baggy"},
-    "DENIM RAPPORT JORT": {"categoria": "shorts", "corte": "baggy"},
-    "SKULL HOODIE": {"corte": "oversize"},
-    "GRITA Y EXHALE HOODIE": {"corte": "oversize"},
-    "GRITA & EXHALE TEE": {"corte": "sin corte definido"},
-    "BLUE SKULL TEE": {"corte": "sin corte definido"},
-    "SUEDE VAQUERA-JACKET": {"corte": "oversize"},
-    "TIGER PANTS MEN": {"categoria": "pantalon", "corte": "baggy"},
-    "STRASS BLUE TEE": {"corte": "sin corte definido"},
-    "STRASS BLACK TEE": {"corte": "sin corte definido"},
-    "WOLVES CROME VARSITY-JACKET": {"corte": "oversize"},
-    "SUEDE VAQUERA-JACKET": {"corte": "oversize"},
-    "TOTAL BLACK VARSITY-JACKET": {"corte": "oversize"},
-    "MANADA VARSITY-JACKET": {"corte": "oversize"},
-    "STRASS BLUE HOODIE": {"corte": "oversize"},
-    "STRASS BLACK HOODIE": {"corte": "oversize"},
-    "KRYPTA TEE": {"corte": "sin corte definido"},
-    "KRYPTA HOODIE": {"corte": "oversize"},
-    "GRITA & EXHALE TEE": {"corte": "sin corte definido"},
-    "BLVCK LOGO TEE": {"corte": "sin corte definido"},
-    "SKULL DARK PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "SKULL SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "DETHKID BABY-TEE": {"corte": "sin corte definido"},
-    "DETHKID HOODIE": {"corte": "oversize"},
-    "DETHKID TEE": {"corte": "sin corte definido"},
-    "DEHTKID BOMBER-JACKET": {"corte": "oversize"},
-    "EXHALE BLUE SWEATER.": {"categoria": "chaleco", "corte": "oversize"},
-    "BLUE SKULL TEE": {"corte": "sin corte definido"},
-    "MANADA STONE TEE": {"corte": "sin corte definido"},
-    "BLACK CORE TEE": {"corte": "sin corte definido"},
-    "CAPUCHA BLACK GILETTE": {"categoria": "poleron", "corte": "oversize"},
-    "TIGER BOMBER-JACKET": {"corte": "oversize"},
-    "TIGER PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "BLACK RIVET FLARE-PANTS": {"categoria": "pantalon", "corte": "baggy"},
     "GRAY TIGER CARDIGÁN": {"categoria": "chaleco", "corte": "oversize"},
-    "EXHALE BLUE SWEATER": {"categoria": "chaleco", "corte": "oversize"},
-    "MANADA STONE HOODIE": {"corte": "oversize"},
-    "BLACK VAQUERA-JACKET": {"corte": "oversize"},
-    "CORE BLACK HOODIE": {"corte": "oversize"},
-    "I LOVE DSLS TEE": {"corte": "sin corte definido"},
-    "GRAY JAPO-TEE": {"corte": "sin corte definido"},
-    "VARSITY JACKET 09": {"corte": "oversize"},
-    "CAMO GREEN PANTS MEN": {"categoria": "pantalon", "corte": "baggy"},
-    "CAMO GREEN PANTS GIRL": {"categoria": "pantalon", "corte": "baggy"},
-    "CAMO GRAY PANTS GIRL": {"categoria": "pantalon", "corte": "baggy"},
-    "CAMO GRAY PANTS MEN": {"categoria": "pantalon", "corte": "baggy"},
-    "BOXY TEE NEGRA": {"corte": "sin corte definido"},
-    "HOODIE CAMO STRASS": {"corte": "oversize"},
     "SWEATER CARDIGÁN 09": {"categoria": "chaleco", "corte": "oversize"},
-    "BOXY TEE NEGRA // NocityLimits": {"corte": "sin corte definido"},
-    "Faith&Love HOODIE": {"corte": "oversize"},
-    "María flame TEE": {"corte": "sin corte definido"},
-    "Faith&Love TEE": {"corte": "sin corte definido"},
-    "Love-strong TEE": {"corte": "sin corte definido"},
-    "Wolf-graffiti TEE": {"corte": "sin corte definido"},
-    "Rosary TEE": {"corte": "sin corte definido"},
-    "Dsls-cromo TEE": {"corte": "sin corte definido"},
-    "Wolf graffiti CREWNECK": {"categoria": "poleron", "corte": "oversize"},
-    "María flame HOODIE": {"corte": "oversize"},
     "HOODIE VIRGEN": {"corte": "oversize"},
-    "Embroidery PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "Denim-rapport JACKET": {"corte": "oversize"},
-    "Denim-rapport PANTS": {"categoria": "pantalon", "corte": "baggy"},
-    "Denim-tribal SHORT": {"categoria": "shorts", "corte": "baggy"},
-    "Denim-rapport JORT": {"categoria": "shorts", "corte": "baggy"},
-    "LA FERIA ON TOUR / Anniversary tee": {"corte": "sin corte definido"},
-    "POLERA STRASS GRIS": {"corte": "sin corte definido"},
-    "LOGO STRASS TEE": {"corte": "sin corte definido"},
-    "LOGO STRASS HOODIE": {"corte": "oversize"},
-    "JORT CARGO CAMO VERDE": {"categoria": "shorts", "corte": "baggy"},
-    "JORT CARGO CAMO GRIS": {"categoria": "shorts", "corte": "baggy"},
     "TANK TOP MEN": {"corte": "sin corte definido"},
-    "TANK TOP GIRL": {"corte": "sin corte definido"},
-    "BOXY TEE GRIS": {"corte": "sin corte definido"},
-    "SWEATER CAPUCHA LOGO": {"categoria": "chaleco", "corte": "oversize"},
-    "VARSITY-JACKET CAMO": {"corte": "oversize"},
     "STRASS REED HOODIE": {"corte": "oversize"},
     "STRASS BLACK HOODIE": {"corte": "oversize"},
-    "STRASS PINK HOODIE": {"corte": "oversize"},
-    "VARSITY JACKET LUCIERNAGA": {"corte": "oversize"},
-    "CATS GRAY TEE": {"corte": "sin corte definido"},
-    "CAPUCHA JACKET BLACK 02": {"corte": "oversize"},
-    "POLERA BLACK 02 BOXY": {"corte": "sin corte definido"},
-    "VARSITY JACKET BLACK 02": {"corte": "oversize"},
-    "TEE BOXY DARK PINK": {"corte": "sin corte definido"},
-    "CROP-TOP DARK PINK": {"corte": "sin corte definido"},
-    "CROP-TOP CROMO NEGRO": {"corte": "sin corte definido"},
-    "HOODIE CROMO OVERSIZE": {"corte": "oversize"},
     "POLERA LOCK ARDE": {"corte": "sin corte definido"},
-    "CARGO-PANTS WOLVES": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo"},
-    "CARPINTERO-PANTS CHEETAH": {"categoria": "pantalon", "corte": "baggy"},
-    "FLARE-PANTS DARK": {"categoria": "pantalon", "corte": "baggy"},
-    "CROP-TOP CROMO GRIS": {"corte": "sin corte definido"},
-    "POLERA CONEXIÓN NEGRA": {"corte": "sin corte definido"},
-    "POLERA UNIÓN GRIS": {"corte": "sin corte definido"},
-    "POLERA OBSIDIANA CLIP": {"corte": "sin corte definido"},
-    "POLERA NOCTURA DISCO": {"corte": "sin corte definido"},
-    "SWEATER TRIBAL": {"categoria": "chaleco", "corte": "oversize"},
-    "SWEATER SALLY ROJO": {"categoria": "chaleco", "corte": "oversize"},
-    "SWEATER JACK NEGRO": {"categoria": "chaleco", "corte": "oversize"},
-    "VARSITY-JACKET ARCANA CAFÉ": {"corte": "oversize"},
-    "VARSITY-JACKET ARCANA NEGRA": {"corte": "oversize"},
-    "HOODIE CROMO BOXY": {"corte": "oversize"},
-    "HOODIE DARK OSCURIDAD": {"corte": "oversize"},
-    "CREWNECK DARK ARCANA": {"categoria": "poleron", "corte": "oversize"},
-    "Pants \"Black Wolf\"": {"categoria": "pantalon", "corte": "baggy"},
-    "Tee gray \"Angel wings\"": {"corte": "sin corte definido"},
-    "Tee Gray \"Girly\"": {"corte": "sin corte definido"},
-    "Snake Blue Tee": {"corte": "sin corte definido"},
-    "Pants \"Gray Wolf\"": {"categoria": "pantalon", "corte": "baggy"},
-    "Zipper gray hoodie": {"corte": "oversize"},
-    "CREWNECK OXIDADO MINIMAL": {"categoria": "poleron", "corte": "oversize"},
-    "Tee oversize gray logo": {"corte": "sin corte definido"},
-    "Tee Black \"Night Witch\"": {"corte": "sin corte definido"},
-    "Tee Black \"Biker skeletons\"": {"corte": "sin corte definido"},
-    "Tee Minimal \"Mint\"": {"corte": "sin corte definido"},
-    "Tee Stripe \"Orange\"": {"corte": "sin corte definido"},
-    "Tee Stripe \"Cross\"": {"corte": "sin corte definido"},
-    "Cargo zipper pants": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo"},
-    "Two wolves hoodie": {"corte": "oversize"},
-    "CREWNECK GALGOS ETERNAL VERSIÓN": {"categoria": "poleron", "corte": "oversize"},
-    "Tee Oversize \"White Mask\"": {"corte": "sin corte definido"},
-    "Tee oversize black \"Anniversary Nº7\"": {"corte": "sin corte definido"},
-    "CAMO LOGO SHIRT": {"corte": "sin corte definido"},
-    "Camisa Moon Ritual": {"corte": "oversize", "categoria": "camisa"},
-    "ROMULO Y REMO TEE": {"corte": "sin corte definido"},
     "Raw eonia hoodie": {"corte": "oversize"},
-    "Post vortex gray hoodie": {"corte": "oversize"},
-    "WOLVES BLACK TEE": {"corte": "sin corte definido"},
-    "Tee oversize gray logo": {"corte": "sin corte definido"},
-    "Skull blue tee": {"corte": "sin corte definido"},
-    "Monje black tee": {"corte": "sin corte definido"},
-    "Monje color gray tee": {"corte": "sin corte definido"},
-    "Rómulo y Remo hoodie": {"corte": "oversize"},
-    "Skull gray tee": {"corte": "sin corte definido"},
-    "Wolf chrome tee": {"corte": "sin corte definido"},
-    "Tee oversize blue logo": {"corte": "sin corte definido"},
-    "WOLVES RED HOODIE": {"corte": "oversize"},
-    "Post Vortex Crewneck": {"categoria": "poleron", "corte": "oversize"},
-    "Moon raw hoodie": {"corte": "oversize"},
-    "Tee oversize black \"Angel\"": {"corte": "sin corte definido"},
-    "WOLVES GRAY/BLACK TEE": {"corte": "sin corte definido"},
-    "RED ANGEL TEE": {"corte": "sin corte definido"},
-    "MOON RITUAL BLACK TEE": {"corte": "sin corte definido"},
-    "MOON RITUAL GRAY/BLACK TEE": {"corte": "sin corte definido"},
-    "LUCIÉRNAGA BLACK CROPPED TEE": {"corte": "sin corte definido"},
-    "Tee Ninja \"Black\"": {"corte": "sin corte definido"},
-    "Hoodie Mint Logo": {"corte": "oversize"},
-    "LUCIÉRNAGA BLACK HOODIE": {"corte": "oversize"},
-    "Varsity Jacket Mint Minimal": {"corte": "oversize"},
-    "Tee Ninja \"Mint\"": {"corte": "sin corte definido"},
     "Sweater cardigán logo": {"categoria": "chaleco", "corte": "oversize"},
-    "LOGO CHROME TEE": {"corte": "sin corte definido"},
-    "Sweater Étnico": {"categoria": "chaleco", "corte": "oversize"},
-    "Varsity Jacket \"Brown Paisley\"": {"corte": "oversize"},
-    "Varsity Jacket Black Minimal": {"corte": "oversize"},
-    "Crewneck Galgos": {"categoria": "poleron", "corte": "oversize"},
-    "Tee Black \"orange mask\"": {"corte": "sin corte definido"},
-    "CHROME SWEATER": {"categoria": "chaleco", "corte": "oversize"},
     "Sweater cardigán skeleton": {"categoria": "chaleco", "corte": "oversize"},
-    "POLERA CALMA NEGRA": {"corte": "sin corte definido"},
-    "POLERA ALMA BLANCA": {"corte": "sin corte definido"},
-    "POLERÓN CONTIGO NEGRO": {"categoria": "poleron", "corte": "oversize"},
-    "POLERÓN SIEMPRE ROJO": {"categoria": "poleron", "corte": "oversize"},
-    "Varsity Jacket Black Wolf": {"corte": "oversize"},
-    "STRASS LUCIÉRNAGA HOODIE": {"corte": "oversize"},
-    "CATS BLACK HOODIE": {"corte": "oversize"},
-    "Tee Gray Galgos": {"corte": "sin corte definido"},
-    "CATS BLACK TEE": {"corte": "sin corte definido"},
-    "3D CHROME LOGO HOODIE": {"corte": "oversize"},
-    "POLERA DARK IGOR": {"corte": "sin corte definido"},
-    "JORT CARGO CORROÍDO": {"categoria": "shorts", "corte": "baggy"},
-    "CHAQUETA CORROÍDO": {"corte": "oversize"},
-    "PANTALÓN CARGO": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo"},
-    "PANTALÓN CARPINTERO": {"categoria": "pantalon", "corte": "baggy"},
-    "POLERA DARK CARRIE": {"corte": "sin corte definido"},
-    "CROP TOP LOGOGRAMA": {"corte": "sin corte definido"},
-    "POLERA LOGOGRAMA": {"corte": "sin corte definido"},
-    "POLERÓN INFINITO 08": {"categoria": "poleron", "corte": "oversize"},
-    "CAMISETA DARK ETERNAL": {"corte": "sin corte definido"},
-    "SWEATER MINIMALISTA": {"categoria": "chaleco", "corte": "oversize"},
-    "SWEATER ETERNAL": {"categoria": "chaleco", "corte": "oversize"},
-    "POLERA INFINITO 08": {"corte": "sin corte definido"},
-    "JORT CARPINTERO ETERNO 08": {"categoria": "shorts", "corte": "baggy"},
-    "CAMISA ETERNO 08": {"corte": "sin corte definido"},
 
     # --- Novorich (2026-08-24, ficha real via products.json) ---
     "HODDIE LUXURY SKY BLUE": {"corte": "oversize"},
@@ -1325,66 +964,43 @@ VERIFICADO_A_MANO = {
     # un modelo de un genero claro. Aplicado SOLO donde la foto lo confirma,
     # nunca por tienda completa (ver docs/buscador.md, seccion de intereses/
     # genero). Confianza "media" = cuerpo/torso visible sin rostro.
-    "BUZO BAGGY OVA APPAREL NEGRO (PREVENTA)": {"genero": "hombre"},  # torso a zapatillas, confianza media
-    "RAW DENIM JACKET": {"genero": "hombre"},
-    "COMMON HOODIE MOSS": {"genero": "hombre"},
-    "COMMON LONG SLEEVE MORO": {"genero": "mujer"},
-    "Polera Oranwutang Micro Blanca": {"genero": "mujer"},
-    "Polera Oranwutang Logo Negra": {"genero": "hombre"},
-    "Polera Pixa-Throwup Negra": {"genero": "hombre"},
-    "Polera SheoxTatto Negra": {"genero": "mujer"},
-    "Polera TagxGiro Burdeo": {"genero": "hombre"},
-    "Polera TagxGiro Negra": {"genero": "hombre"},
-    "Polera Pixa-Throwup Mora": {"genero": "hombre"},
-    "Polera Flubber": {"genero": "hombre"},
-    "Polera Mono Hiphop 50 Años Blanca": {"genero": "hombre"},
-    "Polera SheoxTatto": {"genero": "hombre"},
-    "Polera Logo Clásica": {"genero": "hombre"},
-    "Polera Logo Verde": {"genero": "mujer"},
-    "Canguro Calaka Letras Verdes": {"genero": "hombre"},
-    "PANTALON MARINO (HEAVYWEIGHT)": {"genero": "hombre"},  # confianza media, sin rostro
+    "BUZO BAGGY OVA APPAREL NEGRO (PREVENTA)": {"categoria": "pantalon", "subtipo": "buzo", "genero": "hombre"},
+    "RAW DENIM JACKET": {"corte": "boxy fit", "genero": "hombre"},
+    "COMMON LONG SLEEVE MORO": {"corte": "boxy fit", "genero": "mujer"},
+    "Polera Oranwutang Micro Blanca": {"material": "algodon_100", "corte": "sin corte definido", "genero": "mujer"},
+    "Polera Oranwutang Logo Negra": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera Pixa-Throwup Negra": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera SheoxTatto Negra": {"material": "algodon_100", "corte": "sin corte definido", "genero": "mujer"},
+    "Polera TagxGiro Burdeo": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera TagxGiro Negra": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera Pixa-Throwup Mora": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera Flubber": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera Mono Hiphop 50 Años Blanca": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera SheoxTatto": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera Logo Clásica": {"material": "algodon_100", "corte": "sin corte definido", "genero": "hombre"},
+    "Polera Logo Verde": {"material": "algodon_100", "corte": "sin corte definido", "genero": "mujer"},
+    "Canguro Calaka Letras Verdes": {"corte": "sin corte definido", "genero": "hombre"},
     "POLERA REGULAR FIT (HEAVYWEIGHT) ROSADO": {"genero": "mujer"},
     "POLERA REGULAR FIT (HEAVYWEIGHT) CAFE": {"genero": "mujer"},  # misma foto que la version rosado
     # ForceBlack: toda la tienda usa el mismo modelo hombre en cada foto
     # (selfie al espejo) -- se aplica por producto igual, no por tienda,
     # porque cada nombre es unico y la evidencia es la foto real de ESE
     # producto puntual, no una regla generica de la tienda.
-    "Black acid wash jeans": {"genero": "hombre"},
-    "Black bur jeans": {"genero": "hombre"},
-    "Black diamond flare jeans": {"genero": "hombre"},
-    "Black Ripped jeans": {"genero": "hombre"},
-    "Blessing VVS jeans": {"genero": "hombre"},
-    "Blue Glow VVS jeans": {"genero": "hombre"},
-    "Blue motion cargo flare jeans": {"genero": "hombre"},
-    "Cloud denim cargo jeans": {"genero": "hombre"},
-    "Denim diamond flare jeans": {"genero": "hombre"},
-    "Denim Essentials jeans": {"genero": "hombre"},
-    "Essentials Black jeans": {"genero": "hombre"},
-    "Essentials Blue jeans": {"genero": "hombre"},
-    "Iron Black jeans": {"genero": "hombre"},
-    "Iron Blue Cargo jeans": {"genero": "hombre"},
-    "Iron grey jeans": {"genero": "hombre"},
-    "Iron Ice jeans": {"genero": "hombre"},
-    "Light Ripped jeans": {"genero": "hombre"},
-    "Short blackrugged": {"genero": "hombre"},
-    "Sky blue cargo jeans": {"genero": "hombre"},
-    "Sky frost jeans": {"genero": "hombre"},
-    "Thunder Black": {"genero": "hombre"},
-    "Thunder VVS jeans": {"genero": "hombre"},
-    "Aero pants": {"genero": "hombre"},  # confianza media, sin rostro
-    "Baby tee": {"genero": "mujer"},  # top cropped, corte femenino visible en foto
-    "FLTNG Zip Hoodie": {"genero": "hombre"},
-    "FLTNG ZIP V2": {"genero": "mujer"},
-    "Noir Pulse": {"genero": "hombre"},  # confianza media, de espaldas
-    "Noir Pulse - Aureum": {"genero": "mujer"},
-    "Noir Pulse - Emerald": {"genero": "hombre"},
-    "Noir Pulse - Morganite": {"genero": "mujer"},
-    "Nuit Volt": {"genero": "mujer"},
-    "Nuit Volt - Heaven": {"genero": "mujer"},
-    "Nuit Volt - Void": {"genero": "hombre"},  # confianza media, solo mandibula visible
-    "Polera Esencial - Blanca": {"genero": "hombre"},  # confianza media, solo mandibula visible
-    "Polera Esencial - Verde botella": {"genero": "hombre"},  # confianza media, solo mandibula visible
-    "Stealth Jorts": {"genero": "hombre"},  # confianza media, piernas/zapatillas
+    "Black diamond flare jeans": {"corte": "baggy", "genero": "hombre"},
+    "Blue motion cargo flare jeans": {"corte": "baggy", "genero": "hombre"},
+    "Denim diamond flare jeans": {"corte": "baggy", "genero": "hombre"},
+    "Thunder Black": {"corte": "baggy", "categoria": "pantalon", "subtipo": "jeans", "genero": "hombre"},
+    "Aero pants": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "Baby tee": {"corte": "slim fit", "largo": "normal", "genero": "mujer"},
+    "Noir Pulse": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "Noir Pulse - Aureum": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "Noir Pulse - Emerald": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "Noir Pulse - Morganite": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "Nuit Volt": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "Nuit Volt - Heaven": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "Nuit Volt - Void": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "Polera Esencial - Blanca": {"corte": "boxy fit", "genero": "hombre"},
+    "Polera Esencial - Verde botella": {"corte": "boxy fit", "genero": "hombre"},
 
     # --- Genero por foto de modelo, ronda 2 (2026-09-07): mismo mecanismo
     # de la ronda anterior, 250 productos unisex mas revisados foto por foto.
@@ -1393,141 +1009,111 @@ VERIFICADO_A_MANO = {
     # con modelo (mujer) -- el otro es flat lay sin evidencia, y este mecanismo
     # aplica por NOMBRE (no por id), asi que forzar el override marcaria mal
     # al que no tiene evidencia. Queda unisex hasta tener un mecanismo por id.
-    "Polera Unk. New Plane Steel Green": {"genero": "mujer"},
-    "Jogger Unk. Generation Black": {"genero": "hombre"},
-    "Polera UNK. Head Pro Black": {"genero": "mujer"},
-    "Polera UNK. Pastel Black": {"genero": "mujer"},
-    "Polera Camaleón Army White": {"genero": "hombre"},
-    "Polera UNK. Future Green": {"genero": "hombre"},
-    "Polera Unk. Skate Large Black": {"genero": "hombre"},
-    "Polera Unk. Large Rainbow Pink": {"genero": "mujer"},
-    "Polerón Unk. Focus Colors": {"genero": "hombre"},
-    "Jacket Unk. Peak Pink": {"genero": "hombre"},
-    "Polar Hoodie UNK. Blue": {"genero": "hombre"},
-    "Polera UNK. Premium Burgundy": {"genero": "mujer"},
-    "Polera UNK. Tie Dye Duo Mint": {"genero": "hombre"},
-    "Polera Camaleón Tie Dye Blue": {"genero": "hombre"},
-    "Polera Camaleón Tie Dye Burgundy": {"genero": "hombre"},
-    "Polera Tie dye World Blue": {"genero": "hombre"},
-    "Polera Unk. Skate Light Blue": {"genero": "hombre"},
-    "Hoodie UNK. Tie Dye Jade": {"genero": "hombre"},
-    "Jacket Cortaviento UNK. 4k Colors": {"genero": "hombre"},
-    "Jacket Cortaviento UNK. 4K Black": {"genero": "hombre"},
-    "Jogger UNK. Euro Calypso": {"genero": "hombre"},
-    "Jacket Cortaviendo unk. 4K Blue": {"genero": "mujer"},
-    "Jacket Cortaviento Unk. Crack Gray": {"genero": "hombre"},
-    "Polera Unk. Skate Pink": {"genero": "hombre"},
-    "Jogger Unk. Green": {"genero": "hombre"},
-    "Hoodie Block White": {"genero": "hombre"},
-    "Jacket Cortaviento Unk. Rainbow Pink": {"genero": "mujer"},
-    "Hoodie Unk. Spiral Mint": {"genero": "hombre"},
-    "Jacket Cortaviento UNK. Wire White": {"genero": "hombre"},
-    "Jogger Unk. Dark": {"genero": "hombre"},
-    "Hoodie Unk. Spiral Blue": {"genero": "mujer"},
-    "Hoodie Unk. Old Brown": {"genero": "mujer"},
-    "Polera Unk. Marley Red": {"genero": "hombre"},
-    "Jacket Cortaviento Camaleón Head Blue": {"genero": "mujer"},
-    "Jacket Cortaviento Camaleón Head Black": {"genero": "hombre"},
-    "Jacket Cortaviento Unk. Snowflake White": {"genero": "hombre"},
-    "Jacket Cortaviento Unk. Noodles Pink": {"genero": "hombre"},
-    "Jacket Cortaviento Unk. Noodles Tiffany": {"genero": "hombre"},
-    "Jacket Cortaviento Unk. Fall Calypso": {"genero": "hombre"},
-    "Hoodie Unk. Peace Steel": {"genero": "mujer"},
-    "Short Unk. Tiger Gray": {"genero": "hombre"},
-    "Polera Camaleón Dynamic Turquoise": {"genero": "hombre"},
-    "Polera Camaleón Dynamic Coral": {"genero": "hombre"},
-    "Polera Camaleón Crazy Black": {"genero": "hombre"},
-    "Polera Camaleón Crazy Oil Blue": {"genero": "hombre"},
-    "Jogger Unk. Rainbow blue": {"genero": "hombre"},
-    "Polera Kmaleón Tie Dye Pink": {"genero": "mujer"},
-    "Joggers Unk. Generation Blue": {"genero": "mujer"},
-    "Hoodie Unk. Level Orange": {"genero": "hombre"},
-    "Polera UNK. Tie Dye Duo Steel": {"genero": "hombre"},
-    "Polera UNK. Plane Blue": {"genero": "mujer"},
-    "Hoodie Camaleón Safary Blue": {"genero": "hombre"},
-    "NITIDO long sleeve": {"genero": "hombre"},
-    "WOLVES emblem tee": {"genero": "hombre"},
-    "LOGO black tee": {"genero": "hombre"},
-    "NITIDO vibe hoodie": {"genero": "hombre"},
-    "LOGO dark hoodie": {"genero": "hombre"},
-    "WASHED long sleeve": {"genero": "hombre"},
-    "LOBO plaid shirt": {"genero": "hombre"},
-    "RESILIO plaid shirt": {"genero": "hombre"},
-    "BIG LOGO RAW SWEATER": {"genero": "mujer"},
-    "BIG LOGO BLACK SWEATER": {"genero": "hombre"},
-    "+ TIME 4 LOVE SWEATER": {"genero": "mujer"},
-    "SUEDE VAQUERA-JACKET": {"genero": "mujer"},
-    "FEAR BLACK HOODIE": {"genero": "mujer"},
-    "SAINTWOLF HOODIE": {"genero": "hombre"},
-    "SAINT WOLF TEE": {"genero": "hombre"},
-    "+ TIME 4 LOVE TEE": {"genero": "hombre"},
-    "METAL GRAY HOODIE": {"genero": "mujer"},
-    "METAL GRAY PANTS": {"genero": "mujer"},
-    "METAL BLACK HOODIE": {"genero": "mujer"},
-    "ESFINGE CATS HOODIE": {"genero": "mujer"},
-    "ESFINGE CATS TEE": {"genero": "mujer"},
-    "3D CHROME HOODIE": {"genero": "hombre"},
-    "DSLS JAPO TEE": {"genero": "hombre"},
-    "MANADA TOUR HOODIE": {"genero": "hombre"},
-    "MANADA TOUR BLACK TEE": {"genero": "hombre"},
-    "MANADA TOUR WHITE TEE": {"genero": "hombre"},
-    "BLACK MINIMAL TEE": {"genero": "hombre"},
-    "BIG LOGO MINT SWEATER": {"genero": "hombre"},
-    "BLACK WOLF PANTS": {"genero": "hombre"},
-    "LIGHT BLUE JORT": {"genero": "hombre"},
-    "METAL BLACK JORT": {"genero": "hombre"},
-    "CAMO GRAY JORT": {"genero": "hombre"},
-    "ICE BLUE PANTS": {"genero": "mujer"},
-    "CAMO GRAY PANTS": {"genero": "hombre"},
-    "BIG LOGO PINK SWEATER": {"genero": "hombre"},
-    "BIG LOGO GRAY SWEATER": {"genero": "mujer"},
-    "ANNIVERSARY 10 JAPO-TEE": {"genero": "hombre"},
-    "ESFINGE PINK CATS TEE": {"genero": "hombre"},
-    "BLACK LOGO 3D TEE": {"genero": "hombre"},
-    "METAL CROMO BLACK HOODIE": {"genero": "hombre"},
-    "ACABÉ TRIUNFANDO HOODIE": {"genero": "hombre"},
-    "ESFINGE PINK CATS HOODIE": {"genero": "hombre"},
-    "ANNIVERSARY 10 CAMISETA": {"genero": "hombre"},
-    "CAMO 10TH BOMBER-JACKET": {"genero": "hombre"},
-    "BLACK 10TH VARSITY-JACKET": {"genero": "hombre"},
-    "DENIM RAPPORT JORT": {"genero": "hombre"},
-    "SKULL HOODIE": {"genero": "hombre"},
-    "GRITA Y EXHALE HOODIE": {"genero": "mujer"},
-    "GRITA & EXHALE TEE": {"genero": "mujer"},
-    "BLUE SKULL TEE": {"genero": "hombre"},
-    "STRASS BLUE TEE": {"genero": "mujer"},
-    "STRASS BLACK TEE": {"genero": "hombre"},
-    "WOLVES CROME VARSITY-JACKET": {"genero": "mujer"},
-    "TOTAL BLACK VARSITY-JACKET": {"genero": "hombre"},
-    "MANADA VARSITY-JACKET": {"genero": "hombre"},
-    "STRASS BLUE HOODIE": {"genero": "mujer"},
-    "KRYPTA TEE": {"genero": "hombre"},
-    "KRYPTA HOODIE": {"genero": "hombre"},
-    "BLVCK LOGO TEE": {"genero": "hombre"},
-    "SKULL DARK PANTS": {"genero": "hombre"},
-    "SKULL SWEATER": {"genero": "hombre"},
-    "DETHKID BABY-TEE": {"genero": "mujer"},
-    "DETHKID HOODIE": {"genero": "hombre"},
-    "DETHKID TEE": {"genero": "hombre"},
-    "DEHTKID BOMBER-JACKET": {"genero": "mujer"},
-    "EXHALE BLUE SWEATER.": {"genero": "hombre"},
-    "MANADA STONE TEE": {"genero": "hombre"},
-    "BLACK CORE TEE": {"genero": "hombre"},
-    "CAPUCHA BLACK GILETTE": {"genero": "mujer"},
-    "TIGER BOMBER-JACKET": {"genero": "hombre"},
-    "TIGER PANTS": {"genero": "mujer"},
-    "BLACK RIVET FLARE-PANTS": {"genero": "hombre"},
-    "EXHALE BLUE SWEATER": {"genero": "hombre"},
-    "MANADA STONE HOODIE": {"genero": "hombre"},
-    "BLACK VAQUERA-JACKET": {"genero": "mujer"},
-    "CORE BLACK HOODIE": {"genero": "mujer"},
-    "I LOVE DSLS TEE": {"genero": "mujer"},
-    "GRAY JAPO-TEE": {"genero": "mujer"},
-    "VARSITY JACKET 09": {"genero": "hombre"},
-    "CAMO GREEN PANTS GIRL": {"genero": "mujer"},
-    "CAMO GRAY PANTS GIRL": {"genero": "mujer"},
-    "BOXY TEE NEGRA": {"genero": "hombre"},
-    "HOODIE CAMO STRASS": {"genero": "mujer"},
+    "Polera Unk. New Plane Steel Green": {"corte": "sin corte definido", "genero": "mujer"},
+    "Polera UNK. Head Pro Black": {"corte": "sin corte definido", "genero": "mujer"},
+    "Polera UNK. Pastel Black": {"corte": "sin corte definido", "genero": "mujer"},
+    "Polera Camaleón Army White": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera UNK. Future Green": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Unk. Skate Large Black": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Unk. Large Rainbow Pink": {"corte": "sin corte definido", "genero": "mujer"},
+    "Polerón Unk. Focus Colors": {"corte": "oversize", "genero": "hombre"},
+    "Jacket Unk. Peak Pink": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Polar Hoodie UNK. Blue": {"corte": "oversize", "genero": "hombre"},
+    "Polera UNK. Premium Burgundy": {"corte": "sin corte definido", "genero": "mujer"},
+    "Polera UNK. Tie Dye Duo Mint": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Camaleón Tie Dye Blue": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Camaleón Tie Dye Burgundy": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Tie dye World Blue": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Unk. Skate Light Blue": {"corte": "sin corte definido", "genero": "hombre"},
+    "Hoodie UNK. Tie Dye Jade": {"corte": "oversize", "genero": "hombre"},
+    "Jacket Cortaviento UNK. 4k Colors": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Jacket Cortaviento UNK. 4K Black": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Jacket Cortaviendo unk. 4K Blue": {"corte": "oversize", "genero": "mujer", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Unk. Crack Gray": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Polera Unk. Skate Pink": {"corte": "sin corte definido", "genero": "hombre"},
+    "Hoodie Block White": {"corte": "oversize", "genero": "hombre"},
+    "Jacket Cortaviento Unk. Rainbow Pink": {"corte": "oversize", "genero": "mujer", "subtipo": "cortavientos"},
+    "Hoodie Unk. Spiral Mint": {"corte": "oversize", "genero": "hombre"},
+    "Jacket Cortaviento UNK. Wire White": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Hoodie Unk. Spiral Blue": {"corte": "oversize", "genero": "mujer"},
+    "Hoodie Unk. Old Brown": {"corte": "oversize", "genero": "mujer"},
+    "Polera Unk. Marley Red": {"corte": "sin corte definido", "genero": "hombre"},
+    "Jacket Cortaviento Camaleón Head Blue": {"corte": "oversize", "genero": "mujer", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Camaleón Head Black": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Unk. Snowflake White": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Unk. Noodles Pink": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Unk. Noodles Tiffany": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Jacket Cortaviento Unk. Fall Calypso": {"corte": "oversize", "genero": "hombre", "subtipo": "cortavientos"},
+    "Hoodie Unk. Peace Steel": {"corte": "oversize", "genero": "mujer"},
+    "Polera Camaleón Dynamic Turquoise": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Camaleón Dynamic Coral": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Camaleón Crazy Black": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Camaleón Crazy Oil Blue": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera Kmaleón Tie Dye Pink": {"corte": "sin corte definido", "genero": "mujer"},
+    "Hoodie Unk. Level Orange": {"corte": "oversize", "genero": "hombre"},
+    "Polera UNK. Tie Dye Duo Steel": {"corte": "sin corte definido", "genero": "hombre"},
+    "Polera UNK. Plane Blue": {"corte": "sin corte definido", "genero": "mujer"},
+    "Hoodie Camaleón Safary Blue": {"corte": "oversize", "genero": "hombre"},
+    "NITIDO long sleeve": {"corte": "sin corte definido", "genero": "hombre"},
+    "WOLVES emblem tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "LOGO black tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "WASHED long sleeve": {"corte": "sin corte definido", "genero": "hombre"},
+    "LOBO plaid shirt": {"corte": "sin corte definido", "genero": "hombre"},
+    "RESILIO plaid shirt": {"corte": "sin corte definido", "genero": "hombre"},
+    "BIG LOGO RAW SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "mujer"},
+    "BIG LOGO BLACK SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "+ TIME 4 LOVE SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "mujer"},
+    "SUEDE VAQUERA-JACKET": {"corte": "oversize", "genero": "mujer", "subtipo": "cuero"},
+    "SAINT WOLF TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "+ TIME 4 LOVE TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "METAL GRAY HOODIE": {"corte": "oversize", "genero": "mujer"},
+    "METAL GRAY PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "mujer"},
+    "ESFINGE CATS TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "DSLS JAPO TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "MANADA TOUR BLACK TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "MANADA TOUR WHITE TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "BLACK MINIMAL TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "BIG LOGO MINT SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "BLACK WOLF PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "ICE BLUE PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "mujer"},
+    "CAMO GRAY PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "BIG LOGO PINK SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "BIG LOGO GRAY SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "mujer"},
+    "ANNIVERSARY 10 JAPO-TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "ESFINGE PINK CATS TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "BLACK LOGO 3D TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "ANNIVERSARY 10 CAMISETA": {"corte": "sin corte definido", "genero": "hombre"},
+    "CAMO 10TH BOMBER-JACKET": {"corte": "oversize", "genero": "hombre"},
+    "BLACK 10TH VARSITY-JACKET": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "GRITA & EXHALE TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "BLUE SKULL TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "STRASS BLUE TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "STRASS BLACK TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "WOLVES CROME VARSITY-JACKET": {"corte": "oversize", "genero": "mujer", "subtipo": "bomber"},
+    "TOTAL BLACK VARSITY-JACKET": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "MANADA VARSITY-JACKET": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "KRYPTA TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "BLVCK LOGO TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "SKULL DARK PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "SKULL SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "DETHKID BABY-TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "DETHKID TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "DEHTKID BOMBER-JACKET": {"corte": "oversize", "genero": "mujer"},
+    "EXHALE BLUE SWEATER.": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "MANADA STONE TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "BLACK CORE TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "CAPUCHA BLACK GILETTE": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "TIGER BOMBER-JACKET": {"corte": "oversize", "genero": "hombre"},
+    "TIGER PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "mujer"},
+    "BLACK RIVET FLARE-PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "EXHALE BLUE SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "BLACK VAQUERA-JACKET": {"corte": "oversize", "genero": "mujer", "subtipo": "Otro"},
+    "I LOVE DSLS TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "GRAY JAPO-TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "VARSITY JACKET 09": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "CAMO GREEN PANTS GIRL": {"categoria": "pantalon", "corte": "baggy", "genero": "mujer"},
+    "CAMO GRAY PANTS GIRL": {"categoria": "pantalon", "corte": "baggy", "genero": "mujer"},
+    "BOXY TEE NEGRA": {"corte": "sin corte definido", "genero": "hombre"},
 
     # --- Genero por foto de modelo, ronda 3 (2026-09-07): mismo mecanismo de
     # las rondas anteriores, 250 productos unisex mas revisados foto por foto
@@ -1539,133 +1125,100 @@ VERIFICADO_A_MANO = {
     # modelo hombre; "POLERAS OVERSIZED// BASIC MINI LOGO" tiene una instancia
     # con modelo hombre y la otra es flat lay sin modelo (mismo diseño, sin
     # evidencia contradictoria) -- se aplico por nombre en los 3 casos.
-    "BOXY TEE NEGRA // NocityLimits": {"genero": "hombre"},
-    "Faith&Love HOODIE": {"genero": "mujer"},
-    "María flame TEE": {"genero": "hombre"},
-    "Faith&Love TEE": {"genero": "mujer"},
-    "Love-strong TEE": {"genero": "mujer"},
-    "Wolf-graffiti TEE": {"genero": "hombre"},
-    "Rosary TEE": {"genero": "hombre"},
-    "Dsls-cromo TEE": {"genero": "hombre"},
-    "Wolf graffiti CREWNECK": {"genero": "mujer"},
-    "María flame HOODIE": {"genero": "hombre"},
-    "Embroidery PANTS": {"genero": "hombre"},
-    "Denim-rapport JACKET": {"genero": "hombre"},
-    "Denim-rapport PANTS": {"genero": "hombre"},
-    "Denim-tribal SHORT": {"genero": "hombre"},
-    "Denim-rapport JORT": {"genero": "hombre"},
-    "LA FERIA ON TOUR / Anniversary tee": {"genero": "mujer"},
-    "POLERA STRASS GRIS": {"genero": "hombre"},
-    "LOGO STRASS TEE": {"genero": "hombre"},
-    "LOGO STRASS HOODIE": {"genero": "hombre"},
-    "JORT CARGO CAMO VERDE": {"genero": "mujer"},
-    "JORT CARGO CAMO GRIS": {"genero": "hombre"},
-    "TANK TOP GIRL": {"genero": "mujer"},
-    "BOXY TEE GRIS": {"genero": "mujer"},
-    "SWEATER CAPUCHA LOGO": {"genero": "hombre"},
-    "VARSITY-JACKET CAMO": {"genero": "mujer"},
-    "STRASS PINK HOODIE": {"genero": "mujer"},
-    "VARSITY JACKET LUCIERNAGA": {"genero": "mujer"},
-    "CATS GRAY TEE": {"genero": "hombre"},
-    "CAPUCHA JACKET BLACK 02": {"genero": "mujer"},
-    "POLERA BLACK 02 BOXY": {"genero": "mujer"},
-    "VARSITY JACKET BLACK 02": {"genero": "mujer"},
-    "TEE BOXY DARK PINK": {"genero": "mujer"},
-    "CROP-TOP DARK PINK": {"genero": "mujer"},
-    "CROP-TOP CROMO NEGRO": {"genero": "mujer"},
-    "HOODIE CROMO OVERSIZE": {"genero": "mujer"},
-    "CARGO-PANTS WOLVES": {"genero": "hombre"},
-    "CARPINTERO-PANTS CHEETAH": {"genero": "hombre"},
-    "FLARE-PANTS DARK": {"genero": "hombre"},
-    "CROP-TOP CROMO GRIS": {"genero": "mujer"},
-    "POLERA CONEXIÓN NEGRA": {"genero": "mujer"},
-    "POLERA UNIÓN GRIS": {"genero": "hombre"},
-    "POLERA OBSIDIANA CLIP": {"genero": "mujer"},
-    "POLERA NOCTURA DISCO": {"genero": "mujer"},
-    "SWEATER TRIBAL": {"genero": "hombre"},
-    "SWEATER SALLY ROJO": {"genero": "hombre"},
-    "SWEATER JACK NEGRO": {"genero": "hombre"},
-    "VARSITY-JACKET ARCANA CAFÉ": {"genero": "hombre"},
-    "VARSITY-JACKET ARCANA NEGRA": {"genero": "mujer"},
-    "HOODIE CROMO BOXY": {"genero": "hombre"},
-    "HOODIE DARK OSCURIDAD": {"genero": "hombre"},
-    "CREWNECK DARK ARCANA": {"genero": "hombre"},
-    "Pants \"Black Wolf\"": {"genero": "hombre"},
-    "Tee gray \"Angel wings\"": {"genero": "hombre"},
-    "Tee Gray \"Girly\"": {"genero": "mujer"},
-    "Snake Blue Tee": {"genero": "hombre"},
-    "Pants \"Gray Wolf\"": {"genero": "hombre"},
-    "Zipper gray hoodie": {"genero": "hombre"},
-    "CREWNECK OXIDADO MINIMAL": {"genero": "hombre"},
-    "Tee oversize gray logo": {"genero": "hombre"},
-    "Tee Black \"Night Witch\"": {"genero": "hombre"},
-    "Tee Black \"Biker skeletons\"": {"genero": "hombre"},
-    "Tee Minimal \"Mint\"": {"genero": "hombre"},
-    "Tee Stripe \"Orange\"": {"genero": "hombre"},
-    "Tee Stripe \"Cross\"": {"genero": "hombre"},
-    "Cargo zipper pants": {"genero": "hombre"},
-    "Two wolves hoodie": {"genero": "hombre"},
-    "CREWNECK GALGOS ETERNAL VERSIÓN": {"genero": "hombre"},
-    "Tee Oversize \"White Mask\"": {"genero": "hombre"},
-    "Tee oversize black \"Anniversary Nº7\"": {"genero": "mujer"},
-    "CAMO LOGO SHIRT": {"genero": "hombre"},
-    "Camisa Moon Ritual": {"genero": "hombre"},
-    "ROMULO Y REMO TEE": {"genero": "hombre"},
-    "Post vortex gray hoodie": {"genero": "mujer"},
-    "WOLVES BLACK TEE": {"genero": "hombre"},
-    "Skull blue tee": {"genero": "hombre"},
-    "Monje black tee": {"genero": "hombre"},
-    "Monje color gray tee": {"genero": "hombre"},
-    "Rómulo y Remo hoodie": {"genero": "mujer"},
-    "Skull gray tee": {"genero": "hombre"},
-    "Wolf chrome tee": {"genero": "hombre"},
-    "Tee oversize blue logo": {"genero": "mujer"},
-    "WOLVES RED HOODIE": {"genero": "hombre"},
-    "Post Vortex Crewneck": {"genero": "mujer"},
-    "Moon raw hoodie": {"genero": "hombre"},
-    "Tee oversize black \"Angel\"": {"genero": "hombre"},
-    "WOLVES GRAY/BLACK TEE": {"genero": "hombre"},
-    "RED ANGEL TEE": {"genero": "hombre"},
-    "MOON RITUAL BLACK TEE": {"genero": "hombre"},
-    "MOON RITUAL GRAY/BLACK TEE": {"genero": "hombre"},
-    "LUCIÉRNAGA BLACK CROPPED TEE": {"genero": "mujer"},
-    "Tee Ninja \"Black\"": {"genero": "hombre"},
-    "Hoodie Mint Logo": {"genero": "hombre"},
-    "LUCIÉRNAGA BLACK HOODIE": {"genero": "hombre"},
-    "Varsity Jacket Mint Minimal": {"genero": "hombre"},
-    "Tee Ninja \"Mint\"": {"genero": "hombre"},
-    "LOGO CHROME TEE": {"genero": "mujer"},
-    "Sweater Étnico": {"genero": "hombre"},
-    "Varsity Jacket \"Brown Paisley\"": {"genero": "mujer"},
-    "Varsity Jacket Black Minimal": {"genero": "hombre"},
-    "Crewneck Galgos": {"genero": "mujer"},
-    "Tee Black \"orange mask\"": {"genero": "hombre"},
-    "CHROME SWEATER": {"genero": "hombre"},
-    "POLERA CALMA NEGRA": {"genero": "hombre"},
-    "POLERA ALMA BLANCA": {"genero": "mujer"},
-    "POLERÓN CONTIGO NEGRO": {"genero": "mujer"},
-    "POLERÓN SIEMPRE ROJO": {"genero": "hombre"},
-    "Varsity Jacket Black Wolf": {"genero": "hombre"},
-    "STRASS LUCIÉRNAGA HOODIE": {"genero": "hombre"},
-    "CATS BLACK HOODIE": {"genero": "mujer"},
-    "Tee Gray Galgos": {"genero": "mujer"},
-    "CATS BLACK TEE": {"genero": "mujer"},
-    "3D CHROME LOGO HOODIE": {"genero": "hombre"},
-    "POLERA DARK IGOR": {"genero": "mujer"},
-    "JORT CARGO CORROÍDO": {"genero": "hombre"},
-    "CHAQUETA CORROÍDO": {"genero": "hombre"},
-    "PANTALÓN CARGO": {"genero": "mujer"},
-    "PANTALÓN CARPINTERO": {"genero": "hombre"},
-    "POLERA DARK CARRIE": {"genero": "hombre"},
-    "CROP TOP LOGOGRAMA": {"genero": "mujer"},
-    "POLERA LOGOGRAMA": {"genero": "hombre"},
-    "POLERÓN INFINITO 08": {"genero": "hombre"},
-    "CAMISETA DARK ETERNAL": {"genero": "hombre"},
-    "SWEATER MINIMALISTA": {"genero": "hombre"},
-    "SWEATER ETERNAL": {"genero": "hombre"},
-    "POLERA INFINITO 08": {"genero": "hombre"},
-    "JORT CARPINTERO ETERNO 08": {"genero": "hombre"},
-    "CAMISA ETERNO 08": {"genero": "mujer"},
+    "BOXY TEE NEGRA // NocityLimits": {"corte": "sin corte definido", "genero": "hombre"},
+    "María flame TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "Faith&Love TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "Love-strong TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "Wolf-graffiti TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "Rosary TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "Dsls-cromo TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "Wolf graffiti CREWNECK": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "Embroidery PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "Denim-rapport JACKET": {"corte": "oversize", "genero": "hombre"},
+    "LA FERIA ON TOUR / Anniversary tee": {"corte": "sin corte definido", "genero": "mujer"},
+    "POLERA STRASS GRIS": {"corte": "sin corte definido", "genero": "hombre"},
+    "LOGO STRASS TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "TANK TOP GIRL": {"corte": "sin corte definido", "genero": "mujer"},
+    "BOXY TEE GRIS": {"corte": "sin corte definido", "genero": "mujer"},
+    "SWEATER CAPUCHA LOGO": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "VARSITY-JACKET CAMO": {"corte": "oversize", "genero": "mujer", "subtipo": "bomber"},
+    "VARSITY JACKET LUCIERNAGA": {"corte": "oversize", "genero": "mujer", "subtipo": "bomber"},
+    "CATS GRAY TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "CAPUCHA JACKET BLACK 02": {"corte": "oversize", "genero": "mujer", "subtipo": "cuero"},
+    "POLERA BLACK 02 BOXY": {"corte": "sin corte definido", "genero": "mujer"},
+    "VARSITY JACKET BLACK 02": {"corte": "oversize", "genero": "mujer", "subtipo": "bomber"},
+    "TEE BOXY DARK PINK": {"corte": "sin corte definido", "genero": "mujer"},
+    "CROP-TOP DARK PINK": {"corte": "sin corte definido", "genero": "mujer"},
+    "CROP-TOP CROMO NEGRO": {"corte": "sin corte definido", "genero": "mujer"},
+    "HOODIE CROMO OVERSIZE": {"corte": "oversize", "genero": "mujer"},
+    "CARGO-PANTS WOLVES": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo", "genero": "hombre"},
+    "CARPINTERO-PANTS CHEETAH": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "FLARE-PANTS DARK": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "CROP-TOP CROMO GRIS": {"corte": "sin corte definido", "genero": "mujer"},
+    "POLERA CONEXIÓN NEGRA": {"corte": "sin corte definido", "genero": "mujer"},
+    "POLERA UNIÓN GRIS": {"corte": "sin corte definido", "genero": "hombre"},
+    "POLERA OBSIDIANA CLIP": {"corte": "sin corte definido", "genero": "mujer"},
+    "POLERA NOCTURA DISCO": {"corte": "sin corte definido", "genero": "mujer"},
+    "SWEATER TRIBAL": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "SWEATER SALLY ROJO": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "SWEATER JACK NEGRO": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "VARSITY-JACKET ARCANA CAFÉ": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "VARSITY-JACKET ARCANA NEGRA": {"corte": "oversize", "genero": "mujer", "subtipo": "bomber"},
+    "HOODIE CROMO BOXY": {"corte": "oversize", "genero": "hombre"},
+    "Pants \"Black Wolf\"": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "Tee gray \"Angel wings\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee Gray \"Girly\"": {"corte": "sin corte definido", "genero": "mujer"},
+    "Snake Blue Tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "Pants \"Gray Wolf\"": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "Tee oversize gray logo": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee Black \"Night Witch\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee Black \"Biker skeletons\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee Minimal \"Mint\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee Stripe \"Orange\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee Stripe \"Cross\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Cargo zipper pants": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo", "genero": "hombre"},
+    "Tee Oversize \"White Mask\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee oversize black \"Anniversary Nº7\"": {"corte": "sin corte definido", "genero": "mujer"},
+    "CAMO LOGO SHIRT": {"corte": "sin corte definido", "genero": "hombre"},
+    "Camisa Moon Ritual": {"corte": "oversize", "categoria": "camisa", "genero": "hombre"},
+    "ROMULO Y REMO TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "WOLVES BLACK TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "Skull blue tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "Monje black tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "Monje color gray tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "Skull gray tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "Wolf chrome tee": {"corte": "sin corte definido", "genero": "hombre"},
+    "Tee oversize blue logo": {"corte": "sin corte definido", "genero": "mujer"},
+    "Tee oversize black \"Angel\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "WOLVES GRAY/BLACK TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "RED ANGEL TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "MOON RITUAL BLACK TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "MOON RITUAL GRAY/BLACK TEE": {"corte": "sin corte definido", "genero": "hombre"},
+    "LUCIÉRNAGA BLACK CROPPED TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "Tee Ninja \"Black\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "Varsity Jacket Mint Minimal": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "Tee Ninja \"Mint\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "LOGO CHROME TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "Sweater Étnico": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "Varsity Jacket \"Brown Paisley\"": {"corte": "oversize", "genero": "mujer", "subtipo": "bomber"},
+    "Varsity Jacket Black Minimal": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "Tee Black \"orange mask\"": {"corte": "sin corte definido", "genero": "hombre"},
+    "CHROME SWEATER": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "POLERA CALMA NEGRA": {"corte": "sin corte definido", "genero": "hombre"},
+    "POLERA ALMA BLANCA": {"corte": "sin corte definido", "genero": "mujer"},
+    "Varsity Jacket Black Wolf": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "Tee Gray Galgos": {"corte": "sin corte definido", "genero": "mujer"},
+    "CATS BLACK TEE": {"corte": "sin corte definido", "genero": "mujer"},
+    "POLERA DARK IGOR": {"corte": "sin corte definido", "genero": "mujer"},
+    "CHAQUETA CORROÍDO": {"corte": "oversize", "genero": "hombre", "subtipo": "bomber"},
+    "POLERA DARK CARRIE": {"corte": "sin corte definido", "genero": "hombre"},
+    "CROP TOP LOGOGRAMA": {"corte": "sin corte definido", "genero": "mujer"},
+    "POLERA LOGOGRAMA": {"corte": "sin corte definido", "genero": "hombre"},
+    "CAMISETA DARK ETERNAL": {"corte": "sin corte definido", "genero": "hombre"},
+    "SWEATER MINIMALISTA": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "SWEATER ETERNAL": {"categoria": "chaleco", "corte": "oversize", "genero": "hombre"},
+    "POLERA INFINITO 08": {"corte": "sin corte definido", "genero": "hombre"},
+    "CAMISA ETERNO 08": {"corte": "sin corte definido", "genero": "mujer"},
     "Night Code Ascend": {"genero": "hombre"},
     "Ice Blue Ascend": {"genero": "hombre"},
     "NOVVM LUXURY - BLACK TRACKSUIT": {"genero": "hombre"},
@@ -1673,15 +1226,13 @@ VERIFICADO_A_MANO = {
     "NOVVM LUXURY - WHITE TRACKSUIT": {"genero": "hombre"},
     "NOVVM ESSENCE - PURPLE TRACKSUIT": {"genero": "hombre"},
     "NOVVM ESSENCE - BLVCK TRACKSUIT": {"genero": "hombre"},
-    "T-SHIRT \"PACIFIC SUN\"": {"genero": "hombre"},
-    "T-SHIRT \"LEMON PALETA\"": {"genero": "hombre"},
+    "T-SHIRT \"PACIFIC SUN\"": {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 280, "genero": "hombre"},
+    "T-SHIRT \"LEMON PALETA\"": {"corte": "boxy fit", "material": "algodon_100", "gramaje_gsm": 280, "genero": "hombre"},
     "Baby Tee Fur": {"genero": "mujer"},
     "Baby Tee 8 Ball": {"genero": "mujer"},
     "Baby Tee Sofía": {"genero": "mujer"},
-    "Long Sleeve FERONI": {"genero": "hombre"},
-    "\"YELLOW LABEL COMP\"// OVERSIZED HOODIE": {"genero": "hombre"},
+    "Long Sleeve FERONI": {"corte": "slim fit", "genero": "hombre"},
     "BASICA//ESSENCIAL OVERSIZED TEES // GRIS ACERO": {"genero": "hombre"},
-    "BASIC MINI LOGO// OVERSIZED HOODIE": {"genero": "hombre"},
     "POLERAS OVERSIZED// CANINE BLACK": {"genero": "hombre"},
     "POLERA OVERSIZED BASIC MINI LOGO V2": {"genero": "hombre"},
     "POLERAS OVERSIZED// BASIC MINI LOGO": {"genero": "hombre"},
@@ -1693,88 +1244,54 @@ VERIFICADO_A_MANO = {
     # en catalogo ("BASICA//ESSENCIAL OVERSIZED TEES", 3 instancias) -- las 3
     # fotos se revisaron directo y muestran el mismo modelo hombre en 3
     # colores, sin conflicto, seguro aplicar por nombre.
-    "BASICO MINI LOGO// OVERSIZED HOODIE": {"genero": "hombre"},
-    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE NEGRO": {"genero": "hombre"},
-    "BASIC//ESSENCIAL OVERSIZED HOODIE BEIGE": {"genero": "hombre"},
-    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE BLANCO": {"genero": "hombre"},
     "BASICA//ESSENCIAL OVERSIZED TEES": {"genero": "hombre"},
-    "BASIC MINI LOGO//OVERSIZED HOODIE": {"genero": "hombre"},
-    "Haze Leather Jacket Camel": {"genero": "hombre"},
+    "Haze Leather Jacket Camel": {"genero": "hombre", "corte": "boxy fit"},
     "\"Everyday\" Knit Sweater Burgundy": {"genero": "mujer"},
     "\"Everyday\" Knit Sweater Black": {"genero": "hombre"},
-    "Hoodie \"The Locals\" Black HEAVYWEIGHT": {"genero": "hombre"},
-    "Hoodie \"The Locals\" Pink": {"genero": "mujer"},
-    "Hoodie \"The Locals\" Chocolate": {"genero": "hombre"},
-    "Hoodie \"Shelter\" Black": {"genero": "hombre"},
-    "Hoodie \"Shelter\" Pink": {"genero": "hombre"},
-    "Hoodie \"Shelter\" Chocolate": {"genero": "hombre"},
-    "\"Clubhouse\" Zipper Knit Navy": {"genero": "hombre"},
-    "\"Clubhouse\" Zipper Knit Black": {"genero": "hombre"},
     "\"Archives\" Black Boxy Fit Tee": {"genero": "hombre"},
     "\"Archives\" White Boxy Fit Tee": {"genero": "hombre"},
     "\"Bohemian\" White Boxy Fit Tee": {"genero": "hombre"},
     "\"Bohemian\" Black Boxy Fit Tee": {"genero": "hombre"},
     "Black Daily Regular Tee": {"genero": "hombre"},
     "White Daily Regular Tee": {"genero": "hombre"},
-    "First Date Double Zip Chocolate": {"genero": "hombre"},
-    "First Date Double Zip Black HEAVYWEIGHT": {"genero": "hombre"},
-    "Haze Leather Jacket": {"genero": "hombre"},
-    "Raw Icon Denim Pants": {"genero": "hombre"},
-    "Black Icon Denim Pants": {"genero": "hombre"},
+    "Haze Leather Jacket": {"genero": "hombre", "corte": "boxy fit"},
     "\"Always On\" Baggy Sweatpants Black HEAVYWEIGHT": {"genero": "hombre"},
     "\"Always On\" Baggy Sweatpants Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
-    "Zip Up \"Logo\" Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
     "White Daily Boxy Tee": {"genero": "hombre"},
-    "Zip Up Hoodie Navy Blue HEAVYWEIGHT": {"genero": "hombre"},
-    "Boxy Fit Hoodie Navy Blue HEAVYWEIGHT": {"genero": "hombre"},
-    "Boxy Fit Hoodie Pink HEAVYWEIGHT": {"genero": "hombre"},
-    "Boxy Fit Hoodie Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
-    "Zip Up Hoodie Melange Grey HEAVYWEIGHT": {"genero": "hombre"},
-    "Zip Up Hoodie Chocolate": {"genero": "hombre"},
-    "Zip Up Hoodie Black HEAVYWEIGHT": {"genero": "hombre"},
     "Black Daily Boxy Tee": {"genero": "hombre"},
-    "Boxy Fit Hoodie Black HEAVYWEIGHT": {"genero": "hombre"},
-    "Boxy Fit Hoodie Chocolate": {"genero": "hombre"},
     "Dress T-Shirt Boxy Fit": {"genero": "hombre"},
     "Flared Pants RE: Cargo": {"genero": "hombre"},
-    "Blazze 04 - Zip set indigo": {"genero": "mujer"},
-    "Blazze 04 - Button set raw": {"genero": "mujer"},
-    "Blazze 04 - Indigo": {"genero": "mujer"},
-    "Blazze 04 - Raw": {"genero": "mujer"},
-    "Blazze 04 - Black": {"genero": "mujer"},
-    "Blazze 04 - Light blue": {"genero": "mujer"},
-    "Blazze 04 - Zip jacket indigo": {"genero": "mujer"},
-    "Blazze 04 - Button jacket raw": {"genero": "mujer"},
-    "Blazze 03 - Bare Waist Black": {"genero": "mujer"},
-    "Blazze 03 - Bare Waist Blue": {"genero": "mujer"},
-    "Blazze 01 - Blue": {"genero": "mujer"},
-    "Blazze 01 - Gray": {"genero": "mujer"},
-    "Blazze 01 - White": {"genero": "mujer"},
-    "Blazze 02 - Black": {"genero": "mujer"},
-    "Blazze 02 - White": {"genero": "mujer"},
-    "Blazze 02 - Mid blue": {"genero": "mujer"},
-    "Blazze 02 - Light blue": {"genero": "mujer"},
-    "Blazze 01 - Black": {"genero": "mujer"},
-    "CHAQUETA I": {"genero": "mujer"},
+    "Blazze 04 - Button set raw": {"categoria": "conjunto", "genero": "mujer"},
+    "Blazze 04 - Indigo": {"categoria": "pantalon", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 04 - Raw": {"categoria": "pantalon", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 04 - Black": {"categoria": "pantalon", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 04 - Light blue": {"categoria": "pantalon", "subtipo": "jeans", "colores": ["Celeste"], "genero": "mujer"},
+    "Blazze 04 - Zip jacket indigo": {"categoria": "chaqueta", "subtipo": "mezclilla", "genero": "mujer", "corte": "slim fit"},
+    "Blazze 04 - Button jacket raw": {"categoria": "chaqueta", "subtipo": "mezclilla", "genero": "mujer", "corte": "slim fit"},
+    "Blazze 03 - Bare Waist Black": {"categoria": "pantalon", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 03 - Bare Waist Blue": {"categoria": "pantalon", "subtipo": "jeans", "colores": ["Celeste"], "genero": "mujer"},
+    "Blazze 01 - Blue": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight", "genero": "mujer"},
+    "Blazze 01 - Gray": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight", "genero": "mujer"},
+    "Blazze 01 - White": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight", "genero": "mujer"},
+    "Blazze 02 - Black": {"categoria": "shorts", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 02 - White": {"categoria": "shorts", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 02 - Mid blue": {"categoria": "shorts", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 02 - Light blue": {"categoria": "shorts", "subtipo": "jeans", "genero": "mujer"},
+    "Blazze 01 - Black": {"categoria": "pantalon", "subtipo": "jeans", "corte": "straight", "genero": "mujer"},
+    "CHAQUETA I": {"genero": "mujer", "corte": "slim fit", "subtipo": "cuero"},
     "POLERA 14F": {"genero": "hombre"},
-    "JORT TABLEADO": {"genero": "mujer"},
-    "TEE REGALA FLORES": {"genero": "hombre"},
-    "TEE FLORES, COMO LLAVES": {"genero": "mujer"},
-    "Polerón LA Azul Eléctrico Over Size": {"genero": "mujer"},
-    "Polerón Blanco Estrella Negra Tachas Over Size": {"genero": "mujer"},
-    "Polerón Soccer 08 Franela Fantasía": {"genero": "mujer"},
-    "Polerón Spicy Pink Over Size": {"genero": "mujer"},
-    "Chaqueta Bomber Marrón": {"genero": "mujer"},
-    "Denim Corteza Negro": {"genero": "mujer"},
-    "Bomber Índigo": {"genero": "mujer"},
-    "Bomber Breña": {"genero": "mujer"},
-    "Chaqueta Archivo": {"genero": "mujer"},
-    "Bomber Corteza": {"genero": "mujer"},
-    "Bomber Granate": {"genero": "mujer"},
-    "Bomber Alba": {"genero": "mujer"},
-    "Chaqueta Vestigio": {"genero": "mujer"},
-    "Jeans Corteza Vestigio": {"genero": "mujer"},
-    "Denim Alba": {"genero": "mujer"},
+    "TEE REGALA FLORES": {"colores": ["Negro"], "genero": "hombre"},
+    "TEE FLORES, COMO LLAVES": {"colores": ["Blanco"], "genero": "mujer"},
+    "Polerón Blanco Estrella Negra Tachas Over Size": {"genero": "mujer", "corte": "oversize"},
+    "Polerón Spicy Pink Over Size": {"genero": "mujer", "corte": "oversize"},
+    "Chaqueta Bomber Marrón": {"genero": "mujer", "corte": "oversize"},
+    "Bomber Índigo": {"categoria": "chaqueta", "subtipo": "bomber", "colores": ["Azul"], "genero": "mujer", "corte": "regular fit"},
+    "Bomber Breña": {"categoria": "chaqueta", "subtipo": "bomber", "colores": ["Verde"], "genero": "mujer", "corte": "regular fit"},
+    "Chaqueta Archivo": {"colores": ["Gris"], "genero": "mujer", "corte": "regular fit", "subtipo": "Otro"},
+    "Bomber Corteza": {"categoria": "chaqueta", "subtipo": "bomber", "corte": "oversize", "material": "algodon_100", "colores": ["Negro"], "genero": "mujer"},
+    "Bomber Granate": {"categoria": "chaqueta", "subtipo": "bomber", "material": "poliester", "colores": ["Granate"], "genero": "mujer", "corte": "oversize"},
+    "Bomber Alba": {"categoria": "chaqueta", "subtipo": "bomber", "corte": "oversize", "material": "algodon_100", "colores": ["Blanco"], "genero": "mujer"},
+    "Chaqueta Vestigio": {"subtipo": "mezclilla", "material": "algodon_100", "colores": ["Negro"], "genero": "mujer", "corte": "regular fit"},
 
     # --- Genero por foto de modelo, ronda 5 (2026-09-08): mismo mecanismo de
     # las rondas anteriores, 250 productos unisex mas revisados foto por foto
@@ -1785,30 +1302,26 @@ VERIFICADO_A_MANO = {
     # mostraba rasgos claros (ej. la ilustracion anime de mujer reusada en
     # toda la linea "Saddabae" de IPREX, o fotos reales con rostro/cuerpo
     # visible). Sin nombres duplicados en el catalogo para este lote.
-    "Polera Baby Tee Brasil iprex": {"genero": "mujer"},
-    "Polera Minimal m2 Saddabae": {"genero": "mujer"},
-    "polera minimal saddabae": {"genero": "mujer"},
-    "Polera Sad Rulay Saddabae": {"genero": "mujer"},
-    "Polera Trivial Saddabae": {"genero": "mujer"},
-    "Polera Waifu Saddabae": {"genero": "mujer"},
-    "Polera Waifu triviales Saddabae": {"genero": "mujer"},
-    "Polerón full zip trivial M2 Saddabae": {"genero": "mujer"},
-    "Polerón full zip Trivial m3 Saddabae": {"genero": "mujer"},
-    "Polerón full zip trivial Saddabae": {"genero": "mujer"},
-    "Polerón Minimal m2 Saddabae": {"genero": "mujer"},
-    "Polerón minimal Saddabae": {"genero": "mujer"},
-    "Polerón personajes Saddabae": {"genero": "mujer"},
-    "Polerón Sad Rulay Saddabae": {"genero": "mujer"},
-    "CROPPED BEEWAY ROSA": {"genero": "mujer"},
-    "CROPPED BEEWAY BLACK": {"genero": "mujer"},
-    "CROPPED BEEWAY (BLUE)": {"genero": "mujer"},
+    "Polera Baby Tee Brasil iprex": {"colores": ["Amarillo"], "genero": "mujer"},
+    "Polera Minimal m2 Saddabae": {"colores": ["Gris"], "genero": "mujer"},
+    "polera minimal saddabae": {"colores": ["Gris"], "genero": "mujer"},
+    "Polera Sad Rulay Saddabae": {"colores": ["Gris"], "genero": "mujer"},
+    "Polera Trivial Saddabae": {"colores": ["Gris"], "genero": "mujer"},
+    "Polera Waifu Saddabae": {"colores": ["Gris"], "genero": "mujer"},
+    "Polera Waifu triviales Saddabae": {"colores": ["Gris"], "genero": "mujer"},
+    "Polerón Minimal m2 Saddabae": {"colores": ["Negro"], "genero": "mujer", "corte": "oversize"},
+    "Polerón minimal Saddabae": {"colores": ["Negro"], "genero": "mujer", "corte": "oversize"},
+    "Polerón personajes Saddabae": {"colores": ["Negro"], "genero": "mujer", "corte": "oversize"},
+    "Polerón Sad Rulay Saddabae": {"colores": ["Negro"], "genero": "mujer", "corte": "oversize"},
+    "CROPPED BEEWAY ROSA": {"largo": "crop", "genero": "mujer"},
+    "CROPPED BEEWAY BLACK": {"largo": "crop", "genero": "mujer"},
+    "CROPPED BEEWAY (BLUE)": {"largo": "crop", "genero": "mujer"},
     "T- SHIRT XXXTENTACION ———(SLIM FIT)": {"genero": "hombre"},
     "T-SHIRT XXXTENTACION.  —— (BOXY FIT)": {"genero": "hombre"},
     "RESILIENCE ULTRA BLACK": {"genero": "hombre"},
-    "Polera Slim fit (OG)": {"genero": "hombre"},
-    "TANK TOP SLIM FIT (LÍNEAS CAMO )": {"genero": "hombre"},
-    "POLERA SLIM FIT LÍNEAS CAMO": {"genero": "hombre"},
-    "HOODIE BUZO": {"genero": "hombre"},
+    "Polera Slim fit (OG)": {"colores": ["Negro"], "genero": "hombre"},
+    "TANK TOP SLIM FIT (LÍNEAS CAMO )": {"colores": ["Verde"], "genero": "hombre"},
+    "POLERA SLIM FIT LÍNEAS CAMO": {"colores": ["Verde"], "genero": "hombre"},
 
     # --- Genero por foto de modelo, ronda 6 (2026-09-08): termina el pool de
     # 434 productos unisex que quedaba sin revisar (RRREUSED/IPREX/BEEWAY
@@ -1820,57 +1333,635 @@ VERIFICADO_A_MANO = {
     # tiendas 100% ghost mannequin/flat lay (sin modelo humano en ninguna
     # foto), asi que quedaron unisex por falta de evidencia, no por omision.
     # Sin nombres duplicados en el catalogo para este lote.
-    "Haring Jort Japonés": {"genero": "hombre"},
-    "Polar Sakura Azul": {"genero": "hombre"},
-    "Polar Sakura Café": {"genero": "mujer"},
-    "Polar Micelio": {"genero": "mujer"},
     "Polera con Capucha Warhol": {"genero": "hombre"},
     "Jockey Gamuza Wav": {"genero": "hombre"},
     "Jockey Walk With Your Friends": {"genero": "mujer"},
-    "Jort Negro Japonés": {"genero": "hombre"},
-    "Short Basic Negro": {"genero": "mujer"},
-    "Short Happy Flower": {"genero": "mujer"},
     "Polera Baby Tee Blanca": {"genero": "mujer"},
     "Polera Baby Tee Striped": {"genero": "mujer"},
     "Polera Baby Tee Negra": {"genero": "mujer"},
     "Polera Morpho Menelaus": {"genero": "hombre"},
     "Polera Super Mr. Wav": {"genero": "hombre"},
     "Polera Happy Flower": {"genero": "hombre"},
-    "Poleron Ume No Hakiri": {"genero": "hombre"},
     "Beanie Beige": {"genero": "mujer"},
     "Beatle Hidden Clover": {"genero": "hombre"},
     "Jockeys Chiporro": {"genero": "mujer"},
     "Beanie Black": {"genero": "mujer"},
-    "Poleron Ghost Input 808": {"genero": "mujer"},
+    "Poleron Ghost Input 808": {"genero": "mujer", "corte": "regular fit"},
     "Polera Hongo Corazón": {"genero": "hombre"},
     "Polera Warm inside": {"genero": "hombre"},
     "Polera Dormant Love": {"genero": "hombre"},
     "Polera Basic Café": {"genero": "mujer"},
     "Polera Basic White": {"genero": "hombre"},
     "Polera Basic Negra": {"genero": "hombre"},
-    "Crewneck Art Escapist": {"genero": "mujer"},
     "POLERA BOXY FIT FUCSIA – HEART LMD": {"genero": "mujer"},
-    "FIVE STARS ONLY HOODIE": {"genero": "mujer"},
-    "Poleron café desgastado LMD studio - Boxy": {"genero": "mujer"},
-    "Sobrefalda tartan #4": {"genero": "mujer"},
-    "Sobrefalda tartan #3": {"genero": "mujer"},
-    "Sobrefalda tartan #2": {"genero": "mujer"},
-    "Sobrefalda tartan #1": {"genero": "mujer"},
-    "Hoodie gris desgastado LMD studio con cierre": {"genero": "mujer"},
-    "Hoodie Boxy Oversized · Rosado coderas de estrella": {"genero": "hombre"},
-    "Hoodie Boxy Oversized 5 Estrellas Café Bolsillo Canguro": {"genero": "hombre"},
-    "Poleron Verde Desgastado estrellas bordadas - Boxy": {"genero": "mujer"},
-    "Poleron Negro Desgastado estrellas bordadas - Boxy": {"genero": "mujer"},
-    "Poleron Básico Negro Gravillado": {"genero": "mujer"},
-    "Polerón Básico Crewneck": {"genero": "hombre"},
-    "Polera Estrella": {"genero": "hombre"},
-    "Polera basica Hush": {"genero": "hombre"},
-    "TOADALLY FRESH": {"genero": "hombre"},
+    "Poleron café desgastado LMD studio - Boxy": {"genero": "mujer", "corte": "boxy fit"},
+    "Poleron Gris Claro Boxy Abierto Acid Wash Estrellas Bordadas": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Sobrefalda tartan #4": {"categoria": "falda", "genero": "mujer"},
+    "Sobrefalda tartan #3": {"categoria": "falda", "genero": "mujer"},
+    "Sobrefalda tartan #2": {"categoria": "falda", "genero": "mujer"},
+    "Sobrefalda tartan #1": {"categoria": "falda", "genero": "mujer"},
+    "Polera Estrella": {"material": "algodon_100", "gramaje_gsm": 300, "genero": "hombre"},
+    "Polera basica Hush": {"material": "algodon_100", "gramaje_gsm": 300, "genero": "hombre"},
+    "TOADALLY FRESH": {"corte": "regular fit", "genero": "hombre"},
     "Jersey's HELLSTAR Azul": {"genero": "hombre"},
     "Jersey's HELLSTAR Sports Morado": {"genero": "hombre"},
     "Jersey's HELLSTAR Rojo": {"genero": "hombre"},
-    "BANE - Oversized": {"genero": "hombre"},
+    "BANE - Oversized": {"material": "algodon_100", "genero": "hombre"},
     "BANGE": {"genero": "hombre"},
+
+    # --- Subtipo de pantalon por foto (2026-09-08), pedido explicito del
+    # usuario: revisar foto por foto los 64 pantalones que quedaban sin
+    # subtipo (ninguna palabra "jean/denim/cargo/buzo" en el nombre) y
+    # clasificarlos dentro de los 3 subtipos reales que soporta la
+    # arquitectura (buzo/jeans/cargo, ver SUBTIPOS_POR_TIPO_PRENDA). Nombres
+    # duplicados en catalogo (Pantalón Wrangler x2, Pantalón Rustler x2,
+    # Pantalon Polo x2, Pantalon Rocawear x3, todos RRREUSED) se revisaron
+    # las 2-3 instancias por separado antes de aplicar por nombre -- todas
+    # confirmadas denim/jean sin conflicto.
+    # JEANS: denim real confirmado por foto (5 bolsillos + textura/lavado
+    # de mezclilla, marcas exclusivamente denim como Levis/Wrangler/
+    # Rustler/Diesel/Girbaud).
+    "Pantalon Phat Farm Flare": {"subtipo": "jeans"},
+    "Pantalon Vintage Baggy": {"subtipo": "jeans"},
+    "Pantalon Tommy Hilfiger Baggy": {"subtipo": "jeans"},
+    "Pantalón Náutica Baggy": {"subtipo": "jeans"},
+    "NIGHT CREASE": {"categoria": "pantalon", "subtipo": "jeans"},
+    "SILVER NIGHT CREASE": {"categoria": "pantalon", "subtipo": "jeans"},
+    # Confirmado por el usuario (2026-09-08): "METAL BLACK PANTS" (Doslobos)
+    # es buzo -- decision del usuario, foto no daba senal clara por si sola.
+    "METAL BLACK PANTS": {"categoria": "pantalon", "corte": "baggy", "subtipo": "buzo"},
+    # CARGO: bolsillos cargo/utilitarios extra visibles en la foto (ademas
+    # de los 5 bolsillos normales de jean/canvas).
+    "TIGER PANTS MEN": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo"},
+    "CAMO GREEN PANTS MEN": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo"},
+    "CAMO GRAY PANTS MEN": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo"},
+    # BUZO: jogger/sweatpants real (pretina y puños elasticados, cordon,
+    # tela tipo buzo) confirmado por foto en toda la linea.
+    "PANTALON BAGGY BLANK (NEGRO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY BLANK (CREMA)": {"subtipo": "buzo"},
+    "PANTALON BAGGY BLANK (GRIS MELANGE)": {"subtipo": "buzo"},
+    "PANTALON BAGGY ESENCIAL (NEGRO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY ESENCIAL (MARINO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY ESENCIAL (ROJO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY LIVE YOUR DREAM (NEGRO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY MAKE IT SIMPLE (NEGRO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY MAKE IT SIMPLE (MARINO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY STARS (NEGRO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY STARS (MARINO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY THANK GOD (NEGRO)": {"subtipo": "buzo"},
+    "PANTALON BAGGY THANK GOD (ROJO)": {"subtipo": "buzo"},
+    # Nota (2026-09-08) sobre el resto del lote de 66 pantalones sin
+    # subtipo revisados: "FOUNDATION TROUSER"/"FOUNDATION TROUSER BLACK"
+    # (Rapt) y "CROCODILE BLCK (BOOTCUT)" (By Adrián Sánchez) -- trouser de
+    # vestir y cuero sintetico, ninguno de los 3 subtipos reales (buzo/
+    # jeans/cargo) aplicaba -- se sacaron del catalogo por decision del
+    # usuario en vez de dejarlos sin subtipo (ver RAPT y BYADRIAN mas
+    # abajo). "Pantalón Dickies Tela" (RRREUSED) tambien se saco (mismo
+    # motivo, el propio nombre decia "Tela"). "PANTALÓN CARPINTERO"/
+    # "Pantalón Carhartt Carpintero" y "METAL BLACK PANTS" quedan resueltos
+    # mas abajo (regla "carpintero" -> cargo en clasificar_prenda(), y
+    # override puntual de METAL BLACK PANTS -> buzo).
+
+    # --- Corte de pantalon/short por foto (2026-09-09), pedido explicito
+    # del usuario: el buscador no encontraba productos reales porque el
+    # corte dependia solo del nombre (muchas tiendas no dicen "baggy"/
+    # "straight"/etc en el nombre). Revisados foto por foto los 129
+    # pantalones/shorts que quedaban sin corte, usando la silueta real como
+    # proxy de sus reglas (ningun sitio publica medidas en cm de tobillo/
+    # tiro, ver docs/catalogo_real.md) -- confirmado con el usuario que este
+    # es el metodo a seguir. Nombres duplicados en catalogo (Pantalón
+    # Wrangler x2, Pantalón Rustler x2, Pantalon Polo x2, Pantalon Rocawear
+    # x3, Pantalón Buzo Adidas x2, todos RRREUSED) tienen fotos DISTINTAS
+    # (handles/imagenes distintos) pero son la misma tienda con el mismo
+    # patron de foto (percha, denim recto) en las revisadas -- criterio
+    # aplicado tambien a las no revisadas 1 a 1 dentro del mismo par,
+    # consistente con el resto de RRREUSED. Para StreetVibe/Sioux se
+    # prioriza el "fit"/"calce" REAL que la propia tienda declara (categoria
+    # o campo de ficha) por sobre la silueta, cuando existe.
+    # "SHORT METALLIC" (BEEWAY) quedó marcado aparte como posible cargo
+    # (bolsillos tipo cargo visibles) -- no se cambia el subtipo aca, fuera
+    # de alcance de este pedido puntual (corte).
+    "PANTALON BASICO HEAVYWEIGHT (ROSADO)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy", "subtipo": "buzo"},
+    "PANTALON BASICO HEAVYWEIGHT (CAFE)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy", "subtipo": "buzo"},
+    "PANTALON MARINO (HEAVYWEIGHT)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy", "genero": "hombre", "subtipo": "buzo"},
+    "PANTALON BASICO HEAVYWEIGHT NEGRO (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy", "subtipo": "buzo"},
+    "PANTALON BASICO HEAVYWEIGHT GRIS (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy", "subtipo": "buzo"},
+    "PANTALON BASICO HEAVYWEIGHT AZUL MARINO (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy", "subtipo": "buzo"},
+    "PANTALON BASICO HEAVYWEIGHT BURDEO (PREVENTA)": {"material": "algodon_100", "gramaje_gsm": 400, "corte": "baggy", "subtipo": "buzo"},
+    "Black acid wash jeans": {"corte": "baggy", "genero": "hombre"},
+    "Black bur jeans": {"corte": "baggy", "genero": "hombre"},
+    "Black Ripped jeans": {"corte": "baggy", "genero": "hombre"},
+    "Blessing VVS jeans": {"corte": "baggy", "genero": "hombre"},
+    "Blue Glow VVS jeans": {"corte": "baggy", "genero": "hombre"},
+    "Cloud denim cargo jeans": {"corte": "baggy", "genero": "hombre"},
+    "Denim Essentials jeans": {"corte": "baggy", "genero": "hombre"},
+    "Essentials Black jeans": {"corte": "baggy", "genero": "hombre"},
+    "Essentials Blue jeans": {"corte": "baggy", "genero": "hombre"},
+    "Iron Black jeans": {"corte": "baggy", "genero": "hombre"},
+    "Iron Blue Cargo jeans": {"corte": "baggy", "genero": "hombre"},
+    "Iron grey jeans": {"corte": "baggy", "genero": "hombre"},
+    "Iron Ice jeans": {"corte": "baggy", "genero": "hombre"},
+    "Light Ripped jeans": {"corte": "baggy", "genero": "hombre"},
+    "Short blackrugged": {"corte": "baggy", "subtipo": "cargo", "genero": "hombre"},
+    "Sky blue cargo jeans": {"corte": "baggy", "colores": ["Celeste"], "genero": "hombre"},
+    "Sky frost jeans": {"corte": "baggy", "genero": "hombre"},
+    "Thunder VVS jeans": {"corte": "baggy", "genero": "hombre"},
+    "Stealth Jorts": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "Jogger Unk. Generation Black": {"categoria": "pantalon", "corte": "slim fit", "genero": "hombre"},
+    "Jogger UNK. Euro Calypso": {"categoria": "pantalon", "corte": "slim fit", "genero": "hombre"},
+    "Jogger Unk. Green": {"categoria": "pantalon", "corte": "slim fit", "genero": "hombre"},
+    "Jogger Unk. Dark": {"categoria": "pantalon", "corte": "slim fit", "genero": "hombre"},
+    "Short Unk. Tiger Gray": {"corte": "regular fit", "genero": "hombre"},
+    "Jogger Unk. Rainbow blue": {"categoria": "pantalon", "corte": "slim fit", "genero": "hombre"},
+    "Joggers Unk. Generation Blue": {"categoria": "pantalon", "corte": "slim fit", "genero": "mujer"},
+    "LIGHT BLUE JORT": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "METAL BLACK JORT": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "CAMO GRAY JORT": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "DENIM RAPPORT JORT": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "Denim-rapport PANTS": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "Denim-tribal SHORT": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "Denim-rapport JORT": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "JORT CARGO CAMO VERDE": {"categoria": "shorts", "corte": "baggy", "genero": "mujer"},
+    "JORT CARGO CAMO GRIS": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "JORT CARGO CORROÍDO": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "PANTALÓN CARGO": {"categoria": "pantalon", "corte": "baggy", "subtipo": "cargo", "genero": "mujer"},
+    "PANTALÓN CARPINTERO": {"categoria": "pantalon", "corte": "baggy", "genero": "hombre"},
+    "JORT CARPINTERO ETERNO 08": {"categoria": "shorts", "corte": "baggy", "genero": "hombre"},
+    "Distressed Full Black Short": {"corte": "regular fit"},
+    "Go to Shorts Black": {"corte": "regular fit"},
+    "Go to Shorts Melange Grey": {"corte": "regular fit"},
+    "Raw Icon Denim Pants": {"genero": "hombre", "corte": "baggy"},
+    "Black Icon Denim Pants": {"genero": "hombre", "corte": "baggy"},
+    "Denim Corteza Negro": {"corte": "wide leg", "colores": ["Negro"], "genero": "mujer"},
+    "Jeans Corteza Vestigio": {"material": "algodon_100", "colores": ["Negro"], "genero": "mujer", "corte": "wide leg"},
+    "Denim Alba": {"material": "algodon_100", "colores": ["Blanco"], "genero": "mujer", "corte": "wide leg"},
+    "Pantalón Levis 505": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Faded Glory": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Levis": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Wrangler": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Buzo Adidas": {"corte": "slim fit"},
+    "Pantalón Eddie Bauer": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Rustler": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Paco Jeans": {"corte": "straight"},
+    "Pantalón Carhartt Carpintero": {"corte": "straight"},
+    "Pantalon Levis 505": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Levis 559": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Levis": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Polo": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Tommy Hilfiger": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Rocawear": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Y2K Royal Republic": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Levis 560": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Levis 541": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalon Diesel": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Buzo Nike Cargo": {"corte": "straight"},
+    "Pantalon Buzo Nike Tech": {"corte": "slim fit"},
+    "Pantalón Carpintero Levis": {"subtipo": "cargo", "corte": "straight"},
+    "Pantalón Levis 501": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Carhartt": {"subtipo": "cargo", "corte": "straight"},
+    "Pantalon Buzo Nike": {"corte": "slim fit"},
+    "Pantalón Levis Bootcut": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Cargo Dickies Tela": {"corte": "straight"},
+    "Pantalón Levis 506": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Vintage Con Rayas": {"subtipo": "jeans", "corte": "straight"},
+    "Pantalón Marithe Francois Girbaud": {"subtipo": "jeans", "corte": "straight"},
+    "SHORT DOBLE PRETINA BEEWAY": {"colores": ["Gris"], "corte": "baggy"},
+    "SHORT BEEWAY NUBE": {"colores": ["Beige"], "corte": "regular fit"},
+    "PANTS (BUZO)": {"categoria": "pantalon", "subtipo": "buzo", "colores": ["Gris"], "corte": "baggy"},
+    "SHORT METALLIC": {"colores": ["Negro"], "corte": "baggy"},
+    "Haring Jort Japonés": {"genero": "hombre", "corte": "regular fit"},
+    "Jort Negro Japonés": {"genero": "hombre", "corte": "regular fit"},
+    "Short Basic Negro": {"genero": "mujer", "corte": "baggy"},
+    "Short Happy Flower": {"genero": "mujer", "corte": "baggy"},
+    "Short de franela de algodón": {"corte": "regular fit"},
+    "CROCODILE SMOKE JEANS": {"corte": "flare"},
+    "DIRTY NIGHT CREASE ( JEANS )": {"corte": "flare"},
+    "Jeans Viral Acid Blue": {"corte": "baggy"},
+    "Low flow Celeste": {"corte": "straight"},
+    "Low flow Ocre": {"corte": "straight"},
+    "Low flow Acid": {"corte": "straight"},
+    "Jeans Viral Dark Blue": {"corte": "baggy"},
+    "Low flow brown": {"corte": "straight"},
+    "Low flow ash": {"corte": "straight"},
+    "Low flow Dark": {"corte": "straight"},
+    "Jort Celeste Hielo": {"corte": "baggy"},
+    "Jort Ocre": {"corte": "baggy"},
+    "Jort Cafe": {"corte": "baggy"},
+    "Jort Gris Focalizado": {"corte": "baggy"},
+    "Jeans Hombre Cargo Corte Azul Sioux": {"corte": "baggy"},
+    "Jeans Hombre Cargo Negro": {"corte": "wide leg"},
+    "Jeans Hombre Carpintero Cierre Celeste Sioux": {"corte": "baggy"},
+    "Jeans Hombre Multicargo 3D Cierres Negro Sioux": {"corte": "wide leg"},
+    "Jeans Mujer Cargo Elasticado Celeste Sioux": {"corte": "wide leg"},
+    "Jeans Mujer Cargo Multi Bolsillos Azul Sioux": {"corte": "wide leg"},
+    "Jeans Mujer Cargo Tiro Alto Negro Sioux": {"corte": "wide leg"},
+    "Jeans Mujer Estrellas Costados Celeste": {"corte": "wide leg"},
+    "Jeans Mujer Extra Wide Led Bicolor Celeste": {"corte": "wide leg"},
+    "Jeans Mujer Folded Tiro Alto Celeste Sioux": {"corte": "wide leg"},
+    "Jeans Mujer Raw Oscuro Azul Sioux": {"corte": "straight"},
+    "Jeans Mujer Tachas Stars Celeste": {"corte": "wide leg"},
+    "Short Acid Wash - KL": {"corte": "regular fit"},
+    "Shorts Cargo Detroit": {"corte": "baggy"},
+    "Shorts Cargo Estambul Negro": {"corte": "baggy"},
+    # Culotte plisado largo, se ve como falda (ver duplicado categoria
+    # "falda" en main()) -- "wide leg" describe mejor la silueta ancha real
+    # que "baggy" (no hay volumen/puddle en el tobillo, es un plisado recto).
+    "JORT TABLEADO": {"genero": "mujer", "corte": "wide leg"},
+
+    # --- Corte de polerones CON CIERRE por foto (2026-09-09), pedido
+    # explicito del usuario tras notar que la mayoria no tenia boxy fit/
+    # oversize aunque las fotos claramente lo muestran. "Poleron black/pink
+    # zipper" (Oversaints) tenian un override viejo "regular fit" (linea 608,
+    # de antes de esta revision) que la foto real no respalda -- se corrige
+    # aca, gana por ser la entrada mas nueva del mismo dict.
+    "Poleron black zipper": {"corte": "oversize"},
+    "Poleron pink zipper": {"corte": "oversize"},
+    "GRID SHIFT ZIP MELANGE": {"corte": "oversize"},
+    "GRID SHIFT ZIP NAVY": {"corte": "oversize"},
+    "PATCH SHIFT ZIP BLACK": {"corte": "oversize"},
+    "ZIP HOODIE LOW TIDE BLACK": {"corte": "boxy fit"},
+    "ZIP HOODIE LOW TIDE BLUE": {"corte": "boxy fit"},
+    "ZIP HOODIE LOW TIDE MOSS": {"corte": "boxy fit"},
+    "ZIP HOODIE LOW TIDE STONE": {"corte": "boxy fit"},
+    "ZIP HOODIE LOW TIDE V2 CEMENT": {"corte": "boxy fit"},
+    "FLTNG Zip Hoodie": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "FLTNG ZIP V2": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    # ZAMU: sweater tejido con cuello, calce ajustado real (no boxy/oversize
+    # como el resto -- es la excepcion real, no un olvido). "categoria"
+    # repetida a proposito: esta MISMA clave ya existia mas arriba en este
+    # dict (categoria "poleron") -- un dict literal con la clave repetida
+    # se PISA completo con la ultima aparicion, asi que hay que repetir
+    # "categoria" aca o se perdia (bug real encontrado al agregar esto).
+    "Sweater con Cierre Metálico Tejido en Chile | Punto Inglés Barnizado": {"categoria": "poleron", "corte": "regular fit"},
+
+    # --- Corte/genero/categoria de POLERONES por TEXTO (2026-09-09), pedido
+    # explicito del usuario: 61% de los 447 polerones nunca tuvieron corte
+    # tageado, asi que busquedas especificas ("boxy sin capucha") daban 0-1
+    # resultados aunque existiera mas stock real. Fase 1 (esta): texto
+    # (nombre+descripcion real) con las señales boxy/oversize/oversized/
+    # holgado -> corte (capucha/cierre van en CAPUCHA_CIERRE_VERIFICADO mas
+    # abajo, NO aca -- construir_producto() solo lee ese dict para esos 2
+    # campos en polerones, VERIFICADO_A_MANO nunca los aplica, bug real que
+    # se evito antes de guardar nada). 123 de estos 261 nombres YA tenian
+    # un override anterior en este mismo dict (mayoria genero, del proyecto
+    # de revision de genero) -- se repiten TODOS sus campos existentes aca
+    # a proposito, porque un dict literal con la clave repetida se PISA
+    # COMPLETO con la ultima aparicion (mismo bug ya encontrado con el
+    # sweater de ZAMU mas arriba). Fase 2 (aparte, por foto) queda pendiente
+    # para lo que el texto no resuelve.
+    "COMMON HOODIE MOSS": {"corte": "boxy fit", "genero": "hombre", "categoria": "poleron"},
+    "NITIDO vibe hoodie": {"corte": "boxy fit", "genero": "hombre", "categoria": "poleron"},
+    "LOGO dark hoodie": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "FEAR BLACK HOODIE": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "SAINTWOLF HOODIE": {"corte": "boxy fit", "genero": "hombre", "categoria": "poleron"},
+    "METAL BLACK HOODIE": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "ESFINGE CATS HOODIE": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "3D CHROME HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "MANADA TOUR HOODIE": {"corte": "boxy fit", "genero": "hombre", "categoria": "poleron"},
+    "METAL CROMO BLACK HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "ACABÉ TRIUNFANDO HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "ESFINGE PINK CATS HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "SKULL HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "GRITA Y EXHALE HOODIE": {"corte": "boxy fit", "genero": "mujer", "categoria": "poleron"},
+    "STRASS BLUE HOODIE": {"corte": "boxy fit", "genero": "mujer", "categoria": "poleron"},
+    "KRYPTA HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "DETHKID HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "MANADA STONE HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "CORE BLACK HOODIE": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "HOODIE CAMO STRASS": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "Faith&Love HOODIE": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "María flame HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "LOGO STRASS HOODIE": {"corte": "boxy fit", "genero": "hombre", "categoria": "poleron"},
+    "STRASS PINK HOODIE": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "HOODIE DARK OSCURIDAD": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "CREWNECK DARK ARCANA": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "Zipper gray hoodie": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "CREWNECK OXIDADO MINIMAL": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "Two wolves hoodie": {"corte": "regular fit", "genero": "hombre", "categoria": "poleron"},
+    "CREWNECK GALGOS ETERNAL VERSIÓN": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "Post vortex gray hoodie": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "Rómulo y Remo hoodie": {"corte": "oversize", "genero": "mujer", "categoria": "poleron"},
+    "WOLVES RED HOODIE": {"corte": "regular fit", "genero": "hombre", "categoria": "poleron"},
+    "Post Vortex Crewneck": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "Moon raw hoodie": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "Hoodie Mint Logo": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "LUCIÉRNAGA BLACK HOODIE": {"corte": "regular fit", "genero": "hombre", "categoria": "poleron"},
+    "Crewneck Galgos": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "POLERÓN CONTIGO NEGRO": {"categoria": "poleron", "corte": "oversize", "genero": "mujer"},
+    "POLERÓN SIEMPRE ROJO": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "STRASS LUCIÉRNAGA HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "CATS BLACK HOODIE": {"corte": "regular fit", "genero": "mujer", "categoria": "poleron"},
+    "3D CHROME LOGO HOODIE": {"corte": "oversize", "genero": "hombre", "categoria": "poleron"},
+    "POLERÓN INFINITO 08": {"categoria": "poleron", "corte": "oversize", "genero": "hombre"},
+    "Shadow Double Zip Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Desert Double Pocket Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "BLACK Double Zip Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "NAVY BLUE Double Zip Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "CHARCOAL GREY ZipUp Dusk Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "NAVY BLUE ZipUp Dusk Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "BUBBLEGUM PINK ZipUp Dusk Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "BLACK ZipUp Dusk Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie \"The Locals\" Black HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie \"The Locals\" Pink": {"genero": "mujer", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie \"The Locals\" Chocolate": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie \"Shelter\" Black": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie \"Shelter\" Pink": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie \"Shelter\" Chocolate": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "First Date Double Zip Chocolate": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "First Date Double Zip Black HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Zip Up \"Logo\" Melange Grey HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Zip Up Hoodie Navy Blue HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Zip Up Hoodie Melange Grey HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Zip Up Hoodie Chocolate": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Zip Up Hoodie Black HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    # 2026-09-09 -- ficha real dice literal "Chaqueta con calce entallada",
+    # es una chaqueta de mezclilla, no un poleron (bug de categoria que veniamos
+    # arrastrando).
+    "Blazze 04 - Zip set indigo": {"categoria": "chaqueta", "genero": "mujer", "corte": "slim fit", "subtipo": "mezclilla"},
+    "Polerón LA Azul Eléctrico Over Size": {"genero": "mujer", "categoria": "poleron", "corte": "oversize"},
+    "Hoodie Soles Tabaco": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "POLERÓN \"EMOTION\" NEGRO": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "POLERON EMOTIONS \"NEVER DIE\" ROSA": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "POLERON \"EMOTION ANGEL\" GRIS": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "POLERÓN \"EMOTION ANGEL\" NEGRO": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Hoodie godpeed negro": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Hoodie Essentials Gris": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Hoodie Essentials Negro": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE TEXTOS": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "MOTION BASIC ACERO": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "HOODIE BLACK ROSE": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE TPSS26": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE FLAMES AQUA": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE FLAMES BROWN": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE TPSCO GRAY": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE TPSCO PINKCAKE": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "MOTION ACID WASH BASIC": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "MOTION BASIC GBLACK": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "MOTION CHOCOLATE": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "MOTION BASIC GRAY": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "MOTION BASIC": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "HOODIE DOBLE ZIP": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE SINGULAR DOBLE ZIP": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE PINK FLAMES": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "TRACK HOODIE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE TPS BASIC": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "FRANCE BLUE HOODIE": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "BERRY FADE HOODIE": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE TPSCO PINK": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE BAYLEAF": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE TPSCO BLACK": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE INSANE BLACK": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE ATYPICAL BLACK": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE BASIC": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE SPACY RED": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE SPACY": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE STARS": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "GRAPE": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "HOODIE ROYAL BLUE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Poleron Yeezy HD-01": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro"], "corte": "boxy fit"},
+    "HOODIE BUZO": {"genero": "hombre", "categoria": "poleron", "corte": "regular fit"},
+    "HOODIE RESILIENCIE (FOCALIZADO)": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Polerón Hoodie Acid Wash con Gorro Cuadrillé a Tono": {"categoria": "poleron", "genero": "unisex", "colores": ["Azul rey", "Burdeo", "Negro desgastado", "Verde botella"], "corte": "boxy fit"},
+    "Polerón con cierre Acid Wash": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "FIVE STARS ONLY HOODIE": {"genero": "mujer", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie gris desgastado LMD studio con cierre": {"genero": "mujer", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie Icon ★: cierre desgastado con estrella en espalda": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie Icon ★:  canguro desgastado con estrella en espalda": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Poleron Básico Negro Gravillado": {"genero": "mujer", "categoria": "poleron", "corte": "oversize"},
+    "Poleron Canguro Acid Wash - Gris": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Poleron Canguro Acid Wash - Azul Marino": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Polerón Básico - Café": {"genero": "unisex", "categoria": "poleron", "material": "algodon_100", "corte": "regular fit"},
+    "Polerón Básico - Beige": {"genero": "unisex", "categoria": "poleron", "material": "algodon_100", "corte": "regular fit"},
+    "Polerón Básico - Negro": {"genero": "unisex", "categoria": "poleron", "material": "algodon_100", "corte": "regular fit"},
+    "Heavyweight® MultiZip Hoodie (FRENCH BLUE)": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Heavyweight® Storm Dusk Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Heavyweight® Black Dusk Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Heavyweight® Mocha Dusk Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Instinctive Dark Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Instinctive Emerald ZipUp Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Instinctive French Blue ZipUp Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Instinctive Cherry ZipUp Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "\"DarkSide\" Black BoxyFit Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "\"Chaos\" Boxy Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "\"YELLOW LABEL COMP\"// OVERSIZED HOODIE": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "\"MICRO TEX 01\" // CREWNECK BOXYFIT DOUBLE SLEEVE": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "\"GOOD LIFE YELLOW CLUB\" // HOODIE BOXYFIT": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "BASIC MINI LOGO// OVERSIZED HOODIE": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "\"ESSENCIAL 911 \" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"VICTORIA\"  // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"DIOSES\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"YELLOW CLUB MONOCROMO\"//OVERSIZED HOODIE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"YELLOW CLUB MONOCROMO\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"YELLOW CLUB\" // OVERSIZED HOODIE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"PRIMA DONNA\" // HOODIE OVERSIZED SAT": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"IA\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"COLORS\"//OVERSIZED HOODIE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"METAL\" // HOODIE OVERSIZED // ACIDWASH": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "SUPER TEX // HOODIE OVERSIZED // ACIDWASH": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"HIGH RIDE\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"STAR LINE\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"LABEL CLUB\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"SAINT\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"1LIBRACLO VINTAGE\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "\"LIPS\" // HOODIE OVERSIZED": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "BASICO MINI LOGO// OVERSIZED HOODIE": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE NEGRO": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "BASIC//ESSENCIAL OVERSIZED HOODIE BEIGE": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE BLANCO": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "BASIC MINI LOGO//OVERSIZED HOODIE": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "Boxy Fit Hoodie Navy Blue HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Boxy Fit Hoodie Pink HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Boxy Fit Hoodie Melange Grey HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Boxy Fit Hoodie Black HEAVYWEIGHT": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Boxy Fit Hoodie Chocolate": {"genero": "hombre", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie BoxyFit zip up SLT2": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie BoxyFit CROP Reichsadler": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie BoxyFit zip up Logo 003": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Mountain Type Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Ninja Hoodie (Medium Contrast) Oversize boxy": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "SLT1H204 Zip Hoodie": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Polerón Soccer 08 Franela Fantasía": {"genero": "mujer", "categoria": "poleron", "corte": "regular fit"},
+    "Hoodie Time Unisex OverSize Gris Mauve": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "NUEVO HOODIE SPACY CACTUS": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE SPACY PERLA": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE SPACY MARINE": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "HOODIE SPACY ACID WASH": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "CHOSEN HOODIE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "WORK HRD": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "TRUE BLACK": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "CHERRY BOMB": {"categoria": "poleron", "genero": "unisex", "largo": "normal", "manga": "corta", "corte": "oversize"},
+    "HOODIE TPSCOMPANY": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE DADOS": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Crewneck Nike Center": {"categoria": "poleron", "genero": "unisex", "colores": ["Negro"]},
+    "Crewneck Stussy": {"categoria": "poleron", "genero": "unisex", "colores": ["Verde"]},
+    "Crewneck Carhartt Vintage": {"categoria": "poleron", "genero": "unisex", "colores": ["Verde"], "corte": "regular fit"},
+    "Crewneck Russell": {"categoria": "poleron", "genero": "unisex", "colores": ["Gris"], "corte": "regular fit"},
+    "HOODIE ABISMO PURPLE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE ABISMO BLACK": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE CAPAS COLOR CEMENTO": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE (CAPAS) NEW": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE MULTIZIPER (FÉNIX)": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE DOUBLE CAP (FULL ZIP)": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE DOUBLE CAP (WHITE SEAMS)": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE DOUBLE CAP ROSA ( NEW)": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE DOUBLE CAP BLUE": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "HOODIE DOUBLE CAP ACID (NEW)": {"genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Resilience Hoodie Boxy Fit": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Poleron Ume No Hakiri": {"genero": "hombre", "categoria": "poleron", "colores": ["Negro"], "corte": "oversize"},
+    "Poleron House of Love": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro"], "corte": "oversize"},
+    "Crewneck Art Escapist": {"genero": "mujer", "categoria": "poleron", "colores": ["Negro"], "corte": "oversize"},
+    "Hoodie Canguro Boxy Fit /Franela de Algodón": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit", "colores": ["Negro", "Negro desgastado"]},
+    "Hoodie Boxy Oversized · Rosado coderas de estrella": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "Hoodie Boxy Oversized 5 Estrellas Café Bolsillo Canguro": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "Poleron Verde Desgastado estrellas bordadas - Boxy": {"genero": "mujer", "categoria": "poleron", "corte": "boxy fit"},
+    "Poleron Negro Desgastado estrellas bordadas - Boxy": {"genero": "mujer", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie 5 Estrellas – Boxy Fit Negro": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie 5 Estrellas – Boxy Fit Celeste": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Poleron chocolate con gorro desgastado estrella en espalda": {"categoria": "poleron", "genero": "unisex", "corte": "boxy fit"},
+    "Polerón Básico Crewneck": {"genero": "hombre", "categoria": "poleron", "corte": "regular fit"},
+    "CROSS DEMON HOODIE": {"corte": "boxy fit", "genero": "unisex", "categoria": "poleron"},
+    "PINK TIGER ll": {"categoria": "poleron", "genero": "unisex", "colores": ["Rosado"], "largo": "normal", "manga": "corta", "corte": "regular fit"},
+    "Zip Hoodie \"Basic\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro", "Full Black"], "corte": "oversize"},
+    "Hoodie \"Engagement Concept\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Azul", "Rojo", "Navy", "Café", "Rosado", "Negro"], "corte": "oversize"},
+    "Hoodie \"NDLSS CLUB\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Navy", "Azul", "Negro", "Rosado", "Rojo", "Café"], "corte": "oversize"},
+    "Hoodie \"DEPT🍓\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro", "Rosado"], "corte": "oversize"},
+    "Hoodie \"PGLE\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Verde", "Negro", "Rosado", "Crema", "Café"], "corte": "oversize"},
+    "Hoodie \"Basic\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Full Black", "Rosado", "Negro", "Verde", "Café", "Crema"], "corte": "oversize"},
+    "Hoodie \"Angelss\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Café", "Negro"], "corte": "oversize"},
+    "Zip Hoodie \"DEPT\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro", "Rosado"], "corte": "oversize"},
+    "Zip Hoodie \"PGLE\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro", "Rosado", "Verde"], "corte": "oversize"},
+    "Hoodie \"Flowerss\"": {"genero": "unisex", "categoria": "poleron", "colores": ["Rosado \"Red Flower\"", "Negro \"Blue Flower\"", "Crema \"Red Flower\"", "Negro \"Pink Flower\""], "corte": "oversize"},
+    "Hoodie elemental turquesa oscuro": {"corte": "oversize", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie Not San Valentin": {"corte": "boxy fit", "gramaje_gsm": "330", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie Psycho": {"corte": "boxy fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie elemental negro": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie perfect time": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie Never The Same": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie Not Vision": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie Don't Look Back Café Boxyfit": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie Don't Look Back Beige Boxyfit": {"genero": "unisex", "categoria": "poleron", "corte": "boxy fit"},
+    "Hoodie Don't Look Back Negro": {"corte": "boxy fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie Style Café": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie style beige": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie Elemental Rosado Pálido": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie Elemental Azul Marino": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie style rosado": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie style turquesa": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie Style Negro": {"corte": "regular fit", "genero": "unisex", "categoria": "poleron"},
+    "Hoodie básico beige verdoso": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Hoodie básico blanco": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Hoodie básico negro": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Polerón Polo Krono - Carbón": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "Polerón Polo Krono - Azul Marino": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    "\"Clubhouse\" Zipper Knit Navy": {"genero": "hombre", "categoria": "poleron", "corte": "regular fit"},
+    "\"Clubhouse\" Zipper Knit Black": {"genero": "hombre", "categoria": "poleron", "corte": "regular fit"},
+    "Poleron Nike Zip Up": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro"]},
+    "Poleron Polo Zip Up": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro"]},
+    "Quarter Zip Polo": {"genero": "unisex", "categoria": "poleron", "colores": ["Granate"]},
+    "Poleron Patagonia Zip Up": {"genero": "unisex", "categoria": "poleron", "colores": ["Azul"], "corte": "regular fit"},
+    "Poleón full zip Mortis": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Polerón full zip Scelus": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Polerón full zip Solitudo": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Polerón full zip Timor": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Polerón Full zip Tristitia": {"colores": ["Negro"], "genero": "unisex", "categoria": "poleron", "corte": "oversize"},
+    "Polerón full zip trivial M2 Saddabae": {"colores": ["Negro"], "genero": "mujer", "categoria": "poleron", "corte": "oversize"},
+    "Polerón full zip Trivial m3 Saddabae": {"colores": ["Negro"], "genero": "mujer", "categoria": "poleron", "corte": "oversize"},
+    "Polerón full zip trivial Saddabae": {"colores": ["Negro"], "genero": "mujer", "categoria": "poleron", "corte": "oversize"},
+    "Polar Sakura Azul": {"genero": "hombre", "categoria": "poleron", "corte": "oversize"},
+    "Polar Sakura Café": {"genero": "mujer", "categoria": "poleron", "corte": "oversize"},
+    "Polar Micelio": {"genero": "mujer", "categoria": "poleron", "corte": "oversize"},
+    "COURBE BLACK WAFFLE": {"categoria": "poleron", "corte": "regular fit", "genero": "unisex", "colores": ["Negro"], "largo": "normal", "manga": "corta"},
+    "Quarter Zip Pullover": {"genero": "unisex", "categoria": "poleron", "colores": ["Negro & Amarillo", "Negro & Rosa", "Negro & Blanco", "Cafe & Blanco", "Cafe & Rosa", "Rosa & Blanco", "Navy & Amarillo", "Navy & Blanco", "Gris & Blanco"], "corte": "regular fit"},
+    "Polerón Core con cierre - KL": {"genero": "unisex", "categoria": "poleron", "corte": "regular fit"},
+    # 2026-09-09 -- la foto real muestra un pantalon de buzo (pierna ancha,
+    # elastico), no un poleron -- mismo bug de categoria que "BUZO BAGGY" de
+    # OVA/BEEWAY/ZAMU encontrados antes en esta misma revision.
+    "Buzo Baggy - KL CHOCOLATE": {"categoria": "pantalon"},
+    "Buzo Baggy - KL AZUL ACERO": {"categoria": "pantalon"},
+    "Buzo Baggy - KL NEGRO": {"categoria": "pantalon"},
+
+    # --- Old Tree (2026-09-10) -----------------------------------------
+    # Linea "Regular" (Trunk): el nombre dice "Regular" (detectar_corte()
+    # lo tomaria como "regular fit"), pero la ficha real dice literal "Mas
+    # ancho que un regular normal y menos ancho que el extra baggy" -- y la
+    # foto real confirma pierna ancha con puno elastico en el tobillo
+    # (mismo patron que "baggy" del resto del catalogo, no un calce
+    # intermedio nuevo). Se prioriza el texto/foto real sobre la palabra
+    # del nombre.
+    "Jeans Regular Negro Contrast Trunk": {"corte": "baggy"},
+    "Jeans Regular Acid Wash Gris Trunk": {"corte": "baggy"},
+    "Jeans Regular Acid Black Azul Trunk": {"corte": "baggy"},
+    "Jeans Regular Negro Trunk": {"corte": "baggy"},
+    # "Cargo Pant Beige Old Tree": el nombre dice "Pant" (singular, sin la
+    # "s") -- clasificar_prenda() solo reconoce "pants" (con s) o
+    # "pantalon" como disparador de categoria, asi que sin este override
+    # caia al default "polera" (bug real encontrado cargando esta tienda).
+    # Corte "calce regular" (ficha real) = docs/buscador.md "straight fit:
+    # calce parejo, ni ajustado ni suelto" -- confirmado por foto (pierna
+    # recta, sin ensanche).
+    "Cargo Pant Beige Old Tree": {"categoria": "pantalon", "subtipo": "cargo", "corte": "straight"},
+    # Chaqueta denim "Classic Fit" (categoria real de la tienda, ver
+    # cargar_oldtree_cache()): foto real muestra un trucker jacket clasico,
+    # cuerpo recto sin entalle de cintura -- straight, no regular fit.
+    "Chaqueta Denim Negro Spider Old Tree": {"corte": "straight"},
+    "Chaqueta Denim Negro Contrast Metanoia Old Tree": {"corte": "straight"},
+    # Hoodies "Classic Fit" (categoria real de la tienda) y sin fit en el
+    # nombre/descripcion: foto real confirma proporciones normales, sin
+    # hombro caido ni silueta cuadrada como los "Boxy Fit" de la misma
+    # tienda -- regular fit.
+    "Hoodie OT 2012 Negro Old Tree": {"corte": "regular fit"},
+    "Zip Hoodie Classic Fit Spider Negro Old Tree": {"corte": "regular fit"},
+    "Zip Hoodie Classic Fit Big Ovalo Negro Old Tree": {"corte": "regular fit"},
+    "Zip Hoodie Classic Fit Big Ovalo Gris Old Tree": {"corte": "regular fit"},
+    "Hoodie Canguro Gris Grafo": {"corte": "regular fit"},
+    "Hoodie Gotic French Terry Negro Old Tree": {"corte": "regular fit"},
+    # Collab Skatesencia: foto real muestra hombro caido marcado y cuerpo
+    # ancho/cuadrado (mismo patron que la linea "Boxy Fit" de la tienda) --
+    # boxy fit, distinto de los otros hoodies sin fit de arriba.
+    "Hoodie Old Tree X Skatesencia Negro": {"corte": "boxy fit"},
+    # Poleras "Fit Holgado (mas largo que la boxy y menos ancho)": mas
+    # angosto que boxy fit (texto real) y sin entalle de cintura visible en
+    # la foto -- straight, no boxy ni regular.
+    "Polera Stgo Roots Blanca Old Tree": {"corte": "straight"},
+    "Polera Syndicate Negra Old Tree": {"corte": "straight"},
+    # Collab Skatesencia (polera): foto real muestra silueta ancha/cuadrada
+    # igual que el hoodie de la misma coleccion de arriba -- boxy fit.
+    "Polera Old Tree X Skatesencia Negra": {"corte": "boxy fit"},
+    # Chaleco 100% acrilico (ficha real, sin declarar %) -- fibra unica
+    # confirmada por texto, mismo criterio que otros materiales sin "100%"
+    # explicito en el resto del catalogo (ej. "Chaleco Cuero Rastro").
+    "Chaleco Semi Oversize Negro": {"material": "acrilico"},
+    "Chaleco Semi Oversize Beige": {"material": "acrilico"},
+    # El nombre no dice "baggy" (a diferencia de los demas jorts de la
+    # tienda), pero la ficha real si: "Jort Carpenter Baggy".
+    "Jort Carpenter Acid Wash Old Tree": {"corte": "baggy"},
+
+    # --- Hooked (2026-09-10) ---------------------------------------------
+    # Shorts denim rectos (ficha real: "100% cotton denim", "straight-leg
+    # fit", "large back pockets" -- bolsillos traseros grandes normales,
+    # NO bolsillos tipo cargo con solapa, asi que subtipo "jeans" (short de
+    # jean clasico), no "cargo"). categoria_override en cargar_hooked_cache()
+    # ya fuerza subtipo "tela" por defecto (el nombre no trae "short" ni
+    # "jean") -- se corrige aca con el dato real de la ficha.
+    "KHAKI SHORTS": {"subtipo": "jeans", "es_jean": True},
+    "BLACK SHORTS": {"subtipo": "jeans", "es_jean": True},
+    "DARK BLUE SHORTS": {"subtipo": "jeans", "es_jean": True},
+    "LIGHT BLUE SHORTS": {"subtipo": "jeans", "es_jean": True},
+    # "SWIMPANTS": short de baño real ("swim trunks", "quick-dry fabric",
+    # "drainage eyelets") -- mismo default "tela" de cargar_hooked_cache()
+    # corregido con el subtipo real. Color solo en la descripcion, no en
+    # el nombre ("SWIMPANTS" no trae ninguna palabra de color) -- ficha
+    # real: "Black swim trunks...".
+    "SWIMPANTS": {"subtipo": "bano", "colores": ["Negro"]},
+    # Jeans "Baloon" con bolsillo cargo real en la pierna ("Cargo pocket
+    # with embroidered 'k' on the leg", ficha real) -- subtipo cargo,
+    # combinado con es_jean=True (ya detectado solo por "denim" en el
+    # nombre) igual que el resto de jean-cargo del catalogo.
+    "BLUE DENIM BALOON PANTS": {"subtipo": "cargo"},
+    "BLACK DENIM BALOON PANTS": {"subtipo": "cargo"},
+    # "Dusty" no es un color por si solo (nombre no trae base, ej. "dusty
+    # pink/blue") -- confirmado por foto real: verde salvia/sage.
+    "FADE TO SUMMER DUSTY HOODIE": {"colores": ["Verde salvia"]},
 }
 
 # 2026-08-20 -- capucha/cierre de los 28 polerones reales (ninguno lo tenia
@@ -1887,6 +1978,279 @@ VERIFICADO_A_MANO = {
 #    "(texto)" o "(foto)" segun de donde salio el dato, para saber donde
 #    revisar primero si alguna vez hay dudas.
 CAPUCHA_CIERRE_VERIFICADO = {
+    # --- IPREX "ninja"/Saddabae (2026-09-09, Fase 2 por foto): mismo diseño
+    # base con capucha grande y cierre completo visible en cada foto real
+    # (linea "ninja" completa, distintos estampados/colores del mismo corte).
+    "Polerón ninja Desperatio": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón ninja Flagitium": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Poleron ninja Gehenna": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón ninja Kuromi": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Ninja Maledictio": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón ninja Manes": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón ninja Venom": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Ninja Vampyrus": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Ninja Vastitas": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Poleroón ninja Draco": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón personajes Saddabae": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Sad Rulay Saddabae": {"capucha": "con capucha", "cierre": "con cierre"},
+    # --- Capucha/cierre de POLERONES por TEXTO (2026-09-09), Fase 1,
+    # mismo pedido que el bloque de corte en VERIFICADO_A_MANO: 64% de los
+    # 447 polerones tenian capucha="no especificado" y 70% cierre="no
+    # especificado", por eso busquedas como "poleron con cierre" no
+    # encontraban productos reales que si tienen cierre. Señales de texto
+    # (nombre+descripcion real): "con capucha"/"hoodie" vs "sin capucha"/
+    # "crewneck"; "con cierre"/zip/zipper/zip-up/fullzip/cremallera/ykk vs
+    # "sin cierre"/"pullover". Se verifico que ninguno de estos 261 nombres
+    # ya existia en este dict (si hubiera, esto lo pisaria completo).
+    "Shadow Double Zip Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Desert Double Pocket Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "BLACK Double Zip Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "NAVY BLUE Double Zip Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "CHARCOAL GREY ZipUp Dusk Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "NAVY BLUE ZipUp Dusk Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "BUBBLEGUM PINK ZipUp Dusk Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "BLACK ZipUp Dusk Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie \"The Locals\" Black HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"The Locals\" Pink": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"The Locals\" Chocolate": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"Shelter\" Black": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"Shelter\" Pink": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"Shelter\" Chocolate": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "First Date Double Zip Chocolate": {"capucha": "con capucha", "cierre": "con cierre"},
+    "First Date Double Zip Black HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Zip Up \"Logo\" Melange Grey HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Zip Up Hoodie Navy Blue HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Zip Up Hoodie Melange Grey HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Zip Up Hoodie Chocolate": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Zip Up Hoodie Black HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Blazze 04 - Zip set indigo": {"capucha": "no especificado", "cierre": "con cierre"},
+    "Polerón LA Azul Eléctrico Over Size": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Hoodie Soles Tabaco": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "POLERÓN \"EMOTION\" NEGRO": {"capucha": "con capucha", "cierre": "con cierre"},
+    "POLERON EMOTIONS \"NEVER DIE\" ROSA": {"capucha": "con capucha", "cierre": "con cierre"},
+    "POLERON \"EMOTION ANGEL\" GRIS": {"capucha": "con capucha", "cierre": "con cierre"},
+    "POLERÓN \"EMOTION ANGEL\" NEGRO": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie godpeed negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Essentials Gris": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Essentials Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE TEXTOS": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "MOTION BASIC ACERO": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE BLACK ROSE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE TPSS26": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE FLAMES AQUA": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE FLAMES BROWN": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE TPSCO GRAY": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE TPSCO PINKCAKE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "MOTION ACID WASH BASIC": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "SPACY GRAY": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "MOTION BASIC GBLACK": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "MOTION CHOCOLATE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "MOTION BASIC GRAY": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "MOTION BASIC": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE DOBLE ZIP": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE SINGULAR DOBLE ZIP": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE PINK FLAMES": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "TRACK HOODIE": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE TPS BASIC": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "FRANCE BLUE HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "BERRY FADE HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE TPSCO PINK": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE BAYLEAF": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE TPSCO BLACK": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE INSANE BLACK": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE ATYPICAL BLACK": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE BASIC": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE SPACY RED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE SPACY": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE STARS": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "GRAPE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE ROYAL BLUE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Yeezy HD-01": {"capucha": "no especificado", "cierre": "no especificado"},
+    "HOODIE BUZO": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE RESILIENCIE (FOCALIZADO)": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Hoodie Acid Wash con Gorro Cuadrillé a Tono": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón con cierre Acid Wash": {"capucha": "con capucha", "cierre": "con cierre"},
+    "FIVE STARS ONLY HOODIE": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie gris desgastado LMD studio con cierre": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie Icon ★: cierre desgastado con estrella en espalda": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie Icon ★:  canguro desgastado con estrella en espalda": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron café desgastado LMD studio - Boxy": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Gris Claro Boxy Abierto Acid Wash Estrellas Bordadas": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Poleron Básico Negro Gravillado": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Canguro Acid Wash - Gris": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Canguro Acid Wash - Azul Marino": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Boxy Fit Oversize - Acid Wash Gris": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Boxy Fit Oversize - Acid Wash Verde Bosque": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Boxy Fit Oversize - Acid Wash Azul Marino": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Básico - Café": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Básico - Beige": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Básico - Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Heavyweight® MultiZip Hoodie (FRENCH BLUE)": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Heavyweight® Storm Dusk Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Heavyweight® Black Dusk Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Heavyweight® Mocha Dusk Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Instinctive Dark Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Instinctive Emerald ZipUp Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Instinctive French Blue ZipUp Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Instinctive Cherry ZipUp Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "\"DarkSide\" Black BoxyFit Hoodie": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"Chaos\" Boxy Hoodie": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"YELLOW LABEL COMP\"// OVERSIZED HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"MICRO TEX 01\" // CREWNECK BOXYFIT DOUBLE SLEEVE": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "\"GOOD LIFE YELLOW CLUB\" // HOODIE BOXYFIT": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "BASIC MINI LOGO// OVERSIZED HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"ESSENCIAL 911 \" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"VICTORIA\"  // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"DIOSES\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"YELLOW CLUB MONOCROMO\"//OVERSIZED HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"YELLOW CLUB MONOCROMO\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"YELLOW CLUB\" // OVERSIZED HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"PRIMA DONNA\" // HOODIE OVERSIZED SAT": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"IA\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"COLORS\"//OVERSIZED HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"METAL\" // HOODIE OVERSIZED // ACIDWASH": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "SUPER TEX // HOODIE OVERSIZED // ACIDWASH": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"HIGH RIDE\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"STAR LINE\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"LABEL CLUB\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"SAINT\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"1LIBRACLO VINTAGE\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"LIPS\" // HOODIE OVERSIZED": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "BASICO MINI LOGO// OVERSIZED HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE NEGRO": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "BASIC//ESSENCIAL OVERSIZED HOODIE BEIGE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "BASICO BLANK // ESSENCIAL OVERSIZED HOODIE BLANCO": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "BASIC MINI LOGO//OVERSIZED HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Boxy Fit Hoodie Navy Blue HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Boxy Fit Hoodie Pink HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Boxy Fit Hoodie Melange Grey HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Boxy Fit Hoodie Black HEAVYWEIGHT": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Boxy Fit Hoodie Chocolate": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie BoxyFit zip up SLT2": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie BoxyFit CROP Reichsadler": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie BoxyFit zip up Logo 003": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Mountain Type Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Ninja Hoodie (Medium Contrast) Oversize boxy": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "SLT1H204 Zip Hoodie": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Soccer 08 Franela Fantasía": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Time Unisex OverSize Gris Mauve": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Blanco Estrella Negra Tachas Over Size": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Polerón Spicy Pink Over Size": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "NUEVO HOODIE SPACY CACTUS": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE SPACY PERLA": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE SPACY MARINE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE SPACY ACID WASH": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "CHOSEN HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "SPACY BLACK": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "WORK HRD": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "TRUE BLACK": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "CHERRY BOMB": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE TPSCOMPANY": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE DADOS": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Crewneck Nike Center": {"capucha": "sin capucha", "cierre": "no especificado"},
+    "Crewneck Stussy": {"capucha": "sin capucha", "cierre": "no especificado"},
+    "Crewneck Carhartt Vintage": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Crewneck Russell": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Poleron Carhartt": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polar The North Face": {"capucha": "sin capucha", "cierre": "con cierre"},
+    "HOODIE ABISMO PURPLE": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE ABISMO BLACK": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE CAPAS COLOR CEMENTO": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE (CAPAS) NEW": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE MULTIZIPER (FÉNIX)": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE DOUBLE CAP (FULL ZIP)": {"capucha": "con capucha", "cierre": "con cierre"},
+    "HOODIE DOUBLE CAP (WHITE SEAMS)": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE DOUBLE CAP ROSA ( NEW)": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE DOUBLE CAP BLUE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "HOODIE DOUBLE CAP ACID (NEW)": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Resilience Hoodie Boxy Fit": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Poleron Ume No Hakiri": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron House of Love": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Crewneck Art Escapist": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Poleron Ghost Input 808": {"capucha": "sin capucha", "cierre": "con cierre"},
+    "Hoodie Canguro Boxy Fit /Franela de Algodón": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Boxy Oversized · Rosado coderas de estrella": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Boxy Oversized 5 Estrellas Café Bolsillo Canguro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Verde Desgastado estrellas bordadas - Boxy": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Negro Desgastado estrellas bordadas - Boxy": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie 5 Estrellas – Boxy Fit Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie 5 Estrellas – Boxy Fit Celeste": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron chocolate con gorro desgastado estrella en espalda": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Básico Crewneck": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "CROSS DEMON HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "PINK TIGER ll": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Zip Hoodie \"Basic\"": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie \"Engagement Concept\"": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"NDLSS CLUB\"": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"DEPT🍓\"": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"PGLE\"": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"Basic\"": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie \"Angelss\"": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Zip Hoodie \"DEPT\"": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Zip Hoodie \"PGLE\"": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Hoodie \"Flowerss\"": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie elemental turquesa oscuro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Not San Valentin": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Psycho": {"capucha": "con capucha", "cierre": "sin cierre"},
+    # --- Bang Concept (2026-09-09, Fase 2 por foto): misma linea/corte base
+    # (flat lay identico entre todos, solo cambia el estampado), pullover
+    # sin cierre visible, capucha con cordon visible en todas las fotos.
+    "Poleron con Gorro Bang concept Chocolate": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Bang concept Logo Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Bang concepto WITZI Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Bang Frongo Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Bang Vibra Black": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Bang Trash Bordado Black": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Bang Rayo Black": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Bang Focus Black": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie elemental negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie perfect time": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Never The Same": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Not Vision": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Don't Look Back Café Boxyfit": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Don't Look Back Beige Boxyfit": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Don't Look Back Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Style Café": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie style beige": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Elemental Rosado Pálido": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Elemental Azul Marino": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie style rosado": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie style turquesa": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie Style Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie básico beige verdoso": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie básico blanco": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Hoodie básico negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Polerón Polo Krono - Carbón": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Polerón Polo Krono - Azul Marino": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Polerón Boxy Fit Oversize - Acid Wash Negro": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "\"Clubhouse\" Zipper Knit Navy": {"capucha": "sin capucha", "cierre": "con cierre"},
+    "\"Clubhouse\" Zipper Knit Black": {"capucha": "sin capucha", "cierre": "con cierre"},
+    "Poleron Nike Zip Up": {"capucha": "no especificado", "cierre": "con cierre"},
+    "Poleron Polo Zip Up": {"capucha": "no especificado", "cierre": "con cierre"},
+    "Quarter Zip Polo": {"capucha": "no especificado", "cierre": "con cierre"},
+    "Poleron Patagonia Zip Up": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Poleón full zip Mortis": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón full zip Scelus": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón full zip Solitudo": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón full zip Timor": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Full zip Tristitia": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón full zip trivial M2 Saddabae": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón full zip Trivial m3 Saddabae": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón full zip trivial Saddabae": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Acid Wash gris Nocturnus": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Acid Wash Ignis": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Acid Wash Rosado Timor": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón cafe Acid Wash Profanus": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón gris Acid Wash Umbrae": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón Minimal m2 Saddabae": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón minimal Saddabae": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polerón ninja Daemon": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polar Sakura Azul": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polar Sakura Café": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Polar Micelio": {"capucha": "con capucha", "cierre": "con cierre"},
+    "COURBE BLACK WAFFLE": {"capucha": "con capucha", "cierre": "con cierre"},
+    "Quarter Zip Pullover": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "Polerón Core con cierre - KL": {"capucha": "sin capucha", "cierre": "con cierre"},
     # --- Feroni Studios --- ficha real dice literal "capucha interior
     # estampada" y "cierre completo".
     "Full Zip Hoodie Leopardo": {"capucha": "con capucha", "cierre": "con cierre"},
@@ -1913,10 +2277,10 @@ CAPUCHA_CIERRE_VERIFICADO = {
     # 777/OS Celeste/Washed OVRST, quedan "no especificado" en cierre.
     "Poleron black zipper": {"capucha": "con capucha", "cierre": "con cierre"},
     "Poleron pink zipper": {"capucha": "con capucha", "cierre": "con cierre"},
-    "Poleron Crema Anillo": {"capucha": "con capucha"},
-    "Poleron Gris Stone 777": {"capucha": "con capucha"},
-    "Poleron OS Celeste": {"capucha": "con capucha"},
-    "Poleron Washed OVRST": {"capucha": "con capucha"},
+    "Poleron Crema Anillo": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Gris Stone 777": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron OS Celeste": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "Poleron Washed OVRST": {"capucha": "con capucha", "cierre": "sin cierre"},
 
     # --- Rapt --- capucha/cierre (texto) confirmados primero por nombre/
     # ficha (ver comentario original), y (foto) donde la primera pasada
@@ -2005,7 +2369,6 @@ CAPUCHA_CIERRE_VERIFICADO = {
     # "Bolsillo tipo canguro en la parte frontal", sin mencion de cierre
     # -- con capucha, sin cierre, en TODOS los polerones (verificado en 2
     # productos representativos).
-    "Poleron Crystals Logo BG": {"capucha": "con capucha", "cierre": "sin cierre"},
     "Poleron Heavy Crystals": {"capucha": "con capucha", "cierre": "sin cierre"},
     "Poleron Crystals Logo BG": {"capucha": "con capucha", "cierre": "sin cierre"},
     "Poleron 333 White Black Chance": {"capucha": "con capucha", "cierre": "sin cierre"},
@@ -2075,7 +2438,6 @@ CAPUCHA_CIERRE_VERIFICADO = {
     "SKULL HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
     "GRITA Y EXHALE HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
     "STRASS BLUE HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
-    "STRASS BLACK HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
     "KRYPTA HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
     "DETHKID HOODIE": {"capucha": "con capucha", "cierre": "sin cierre"},
     "CAPUCHA BLACK GILETTE": {"capucha": "con capucha", "cierre": "sin cierre"},
@@ -2134,8 +2496,8 @@ CAPUCHA_CIERRE_VERIFICADO = {
     "Newland Black Hoodie": {"capucha": "con capucha"},
     "Winter Sky Hoodie": {"capucha": "con capucha"},
     "Pink Motion Hoodie": {"capucha": "con capucha"},
-    "DICE HOODIE \"Third Edition\" Black": {"capucha": "con capucha"},
-    "DICE HOODIE \"Third Edition\" Blue Navy": {"capucha": "con capucha"},
+    "DICE HOODIE \"Third Edition\" Black": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "DICE HOODIE \"Third Edition\" Blue Navy": {"capucha": "con capucha", "cierre": "sin cierre"},
     # ZAMU (2026-09-03): ninguna de las 2 fichas reales menciona capucha, asi
     # que "sin capucha" (un sweater/sueter es cuello redondo o similar por
     # definicion, no lleva capucha -- mismo criterio ya usado para crewneck).
@@ -2146,7 +2508,7 @@ CAPUCHA_CIERRE_VERIFICADO = {
     "Sweater con Cierre Metálico Tejido en Chile | Punto Inglés Barnizado": {
         "capucha": "sin capucha", "cierre": "con cierre",
     },
-    "Sweater tejido oversize punto inglés barnizado": {"capucha": "sin capucha"},
+    "Sweater tejido oversize punto inglés barnizado": {"capucha": "sin capucha", "cierre": "sin cierre"},
 }
 
 # Fuente de cada dato de capucha/cierre de arriba (texto de la ficha o foto
@@ -2159,10 +2521,10 @@ CAPUCHA_CIERRE_VERIFICADO = {
 FUENTE_CAPUCHA_CIERRE = {
     "Poleron black zipper": {"capucha": "texto", "cierre": "texto"},
     "Poleron pink zipper": {"capucha": "texto", "cierre": "texto"},
-    "Poleron Crema Anillo": {"capucha": "texto"},
-    "Poleron Gris Stone 777": {"capucha": "texto"},
-    "Poleron OS Celeste": {"capucha": "texto"},
-    "Poleron Washed OVRST": {"capucha": "texto"},
+    "Poleron Crema Anillo": {"capucha": "texto", "cierre": "foto"},
+    "Poleron Gris Stone 777": {"capucha": "texto", "cierre": "foto"},
+    "Poleron OS Celeste": {"capucha": "texto", "cierre": "foto"},
+    "Poleron Washed OVRST": {"capucha": "texto", "cierre": "foto"},
     "GRID SHIFT ZIP MELANGE": {"capucha": "foto", "cierre": "texto"},
     "GRID SHIFT ZIP NAVY": {"capucha": "foto", "cierre": "texto"},
     "PATCH SHIFT ZIP BLACK": {"capucha": "foto", "cierre": "texto"},
@@ -2195,7 +2557,6 @@ FUENTE_CAPUCHA_CIERRE = {
     "Nuit Volt - Heaven": {"capucha": "texto", "cierre": "texto"},
     "Nuit Volt - Void": {"capucha": "texto", "cierre": "texto"},
 
-    "Poleron Crystals Logo BG": {"capucha": "texto", "cierre": "texto"},
     "Poleron Heavy Crystals": {"capucha": "texto", "cierre": "texto"},
     "Poleron Crystals Logo BG": {"capucha": "texto", "cierre": "texto"},
     "Poleron 333 White Black Chance": {"capucha": "texto", "cierre": "texto"},
@@ -2262,7 +2623,6 @@ FUENTE_CAPUCHA_CIERRE = {
     "SKULL HOODIE": {"capucha": "texto", "cierre": "texto"},
     "GRITA Y EXHALE HOODIE": {"capucha": "texto", "cierre": "texto"},
     "STRASS BLUE HOODIE": {"capucha": "texto", "cierre": "texto"},
-    "STRASS BLACK HOODIE": {"capucha": "texto", "cierre": "texto"},
     "KRYPTA HOODIE": {"capucha": "texto", "cierre": "texto"},
     "DETHKID HOODIE": {"capucha": "texto", "cierre": "texto"},
     "CAPUCHA BLACK GILETTE": {"capucha": "texto", "cierre": "texto"},
@@ -2393,8 +2753,14 @@ def detectar_corte(nombre):
         return "tapered"
     if "relaxed" in n:
         return "relaxed"
-    if "balloon" in n or "ballong" in n:
-        return "balloon"
+    if "balloon" in n or "ballong" in n or "baloon" in n:
+        # 2026-09-10, pedido explicito del usuario: "balloon" (se infla en
+        # muslo/rodilla y se ajusta en el tobillo) es una variante de
+        # Baggy/Wide leg, no un corte aparte -- "baggy" es la unica de las
+        # 2 que existe como opcion real del formulario para prenda inferior
+        # (CORTE_OPCIONES["prenda inferior"] en script.js no ofrece "wide
+        # leg"), asi que un pantalon balloon quede filtrable de verdad.
+        return "baggy"
     if "barrel" in n:
         return "barrel"
     if "loose" in n:
@@ -2442,6 +2808,10 @@ def clasificar_prenda(nombre):
     if not _es_capucha_de_prenda and (
         "gorro" in n or "beanie" in n or "gorra" in n or "jockey" in n
         or "dad hat" in n or "dad-hat" in n or "trucker" in n or "bucket hat" in n
+        # "5 panel" (2026-09-10, Old Tree): forma real de gorro plano (5
+        # paneles de tela + broche ajustable), mismo criterio que el resto
+        # de sinonimos de arriba -- sin esto caia al default "polera".
+        or "5 panel" in n or "5-panel" in n
     ):
         return "gorro", None, None, None
 
@@ -2496,9 +2866,18 @@ def clasificar_prenda(nombre):
     # de seguir con mas tiendas. El chequeo de "chaqueta"/"jacket" arriba ya
     # se encarga de "denim jacket" antes de llegar aca, asi que agregar
     # "denim" no genera falsos positivos con chaquetas.
-    if "trouser" in n or "pantalon" in n or "jean" in n or "denim" in n:
+    # 2026-09-09 -- "pants" (ingles) nunca era disparador de categoria:
+    # bug real encontrado revisando polerones (29 productos con "PANTS" en
+    # el nombre, ej. "Cargo zipper pants", "METAL BLACK PANTS" de Doslobos,
+    # caian en polera/poleron porque el nombre tambien decia "zip"/nada
+    # relacionado a poleron pero "pants" no cortaba antes de llegar ahi).
+    if "trouser" in n or "pantalon" in n or "jean" in n or "denim" in n or "jogger" in n or "pants" in n:
         subtipo = None
-        if "cargo" in n:
+        # 2026-09-08 -- pedido explicito del usuario: todo pantalon
+        # "carpintero"/"carpenter" (presilla de martillo, canvas/denim de
+        # trabajo) se clasifica como cargo de ahora en adelante, sin
+        # depender de revisar la foto producto por producto.
+        if "cargo" in n or "carpintero" in n or "carpenter" in n:
             subtipo = "cargo"
         elif "jean" in n or "denim" in n or "mezclilla" in n:
             # "mezclilla" agregado 2026-08-30 (BEEWAY: "Pantalon Mezclilla
@@ -2506,13 +2885,19 @@ def clasificar_prenda(nombre):
             # sinonimo real de denim/jean, ya usado asi en SUBTIPOS_
             # CONOCIDOS para chaqueta, nunca se habia sumado aca).
             subtipo = "jeans"
-        elif "buzo" in n:
+        elif "buzo" in n or "jogger" in n:
             # 2026-08-30 -- bug real encontrado cargando RRREUSED: "Pantalon
             # Buzo Nike Tech" etc. ya caian bien en categoria "pantalon"
             # (por la palabra "pantalon"), pero el subtipo se quedaba vacio
             # porque esta rama solo miraba cargo/jean -- "Pantalon de buzo"
             # ya existe como opcion en el formulario (SUBTIPO_OPCIONES en
             # script.js) pero nunca se llenaba sola.
+            # 2026-09-08 -- "jogger" agregado como sinonimo real de buzo
+            # (ya reconocido asi en SUBTIPOS_CONOCIDOS del lado de busqueda,
+            # nunca sumado aca): "Jogger UNK. Euro Gray" etc. dependian de un
+            # override VERIFICADO_A_MANO solo para la categoria, quedando sin
+            # subtipo. Tambien agregado como disparador de categoria arriba
+            # (antes solo entraba por ese mismo override manual).
             subtipo = "buzo"
         return "pantalon", subtipo, None, None
 
@@ -2527,7 +2912,13 @@ def clasificar_prenda(nombre):
             subtipo = "jeans"
         elif "bano" in n or "baño" in n or "swim" in n:
             subtipo = "bano"
-        elif "tela" in n:
+        else:
+            # 2026-09-08 -- pedido explicito del usuario: un short que no es
+            # jean/jort ni dice "cargo"/"baño" explicito es, en la practica
+            # de estas tiendas, un short de tela normal -- "tela" pasa a ser
+            # el default real en vez de quedar sin subtipo (antes solo se
+            # taggeaba si el nombre decia "tela" literal, dejando la mayoria
+            # de los shorts genericos sin subtipo).
             subtipo = "tela"
         return "shorts", subtipo, None, None
 
@@ -2574,6 +2965,14 @@ _COLOR_PALABRAS_NOMBRE = {
     "morado": "morado", "morada": "morado", "purple": "morado", "purpura": "morado",
     "rosado": "rosado", "rosada": "rosado", "rosa": "rosado", "pink": "rosado", "fucsia": "rosado",
     "celeste": "celeste",
+    # 2026-09-10 (Hooked): colorways reales en ingles que no tenian
+    # sinonimo todavia -- mismo criterio que el resto de este diccionario,
+    # palabra literal de la ficha, nunca inventada.
+    "burdeo": "rojo",
+    "saddle": "cafe", "mocha": "cafe", "khaki": "cafe", "caramel": "cafe",
+    "shadow": "gris", "melange": "gris", "cement": "gris",
+    "oatmeal": "beige",
+    "mostaza": "amarillo",
 }
 
 
@@ -2595,6 +2994,13 @@ def limpiar_precio(precio_clp):
 
 
 def img_absoluta(url):
+    # 2026-09-09 (StreetVibe): 49/57 productos reales no tienen NINGUNA foto
+    # subida en la tienda (confirmado a mano, ver conversacion) -- sin este
+    # guard, imagen=None + fotos=[] hacia crashear aca (.startswith de None).
+    # imagenesPreview() (comun.js) ya maneja "sin imagen" mostrando nada, asi
+    # que dejar pasar None tal cual es lo correcto, no inventar un fallback.
+    if not url:
+        return url
     if url.startswith("//"):
         return "https:" + url
     return url
@@ -2886,6 +3292,63 @@ def cargar_jumpseller_cache(ruta_json, excluir_slugs=()):
     return resultado
 
 
+def _letra_equivalente_talla(talla_original, genero):
+    """Letra S/M/L/XL equivalente a una talla real (numerica de cintura, o
+    ya en letra/combinada) segun TALLAS_NUMERICAS_PANTALON_POR_GENERO (ver
+    constantes.py) -- None si la talla no calza en ninguna letra modelada
+    (ej. 2XL). Compartido por _tallas_letra_para_filtro() (que hoy usa el
+    buscador para calzar el cuerpo del usuario) y _tallas_variantes_con_
+    numero() (que arma el chip "32 (M)" que ve el usuario)."""
+    if not talla_original:
+        return None
+    tabla = TALLAS_NUMERICAS_PANTALON_POR_GENERO.get(genero, {})
+    normalizada = talla_original.replace("/", "-")
+    if normalizada in ("S", "M", "L", "XL", "XS-S", "M-L", "XL-XXL"):
+        return normalizada
+    return tabla.get(normalizada)
+
+
+def _tallas_letra_para_filtro(tallas_variantes, genero):
+    """Set de letras S/M/L/XL disponibles (con AL MENOS una talla real
+    disponible) -- usado para tallas_reales/tallas_disponibles, el campo
+    que filtrar_por_talla() (motor_recomendacion.py) compara contra el
+    cuerpo estimado del usuario. Sin esto, un jean con talla numerica de
+    cintura nunca calzaba con S/M/L/XL y quedaba invisible en cualquier
+    busqueda con talla (bug real, 2026-09-08)."""
+    por_letra = {}
+    for v in tallas_variantes:
+        letra = _letra_equivalente_talla(v["talla"], genero)
+        if not letra:
+            continue
+        por_letra[letra] = por_letra.get(letra, False) or bool(v["disponible"])
+    return [{"talla": letra, "disponible": disp} for letra, disp in por_letra.items()]
+
+
+def _tallas_variantes_con_numero(tallas_variantes, genero):
+    """Version PARA MOSTRAR de las tallas reales: una entrada por cada
+    talla real que la tienda vende (nunca colapsada), con su letra
+    equivalente aparte -- pedido explicito del usuario (2026-09-08):
+    "vendamoslo por su numero de talla, con una letra estimada al lado
+    entre parentesis, ej. 32 (M)". "talla" queda como la LETRA (para que
+    el resaltado de talla recomendada y el resto de comun.js sigan
+    funcionando igual que con cualquier otra tienda) y "talla_real" lleva
+    el numero/etiqueta real que la tienda usa, para el label visible y
+    para lo que se manda si el usuario compra esa talla puntual. Si la
+    talla real YA es una letra (ej. chaquetas Sioux) no se manda
+    "talla_real" -- no tiene sentido mostrar "M (M)"."""
+    resultado = []
+    for v in tallas_variantes:
+        letra = _letra_equivalente_talla(v["talla"], genero)
+        if not letra:
+            continue
+        entrada = {"talla": letra, "disponible": bool(v["disponible"])}
+        talla_normalizada = v["talla"].replace("/", "-") if v["talla"] else v["talla"]
+        if talla_normalizada != letra:
+            entrada["talla_real"] = v["talla"]
+        resultado.append(entrada)
+    return resultado
+
+
 def cargar_streetvibe_cache(ruta_json):
     """StreetVibe (streetvibe.cl) es WooCommerce con la Store API publica
     (2026-09-08). MUY IMPORTANTE: a diferencia de otras tiendas cargadas por
@@ -2905,8 +3368,10 @@ def cargar_streetvibe_cache(ruta_json):
     for p in productos:
         precio_clp = int(float(p["precio"]))
         precio_regular = int(float(p["precio_regular"])) if p.get("precio_regular") else None
-        tallas_variantes = [{"talla": v["talla"], "disponible": v["disponible"]} for v in p["variantes"] if v.get("talla")]
-        tallas_reales = [t["talla"] for t in tallas_variantes if t["disponible"]]
+        _tallas_crudas = [{"talla": v["talla"], "disponible": v["disponible"]} for v in p["variantes"] if v.get("talla")]
+        tallas_letra = _tallas_letra_para_filtro(_tallas_crudas, p["genero"])
+        tallas_reales = [t["talla"] for t in tallas_letra if t["disponible"]]
+        tallas_variantes = _tallas_variantes_con_numero(_tallas_crudas, p["genero"])
         resultado.append({
             "nombre": p["nombre"],
             "precio": precio_clp,
@@ -2952,8 +3417,10 @@ def cargar_sioux_cache(ruta_json):
             continue
         precios = [v["price"] for v in p["variantes"] if v.get("price")]
         precio_clp = int(min(precios)) if precios else 0
-        tallas_variantes = [{"talla": v["talla"], "disponible": v["stock"] > 0} for v in p["variantes"] if v.get("talla")]
-        tallas_reales = [t["talla"] for t in tallas_variantes if t["disponible"]]
+        _tallas_crudas = [{"talla": v["talla"], "disponible": v["stock"] > 0} for v in p["variantes"] if v.get("talla")]
+        tallas_letra = _tallas_letra_para_filtro(_tallas_crudas, p["genero"])
+        tallas_reales = [t["talla"] for t in tallas_letra if t["disponible"]]
+        tallas_variantes = _tallas_variantes_con_numero(_tallas_crudas, p["genero"])
         composicion = parsear_composicion(p.get("composicion_texto", ""))
         material = None
         if composicion:
@@ -2980,6 +3447,216 @@ def cargar_sioux_cache(ruta_json):
             "colores": [p["color"]] if p.get("color") else None,
             "composicion": composicion or None,
             "material": material,
+        })
+    return resultado
+
+
+_TALLAS_LETRA_VALIDAS = ("S", "M", "L", "XL")
+
+
+def cargar_oldtree_cache(ruta_json, excluir_slugs=()):
+    """Old Tree (oldtree.cl, 2026-09-10) es WordPress/WooCommerce con la
+    Store API publica (wp-json/wc/store/v1/products, igual que ZAMU/
+    StreetVibe/Sioux) -- 104 productos bajados con curl real a
+    data/woocommerce_cache/oldtree.json. A diferencia de otras tiendas, la
+    descripcion viene en bullets muy completos y consistentes ("100%
+    Algodon", "Baggy Fit", "Tela Denim", "Cierre YKK", "Color X") que se
+    usan tal cual llegan (nunca resumidos) via descripcion_real -- el
+    corte/subtipo/material de cada producto se resolvio a mano leyendo esos
+    bullets (mas foto para los casos sin bullet de corte, ver
+    VERIFICADO_A_MANO/docs/catalogo_real.md), esta funcion solo arma los
+    datos crudos reales (fotos/precio/stock/tallas), igual que las demas
+    tiendas Store API.
+
+    Tallas: los jeans/jorts/carpenter/cargo pant venden por talla NUMERICA
+    de cintura (36 a 60) -- no hay tabla de equivalencia a S/M/L/XL
+    publicada por la propia tienda (pedido explicito del usuario,
+    2026-09-10: reusar la tabla real que ya existe para Sioux,
+    TALLAS_NUMERICAS_PANTALON_POR_GENERO en constantes.py, en vez de
+    inventar una nueva -- numeros fuera de esa tabla quedan sin letra
+    equivalente, igual que ya pasa con Sioux). El resto de la tienda
+    (poleras/polerones/chalecos/gorros) ya vende directo en S/M/L/XL(/XXL,
+    que la app no modela y se descarta, mismo criterio que AbsolutelyWrong).
+
+    Stock: la Store API de WooCommerce no da disponibilidad por variante
+    en una sola llamada (mismo limite ya documentado para ZAMU) -- se usa
+    el stock agregado del producto completo (is_in_stock + is_purchasable)
+    para todas sus tallas declaradas, sin pedir 1 request extra por talla
+    (104 productos, mismo criterio de costo que ZAMU con 9)."""
+    productos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in productos:
+        if p["slug"] in excluir_slugs:
+            continue
+        precio_clp = int(float(p["prices"]["price"]))
+        regular = p["prices"].get("regular_price")
+        precio_original_clp = int(float(regular)) if regular else None
+        tallas_crudas = []
+        for attr in p.get("attributes", []):
+            if attr.get("name", "").strip().upper() == "TALLA":
+                tallas_crudas = [t["name"].strip() for t in attr.get("terms", []) if t.get("name", "").strip()]
+        disponible = bool(p.get("is_in_stock") and p.get("is_purchasable"))
+        if tallas_crudas and all(t.isdigit() for t in tallas_crudas):
+            _tallas_num = [{"talla": t, "disponible": disponible} for t in tallas_crudas]
+            tallas_letra = _tallas_letra_para_filtro(_tallas_num, "unisex")
+            tallas_reales = [t["talla"] for t in tallas_letra if t["disponible"]]
+            tallas_variantes = _tallas_variantes_con_numero(_tallas_num, "unisex")
+        else:
+            tallas_validas = [t for t in tallas_crudas if t.upper() in _TALLAS_LETRA_VALIDAS]
+            tallas_reales = tallas_validas if disponible else []
+            tallas_variantes = [{"talla": t, "disponible": disponible} for t in tallas_validas] or None
+        descripcion_real = _limpiar_html(p.get("description") or p.get("short_description"))
+        # Color real (2026-09-10): la ficha declara el color en su propio
+        # bullet ("<li>Color Negro con hilo blanco</li>") -- se extrae ANTES
+        # de aplanar todo el HTML a texto corrido (descripcion_real de
+        # arriba), porque una vez unido todo con espacios ya no se puede
+        # saber donde termina el bullet de color y empieza el siguiente
+        # ("Cierre YKK", etc.). Bug real: 14 productos sin ningun color
+        # detectado (el nombre no siempre lo trae, ej. "Jeans Carpenter
+        # Baggy Real Tree" -- el color esta solo en la ficha).
+        # Bullets vienen en 2 formatos reales distintos segun el producto:
+        # "<ul><li>...</li></ul>" (la mayoria) o "<p>... <br />...</p>" con
+        # guion "–" al inicio de cada linea (ej. "Dad Hat Denim Gothic
+        # Lightblue") -- se separa por CUALQUIERA de los 2 para no perderse
+        # el bullet de color en el segundo formato.
+        _bullets = [
+            re.sub(r"^[\s" + chr(0x2013) + "-]+|[\s" + chr(0x2013) + "-]+$", "", html.unescape(re.sub(r"<[^>]+>", " ", b)))
+            for b in re.split(r"</?li>|<br\s*/?>|</?p>", p.get("description") or "")
+        ]
+        _color_bullet = next((b for b in _bullets if re.match(r"(?i)^color\b", b)), None)
+        colores = None
+        if _color_bullet:
+            _color_texto = re.sub(r"(?i)^color\s+", "", _color_bullet).strip()
+            if _color_texto:
+                colores = [_color_texto[0].upper() + _color_texto[1:]]
+        composicion = parsear_composicion(descripcion_real)
+        material = None
+        if composicion:
+            fibras = {c["fibra"] for c in composicion}
+            if fibras == {"algodon"} and es_composicion_100_pura(composicion):
+                material = "algodon_100"
+            elif fibras == {"algodon", "elastano"}:
+                material = "mezcla_algodon_elastano"
+            elif len(fibras) == 1:
+                material = next(iter(fibras))
+        m_gsm = re.search(r"(\d{2,4})\s*gsm", descripcion_real, re.I)
+        resultado.append({
+            "nombre": p["name"],
+            "precio": precio_clp,
+            "precio_original_clp": precio_original_clp if precio_original_clp and precio_original_clp > precio_clp else None,
+            "path": p["permalink"],
+            "handle": p["slug"],
+            "fotos": [img["src"] for img in p.get("images", [])],
+            "descripcion_real": descripcion_real,
+            "tallas_reales": tallas_reales,
+            "tallas_variantes": tallas_variantes,
+            "colores": colores,
+            "composicion": composicion or None,
+            "material": material,
+            "gramaje_gsm": int(m_gsm.group(1)) if m_gsm else None,
+        })
+    return resultado
+
+
+def cargar_hooked_cache(ruta_json):
+    """Hooked (hookedbrand.cl, 2026-09-10) es Shopify real (products.json
+    publico) -- 65 productos, mismo mecanismo de siempre
+    (_tallas_disponibles_shopify/_variantes_talla_shopify). A diferencia de
+    otras tiendas Shopify, NINGUN nombre de producto trae el corte (son
+    genericos, ej. "NAVY BLUE HOODIE") -- el corte real esta en el
+    body_html ("Oversized fit", "Drop shoulder fit", "Boxy Fit", "straight-
+    leg fit") o confirmado por foto cuando el texto tampoco lo dice
+    (revisadas todas las fotos "sin fit" en bloque, ver docs/
+    catalogo_real.md): silueta oversized/boxy consistente en TODA la linea
+    de hoodies/poleras, foto de las 8 revisadas a mano confirmando el mismo
+    corte -- por eso el default de esta funcion (corte_override) es
+    "oversize" salvo que VERIFICADO_A_MANO diga otra cosa puntual (boxy
+    fit, straight, baggy en los jeans "Baloon").
+
+    product_type real de Shopify ('jeans'/'SHORT'/'hoodie'/'polera'/'knit')
+    se usa como categoria_override cuando el nombre no trae ninguna palabra
+    clave (ej. "SWIMPANTS" no dice "short"; "OVERSIZED SADDLE KNIT" no dice
+    "hoodie"/"crewneck") -- mismo criterio que StreetVibe (evidencia
+    estructurada real de la propia tienda, no adivinada)."""
+    # Corte por HANDLE (unico por producto, ver corte_override en
+    # construir_producto()): default real "oversize" para TODA la linea de
+    # hoodies/poleras (confirmado por texto explicito en la mayoria +
+    # revision de foto en bloque de las que no lo decian, ver docs/
+    # catalogo_real.md -- misma silueta dropshoulder/oversized en las 8
+    # fotos revisadas a mano) salvo estas excepciones reales por texto:
+    _HOOKED_CORTE = {
+        "blue-denim-baloon-pant": "baggy",
+        "black-denim-baloon-pants": "baggy",
+        "all-in-brown-shorts": "straight",
+        "all-in-black-shorts": "straight",
+        "all-in-dark-blue-shorts": "straight",
+        "all-in-light-blue-shorts": "straight",
+        "all-in-swimpants": "sin corte definido",
+        "fade-to-summer-boxy-white-tee": "boxy fit",
+        "fade-to-summer-boxy-black-tee": "boxy fit",
+        "waste-no-time-new-boxy-fit-white-tee": "boxy fit",
+        "all-in-gray-t-shirt": "boxy fit",
+        "all-in-navy-blue-t-shirt": "boxy fit",
+        "all-in-melange-t-shirt-copy": "boxy fit",
+        "all-in-melange-t-shirt": "boxy fit",
+    }
+    datos = json.loads(Path(ruta_json).read_text(encoding="utf-8"))
+    resultado = []
+    for p in datos["products"]:
+        variantes = p["variants"]
+        precio_clp = int(float(variantes[0]["price"]))
+        compare_at = variantes[0].get("compare_at_price")
+        precio_original_clp = int(float(compare_at)) if compare_at else None
+        tipo = (p.get("product_type") or "").strip().lower()
+        categoria_override = {
+            "jeans": "pantalon", "short": "shorts", "hoodie": "poleron", "knit": "poleron",
+        }.get(tipo)
+        descripcion_real = _limpiar_html(p.get("body_html"))
+        composicion = parsear_composicion(descripcion_real)
+        material = None
+        if composicion:
+            fibras = {c["fibra"] for c in composicion}
+            if fibras == {"algodon"} and es_composicion_100_pura(composicion):
+                material = "algodon_100"
+            elif fibras == {"algodon", "elastano"}:
+                material = "mezcla_algodon_elastano"
+            elif len(fibras) == 1:
+                material = next(iter(fibras))
+        resultado.append({
+            "nombre": p["title"],
+            "handle": p["handle"],
+            "precio": precio_clp,
+            "precio_original_clp": precio_original_clp if precio_original_clp and precio_original_clp > precio_clp else None,
+            "path": f"/products/{p['handle']}",
+            "fotos": [img["src"] for img in p.get("images", [])],
+            "descripcion_real": descripcion_real,
+            "tallas_reales": _tallas_disponibles_shopify(p),
+            "tallas_variantes": _variantes_talla_shopify(p),
+            "composicion": composicion or None,
+            "material": material,
+            "categoria_override": categoria_override,
+            # "shorts"/"pantalon" via product_type nunca traen subtipo
+            # propio de clasificar_prenda() (categoria_override pisa el
+            # subtipo entero) -- default seguro, VERIFICADO_A_MANO corrige
+            # los casos reales (cargo/bano/jeans) por nombre, igual que el
+            # resto del catalogo.
+            "subtipo_override": (
+                "tela" if categoria_override == "shorts"
+                else "jeans" if categoria_override == "pantalon"
+                else None
+            ),
+            "corte_override": _HOOKED_CORTE.get(p["handle"], "oversize"),
+            # Capucha/cierre (2026-09-10): ningun hoodie de Hooked menciona
+            # cierre/zip en ninguna ficha (todos pullover, bolsillo
+            # canguro) -- "sin cierre" real por ausencia consistente de la
+            # palabra en las 33 fichas de categoria poleron, no un default
+            # generico. "hoodie" en el nombre/product_type es capucha
+            # confirmada; los 2 "knit" son sweater crewneck explicito
+            # ("Ribbed crew neck"), sin capucha.
+            "capucha_override": (
+                "con capucha" if tipo == "hoodie" else "sin capucha" if tipo == "knit" else None
+            ),
+            "cierre_override": "sin cierre" if tipo in ("hoodie", "knit") else None,
         })
     return resultado
 
@@ -3085,6 +3762,8 @@ TIENDAS_OFICIALES = {
     "StreetVibe",
     "Sioux",
     "KronoLex",
+    "Old Tree",
+    "Hooked",
 }
 
 # Excepciones dentro de una tienda oficial: categorias que NO quedan
@@ -3169,6 +3848,11 @@ TIENDAS_INTERES_COMPLETO = {
 # solo para esta tienda puntual, nunca "adivinado" para otra.
 TIENDAS_GENERO_COMPLETO = {
     "Brissa": "mujer",
+    # Old Tree (2026-09-10): ninguna de las 104 fichas reales menciona
+    # "hombre"/"mujer" en nombre ni descripcion -- varias jeans/jorts SI
+    # dicen "Unisex" literal. Marca 100% unisex, no hay senal de linea
+    # separada por genero.
+    "Old Tree": "unisex",
 }
 
 
@@ -3271,8 +3955,9 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
                         fotos=None, descripcion_real=None, tallas_reales=None, tallas_variantes=None,
                         precio_original_clp=None, colores=None, interes_musica=False, interes_arte=False,
                         interes_anime=False, franquicia_anime=None,
-                        genero_override=None, material=None, composicion=None,
-                        categoria_override=None, subtipo_override=None):
+                        genero_override=None, material=None, composicion=None, gramaje_gsm=None,
+                        categoria_override=None, subtipo_override=None,
+                        corte_override=None, capucha_override=None, cierre_override=None):
     categoria, subtipo, manga, largo = ("gorro", None, None, None) if es_gorro else clasificar_prenda(nombre)
     if categoria_override:
         # 2026-09-08 (StreetVibe): para cuando la propia tienda ya declara la
@@ -3303,6 +3988,14 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
     extra = VERIFICADO_A_MANO.get(nombre, {})
     if extra.get("corte"):
         corte = extra["corte"]
+    if corte_override:
+        # 2026-09-09 (RRREUSED): mismo problema que _RRREUSED_COLORES --
+        # varios productos DISTINTOS (fotos distintas, prenda fisica
+        # distinta) comparten nombre generico (ej. 3 "Poleron Nike"), asi
+        # que un override por NOMBRE en VERIFICADO_A_MANO le pondria el
+        # mismo corte a los 3 aunque solo uno sea boxy. Se resuelve por
+        # HANDLE (unico por producto), igual que ya se hace con colores.
+        corte = corte_override
     if extra.get("subtipo"):
         # Override manual (2026-08-22): para cuando el nombre no trae la
         # palabra clave pero la FICHA o la FOTO real confirman el subtipo
@@ -3404,7 +4097,19 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
         "franquicia_anime": franquicia_anime,
         "tags": ["streetwear", "urbano", marca.lower()] + ([corte_real] if corte_real else []) + tags_interes,
         "marca_autor": marca_autor,
-        "oficial": tienda in TIENDAS_OFICIALES and categoria not in TIENDAS_OFICIALES_EXCEPCIONES.get(tienda, set()),
+        # 2026-09-09 (StreetVibe): 49/57 productos reales no tienen NINGUNA
+        # foto en la tienda de origen -- pedido explicito del usuario, mismo
+        # criterio que la excepcion de Selvanegrawear (gorros con foto no
+        # real) pero generalizado: sin foto real NI ilustrativa, el producto
+        # nunca es "oficial", sin importar la tienda. bool(fotos or
+        # imagen_rel) es False solo en ese caso real (ninguna otra tienda
+        # existente pierde su "oficial" con esto salvo 1 caso legitimo,
+        # "HOODIE VIRGEN" de Doslobos, que tampoco tiene foto).
+        "oficial": (
+            tienda in TIENDAS_OFICIALES
+            and categoria not in TIENDAS_OFICIALES_EXCEPCIONES.get(tienda, set())
+            and bool(fotos or imagen_rel)
+        ),
     }
     if fotos:
         # Fotos reales completas de la ficha de la tienda (todas, no solo
@@ -3493,8 +4198,37 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
             producto["cara_logo_grande"] = bool(ver.get("cara_logo_grande"))
         if categoria == "poleron":
             cc = CAPUCHA_CIERRE_VERIFICADO.get(nombre, {})
-            producto["capucha"] = cc.get("capucha", "no especificado")
-            producto["cierre"] = cc.get("cierre", "no especificado")
+            producto["capucha"] = capucha_override or cc.get("capucha", "no especificado")
+            producto["cierre"] = cierre_override or cc.get("cierre", "no especificado")
+        if categoria in ("pantalon", "shorts"):
+            # 2026-09-10, pedido explicito del usuario: la tela (jean/denim)
+            # y el subtipo (cargo/buzo, por la forma/bolsillos) son atributos
+            # independientes que se combinan, no un solo campo excluyente --
+            # antes un "Jeans ... Carpintero" quedaba con subtipo "cargo" y
+            # perdia por completo que tambien es de tela jean, asi que
+            # buscar "pantalon jeans" no lo encontraba. "es_jean" es un
+            # campo aparte de "subtipo" y de "material" (ese es composicion
+            # de fibra real, ej. algodon_100 -- denim/mezclilla es un tipo de
+            # tela, no una fibra, asi que no comparten campo).
+            _n_tela = _sin_tildes(nombre.lower())
+            # "jort" (2026-09-10, Old Tree) suma aca tambien: un jort es por
+            # definicion tela denim/jean (ver docs/buscador.md, subtipo
+            # "jorts"), aunque el nombre no diga literal "jean"/"denim" (ej.
+            # "Jort Carpenter Acid Wash"). No cambia el subtipo -- un jort
+            # sigue siendo subtipo "jorts" en la busqueda por prenda, esto
+            # solo deja el dato de tela correcto para cualquier otro uso.
+            if "jean" in _n_tela or "denim" in _n_tela or "mezclilla" in _n_tela or "jort" in _n_tela:
+                producto["es_jean"] = True
+        if "es_jean" in extra:
+            # Override manual: para cuando la ficha real o la foto confirman
+            # tela jean/denim pero el nombre del producto no trae ninguna de
+            # esas palabras (mismo mecanismo que el resto de VERIFICADO_A_
+            # MANO), o al reves, para sacar un falso positivo de la deteccion
+            # automatica de arriba.
+            if extra["es_jean"]:
+                producto["es_jean"] = True
+            else:
+                producto.pop("es_jean", None)
 
     if categoria == "gorro" and "forma" not in producto:
         # 2026-08-30 -- bug real reportado por el usuario: gorros cargados
@@ -3519,7 +4253,7 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
             # depender de agregarlo a mano en VERIFICADO_A_MANO cada vez.
             if "beanie" in _n_gorro or "gorro de lana" in _n_gorro or "gorro lana" in _n_gorro or "gorro tejido" in _n_gorro:
                 _forma_detectada = "lana"
-            elif "snapback" in _n_gorro:
+            elif "snapback" in _n_gorro or "5 panel" in _n_gorro or "5-panel" in _n_gorro:
                 _forma_detectada = "plano"
             elif "dad hat" in _n_gorro or "dad-hat" in _n_gorro:
                 _forma_detectada = "dad hat"
@@ -3535,6 +4269,12 @@ def construir_producto(idx, tienda, dominio, marca, nombre, precio_clp, path, im
 
     if material:
         producto["material"] = material
+    if gramaje_gsm:
+        # Mismo mecanismo que "material" arriba (2026-09-10, Old Tree): dato
+        # real declarado por la ficha ("400 Gsm"), no el override manual de
+        # VERIFICADO_A_MANO -- extra.get("gramaje_gsm") sigue pudiendo
+        # pisarlo mas abajo si hiciera falta corregir un caso puntual.
+        producto["gramaje_gsm"] = gramaje_gsm
     if composicion:
         # 2026-09-08 (Sioux): composicion ESTRUCTURADA y normalizada por
         # fibra (ver parsear_composicion() en constantes.py) -- separado del
@@ -3617,7 +4357,6 @@ RAPT = [
     ("PATCH SHIFT ZIP BLACK", 46990, "/patch-shift-zip-black", "https://cdnx.jumpseller.com/rapt/image/75834611/resize/480/600"),
     ("SHIFT LONGSLEEVE BLACK", 23990, "/shift-longsleeve-black", "https://cdnx.jumpseller.com/rapt/image/76168998/resize/480/600"),
     ("FOUNDATION JACKET", 74990, "/foundation-jacket", "https://cdnx.jumpseller.com/rapt/image/78942775/resize/480/600"),
-    ("FOUNDATION TROUSER", 54990, "/foundation-trouser", "https://cdnx.jumpseller.com/rapt/image/78941214/resize/480/600"),
     ("RAW DENIM JACKET", 64990, "/raw-denim-jacket", "https://cdnx.jumpseller.com/rapt/image/79261184/resize/480/600"),
     ("COMMON HOODIE MORO", 39990, "/common-hoodie-moro", "https://cdnx.jumpseller.com/rapt/image/77844170/resize/480/600"),
     ("COMMON HOODIE AZURE", 39990, "/common-hoodie-azure", "https://cdnx.jumpseller.com/rapt/image/77844186/resize/480/600"),
@@ -3625,7 +4364,6 @@ RAPT = [
     ("COMMON LONG SLEEVE MORO", 26990, "/common-tee-moro", "https://cdnx.jumpseller.com/rapt/image/78934163/resize/480/600"),
     ("COMMON LONG SLEEVE AZURE", 26990, "/common-tee-azure", "https://cdnx.jumpseller.com/rapt/image/78239087/resize/480/600"),
     ("COMMON LONG SLEEVE MOSS", 26990, "/common-tee-moss", "https://cdnx.jumpseller.com/rapt/image/78239091/resize/480/600"),
-    ("FOUNDATION TROUSER BLACK", 54990, "/foundation-trouser-black", "https://cdnx.jumpseller.com/rapt/image/79535787/resize/480/600"),
     ("HOODIE ESSENCE CLASSIC II / PRE-ORDER", 38990, "/hoodie-essence-classic-ii", "https://cdnx.jumpseller.com/rapt/image/60258641/resize/480/600"),
     # Tanda 2 (2026-08-28): 39 productos nuevos que aparecieron en el sitio
     # desde la carga original del 2026-08-27 (mismo metodo Jumpseller
@@ -4790,7 +5528,7 @@ _RRREUSED_COLORES = {
     "polera-dickies": ["Gris"], "polera-antisocialclub": ["Blanco"],
     "chaqueta-sin-mangas-wrangler": ["Amarillo"], "pantalon-cargo-dickies-tela": ["Azul"],
     "pantalon-levis-508": ["Negro"], "pantalon-vintage-con-rayas": ["Gris"],
-    "pantalon-dickies-tela": ["Azul"], "polera-polo-manga-larga": ["Rojo"],
+    "polera-polo-manga-larga": ["Rojo"],
     "polera-vintage-raiders": ["Negro"], "polera-vintage-nascar-1995": ["Negro"],
     "polera-juice-wrld": ["Negro"], "gorro-new-era-washington-nationals": ["Negro"],
     "gorro-los-angeles-dodgers": ["Azul"], "polera-vintage-ford-expedition-1999": ["Negro"],
@@ -4801,11 +5539,85 @@ _RRREUSED_COLORES = {
     # automatico de nombre cuando hay mas de un color).
     "polera-jordan": [],
 }
+# Corte/capucha/cierre de RRREUSED (2026-09-09, Fase 2 por foto de
+# polerones): mismo problema que _RRREUSED_COLORES arriba -- por HANDLE,
+# no por nombre (nombres repetidos como "Poleron Nike" son prendas
+# fisicas distintas con fotos distintas, ver comentario en corte_override
+# dentro de construir_producto()).
+_RRREUSED_CORTE = {
+    "poleron-true-religion-1": "regular fit", "poleron-nike-zip-up-10": "regular fit",
+    "poleron-lululemon-1": "regular fit", "poleron-nike-tech-1": "regular fit",
+    "poleron-nike-12": "regular fit", "poleron-nike-13": "regular fit",
+    "poleron-sp5der": "oversize", "poleron-vintage-nfl-bulls-nutmeg": "regular fit",
+    "poleron-obey": "regular fit", "crewneck-nike-center-1": "regular fit",
+    "poleron-nike-zip-up-9": "regular fit", "poleron-ecko": "regular fit",
+    "poleron-polo-zip-up-2": "regular fit", "quarter-zip-polo-6": "regular fit",
+    "poleron-lululemon": "regular fit", "poleron-nike-11": "regular fit",
+    "poleron-nike-zip-up-8": "regular fit", "poleron-nike-vintage": "regular fit",
+    "crewneck-stussy": "regular fit",
+    # Chaquetas RRREUSED (2026-09-09, Paso 2): mismo problema de nombre
+    # repetido con ancho real distinto por prenda (ver "Chaqueta Carhartt
+    # Duck Active" x3, "Chaqueta Sin Mangas Carhartt" x4) -- corte via ancho
+    # real de la ficha (cm, prenda en plano): <60cm regular/slim, >=60cm
+    # oversize/boxy.
+    "chaqueta-carhartt-vintage-blanket-lined-canvas": "oversize",
+    "chaqueta-carhartt-bankston": "oversize",
+    "chaqueta-carhartt-insulated-storm-defender": "oversize",
+    "chaqueta-levis": "oversize",
+    "chaqueta-workwear-schmidt": "oversize",
+    "chaqueta-carhartt-duck-active-19": "oversize",
+    "chaqueta-vintage-duck-active-3": "regular fit",
+    "chaqueta-vintage-duck-active-2": "oversize",
+    "chaqueta-cortavientos-tommy-hilfiger": "oversize",
+    "chaqueta-wrangler-detroit": "regular fit",
+    "chaqueta-carhartt-duck-active-j130cr": "oversize",
+    "chaqueta-sin-mangas-the-north-face": "oversize",
+    "chaqueta-sin-mangas-carhartt-9": "oversize",
+    "chaqueta-duck-active-lee": "oversize",
+    "chaqueta-carhartt-duck-active-18": "oversize",
+    "chaqueta-carhartt-duck-active-17": "regular fit",
+    "chaqueta-sin-mangas-carhartt-8": "regular fit",
+    "chaqueta-carhartt-arctic-3": "oversize",
+    "chaqueta-carhartt-santa-fe-vintage": "oversize",
+    "chaqueta-sin-mangas-carhartt-7": "regular fit",
+    "abrigo-armani-exchange": "regular fit",
+    "chaqueta-duck-active-walls-2": "oversize",
+    "chaqueta-sin-mangas-carhartt-5": "regular fit",
+    "chaqueta-sin-mangas-wrangler": "regular fit",
+    "chaqueta-de-cuero-all-saints": "regular fit",  # 55cm
+}
+_RRREUSED_CAPUCHA_CIERRE = {
+    "poleron-true-religion-1": {"capucha": "con capucha", "cierre": "con cierre"},
+    "poleron-nike-zip-up-10": {"capucha": "con capucha"},
+    "poleron-lululemon-1": {"capucha": "con capucha", "cierre": "con cierre"},
+    "poleron-nike-tech-1": {"capucha": "con capucha", "cierre": "con cierre"},
+    "poleron-nike-12": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "poleron-nike-13": {"capucha": "con capucha", "cierre": "con cierre"},
+    "poleron-sp5der": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "poleron-vintage-nfl-bulls-nutmeg": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "poleron-obey": {"capucha": "con capucha", "cierre": "con cierre"},
+    "crewneck-nike-center-1": {"capucha": "sin capucha", "cierre": "sin cierre"},
+    "poleron-nike-zip-up-9": {"capucha": "con capucha"},
+    "poleron-ecko": {"capucha": "con capucha", "cierre": "con cierre"},
+    "poleron-polo-zip-up-2": {"capucha": "con capucha"},
+    "quarter-zip-polo-6": {"capucha": "sin capucha"},
+    "poleron-lululemon": {"capucha": "con capucha", "cierre": "con cierre"},
+    "poleron-nike-11": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "poleron-yeezy-hd-01": {"capucha": "con capucha", "cierre": "con cierre"},
+    "poleron-nike-zip-up-8": {"capucha": "con capucha"},
+    "poleron-nike-vintage": {"capucha": "con capucha", "cierre": "sin cierre"},
+    "crewneck-stussy": {"capucha": "sin capucha", "cierre": "sin cierre"},
+}
 _rrreused_todos = cargar_shopify_cache(BASE_DIR / "data" / "shopify_cache" / "rrreused.json")
 RRREUSED = [p for p in _rrreused_todos if p["handle"] in _RRREUSED_COLORES]
 for _p in RRREUSED:
     _p["colores"] = _RRREUSED_COLORES[_p["handle"]]
     _p["marca_autor"] = False
+    if _p["handle"] in _RRREUSED_CORTE:
+        _p["corte_override"] = _RRREUSED_CORTE[_p["handle"]]
+    if _p["handle"] in _RRREUSED_CAPUCHA_CIERRE:
+        _p["capucha_override"] = _RRREUSED_CAPUCHA_CIERRE[_p["handle"]].get("capucha")
+        _p["cierre_override"] = _RRREUSED_CAPUCHA_CIERRE[_p["handle"]].get("cierre")
 
 # IPREX (iprex.cl, 2026-08-30): WordPress/WooCommerce, ver cargar_iprex_
 # cache(). Se excluyen 5 productos que NO son retail streetwear real:
@@ -5006,6 +5818,29 @@ KRONOLEX = cargar_kronolex_cache(
 for _p in KRONOLEX:
     _p["marca_autor"] = False
 
+# OLD TREE (oldtree.cl, 2026-09-10): WooCommerce Store API publica, 104
+# productos reales. 5 excluidos por no ser prenda de ropa (2 shoulder bag,
+# 1 tote bag, 1 par de calcetas -- mismo criterio ya usado para bolsos/
+# anillos/pañoletas de WAV, fuera del alcance de la app) + 1 "Producto de
+# prueba" literal (ficha de test de la propia tienda, precio $50). Marca
+# 100% diseño propio (logo/bordado "Old Tree" en cada ficha, boton
+# customizado, etiquetas propias) -- marca_autor=True (default).
+_OLDTREE_EXCLUIR = {
+    "shoulder-bag-denim-negro", "shoulder-bag-denim-negro-acid-wash",
+    "tote-bag-2012-old-tree", "calcetas-logo-negras-old-tree",
+    "producto-de-prueba",
+}
+OLDTREE = cargar_oldtree_cache(
+    BASE_DIR / "data" / "woocommerce_cache" / "oldtree.json",
+    excluir_slugs=_OLDTREE_EXCLUIR,
+)
+
+# HOOKED (hookedbrand.cl, 2026-09-10): Shopify real, 65 productos, todos
+# cargados (ninguna exclusion -- no hay packs/accesorios fuera de alcance
+# en este catalogo). Marca 100% diseño propio (logo "Hooked"/"hooked" en
+# cada ficha) -- marca_autor=True (default).
+HOOKED = cargar_hooked_cache(BASE_DIR / "data" / "shopify_cache" / "hooked.json")
+
 # BY ADRIAN SANCHEZ (byadriansanchez.com, 2026-09-02): Jumpseller, ver
 # cargar_jumpseller_cache(). marca_autor=False para toda la tienda: a
 # diferencia de Brissa/Hush, no se encontro pagina "Nosotros"/about ni
@@ -5013,11 +5848,16 @@ for _p in KRONOLEX:
 # nosotros, /contact y la home -- ninguna la menciona), asi que Criterio 1
 # de Nivel de Confianza queda en 0 para esta tienda hasta tener evidencia
 # real (ver docs/catalogo_real.md).
-BYADRIAN = cargar_jumpseller_cache(BASE_DIR / "data" / "jumpseller_cache" / "byadriansanchez.json")
+BYADRIAN = cargar_jumpseller_cache(
+    BASE_DIR / "data" / "jumpseller_cache" / "byadriansanchez.json",
+    # "crocodile-blck-bootcut" sacado del catalogo (2026-09-08, pedido
+    # explicito del usuario): cuero sintetico (pleather), no calzaba en
+    # ningun subtipo real de pantalon (ni jean ni cargo ni buzo).
+    excluir_slugs={"crocodile-blck-bootcut"},
+)
 for _p in BYADRIAN:
     _p["marca_autor"] = False
 _BYADRIAN_COLORES = {
-    "crocodile-blck-bootcut": ["Negro"],
     "crocodile-smoke-jeans": ["Gris"],
     "crocodile-smoke-jacket": ["Gris"],
     "long-sleeve-stitching": ["Negro"],
@@ -5501,7 +6341,43 @@ DATOS_SHOPIFY_UPGRADE = {
 }
 
 
+def _verificar_diccionarios_sin_duplicados():
+    """Revienta con un mensaje claro si VERIFICADO_A_MANO/CAPUCHA_CIERRE_VERIFICADO/
+    FUENTE_CAPUCHA_CIERRE tienen un nombre de producto repetido como clave.
+
+    2026-09-09 -- se encontraron 379 productos en VERIFICADO_A_MANO donde una
+    entrada nueva (ej. solo {"genero": "hombre"} del proyecto de revision de
+    genero) pisaba entera una entrada vieja con mas datos (corte/categoria/
+    material/colores ya verificados), porque un dict literal de Python con la
+    misma clave repetida se queda solo con la ULTIMA aparicion -- sin avisar.
+    Este chequeo corre antes de construir el catalogo para que ese bug se note
+    de inmediato la proxima vez, en vez de quedar escondido durante meses.
+    """
+    nombres_dicts = ["VERIFICADO_A_MANO", "CAPUCHA_CIERRE_VERIFICADO", "FUENTE_CAPUCHA_CIERRE"]
+    src = Path(__file__).read_text(encoding="utf-8")
+    tree = ast.parse(src)
+    errores = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 \
+                and isinstance(node.targets[0], ast.Name) and node.targets[0].id in nombres_dicts \
+                and isinstance(node.value, ast.Dict):
+            vistos = {}
+            for k in node.value.keys:
+                if isinstance(k, ast.Constant) and isinstance(k.value, str):
+                    vistos.setdefault(k.value, []).append(k.lineno)
+            for nombre, lineas in vistos.items():
+                if len(lineas) > 1:
+                    errores.append(f'{node.targets[0].id}: "{nombre}" aparece en las lineas {lineas} (se pisan entre si)')
+    if errores:
+        raise SystemExit(
+            "Nombres de producto duplicados como clave -- arreglar antes de "
+            "seguir, o se pierden datos silenciosamente (ver comentario de "
+            "_verificar_diccionarios_sin_duplicados):\n  " + "\n  ".join(errores)
+        )
+
+
 def main():
+    _verificar_diccionarios_sin_duplicados()
     catalog_actual = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
     if not BACKUP_PATH.exists():
         BACKUP_PATH.write_text(json.dumps(catalog_actual, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -5565,7 +6441,15 @@ def main():
         ("Traperas Company", "traperascompany.com", "Traperas Company", TRAPERAS),
         ("Enila", "enila.cl", "Enila", ENILA),
         ("RRREUSED", "rrreused.com", "RRREUSED", RRREUSED),
-        ("IPREX", "iprex.cl", "IPREX", IPREX),
+        # IPREX sacada del catalogo (2026-09-14, pedido explicito del usuario
+        # tras reportar productos descontinuados): iprex.cl cambio de
+        # plataforma (WooCommerce -> Next.js) y los 67 links guardados en
+        # data/woocommerce_cache/iprex.json dan 404 TODOS, confirmado a mano
+        # (hasta un link sacado recien de su propia home da 404). La tienda
+        # nueva carga el catalogo por JavaScript, hace falta un scraper
+        # nuevo -- se deja IPREX (variable) y cargar_iprex_cache() sin
+        # borrar para reactivar apenas ese scraper este listo.
+        # ("IPREX", "iprex.cl", "IPREX", IPREX),
         ("BEEWAY", "beeway.cl", "BEEWAY", BEEWAY),
         ("WAV", "wearewav.cl", "WAV", WAV),
         ("ZAMU", "www.zamu.cl", "ZAMU", ZAMU),
@@ -5585,6 +6469,8 @@ def main():
         ("StreetVibe", "www.streetvibe.cl", "StreetVibe", STREETVIBE),
         ("Sioux", "siouxjeans.cl", "Sioux", SIOUX),
         ("KronoLex", "kronolex.cl", "KronoLex", KRONOLEX),
+        ("Old Tree", "oldtree.cl", "Old Tree", OLDTREE),
+        ("Hooked", "hookedbrand.cl", "Hooked", HOOKED),
     ]
     for tienda, dominio, marca, productos in nuevas_tiendas_shopify:
         for i, p in enumerate(productos, start=1):
@@ -5603,8 +6489,12 @@ def main():
                     genero_override=p.get("genero_override"),
                     material=p.get("material"),
                     composicion=p.get("composicion"),
+                    gramaje_gsm=p.get("gramaje_gsm"),
                     categoria_override=p.get("categoria_override"),
                     subtipo_override=p.get("subtipo_override"),
+                    corte_override=p.get("corte_override"),
+                    capucha_override=p.get("capucha_override"),
+                    cierre_override=p.get("cierre_override"),
                 )
             )
 
@@ -5671,6 +6561,25 @@ def main():
             if "cara_logo_gigante" in _t:
                 _p["cara_logo_grande"] = True
                 _p["grafico_grande"] = True
+
+    # "JORT TABLEADO" (Kagi, 2026-09-09): la ficha real de la tienda lo
+    # describe como jort ("Jort hecho de denim, ajustable con lazo en la
+    # parte trasera"), pero en foto es un culotte plisado largo -- se ve
+    # identico a una falda. Pedido explicito del usuario: que aparezca en
+    # busquedas de AMBOS ("que sirva para las 2"). La arquitectura solo
+    # permite una categoria por producto, asi que se duplica la ficha (mismo
+    # precio/fotos/link/tallas, un id distinto) con categoria "falda" y sin
+    # subtipo/corte de jort (no aplican a una falda) -- la version original
+    # categoria "shorts"/subtipo "jorts" queda intacta.
+    for _p in list(nuevo_catalogo):
+        if _p["nombre"] == "JORT TABLEADO" and _p["tienda"] == "Kagi":
+            _falda = dict(_p)
+            _falda["id"] = _p["id"] + "_falda"
+            _falda["categoria"] = "falda"
+            _falda.pop("subtipo", None)
+            _falda.pop("corte", None)
+            nuevo_catalogo.append(_falda)
+            break
 
     CATALOG_PATH.write_text(json.dumps(nuevo_catalogo, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"Catalogo real escrito: {len(nuevo_catalogo)} productos en {CATALOG_PATH}")

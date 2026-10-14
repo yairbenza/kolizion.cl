@@ -13,31 +13,31 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Verde",
+    "talla": "S",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641188500012"
    },
    {
-    "talla": "Verde",
+    "talla": "M",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641188500029"
    },
    {
-    "talla": "Verde",
+    "talla": "L",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641188500036"
    },
    {
-    "talla": "Verde",
+    "talla": "XL",
     "stock": 1,
     "price": 39990.0,
     "sku": "2641188500043"
    },
    {
-    "talla": "Verde",
+    "talla": "XXL",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641188500060"
@@ -148,25 +148,25 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Burdeo",
+    "talla": "XS",
     "stock": 2,
     "price": 49990.0,
     "sku": "2641276800055"
    },
    {
-    "talla": "Burdeo",
+    "talla": "S",
     "stock": 0,
     "price": 49990.0,
     "sku": "2641276800062"
    },
    {
-    "talla": "Burdeo",
+    "talla": "M",
     "stock": 0,
     "price": 49990.0,
     "sku": "2641276800079"
    },
    {
-    "talla": "Burdeo",
+    "talla": "L",
     "stock": 0,
     "price": 49990.0,
     "sku": "2641276800086"
@@ -187,25 +187,25 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Burdeo",
+    "talla": "XS",
     "stock": 5,
     "price": 29990.0,
     "sku": "2641278100016"
    },
    {
-    "talla": "Burdeo",
+    "talla": "S",
     "stock": 10,
     "price": 29990.0,
     "sku": "2641278100023"
    },
    {
-    "talla": "Burdeo",
+    "talla": "M",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641278100040"
    },
    {
-    "talla": "Burdeo",
+    "talla": "L",
     "stock": 11,
     "price": 29990.0,
     "sku": "2641278100047"
@@ -226,25 +226,25 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Verde",
+    "talla": "XS",
     "stock": 3,
     "price": 29990.0,
     "sku": "2641278100054"
    },
    {
-    "talla": "Verde",
+    "talla": "S",
     "stock": 11,
     "price": 29990.0,
     "sku": "2641278100061"
    },
    {
-    "talla": "Verde",
+    "talla": "M",
     "stock": 11,
     "price": 29990.0,
     "sku": "2641278100078"
    },
    {
-    "talla": "Verde",
+    "talla": "L",
     "stock": 11,
     "price": 29990.0,
     "sku": "2641278100085"
@@ -265,25 +265,25 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "XS",
     "stock": 4,
     "price": 39990.0,
     "sku": "2641278900012"
    },
    {
-    "talla": "Azul",
+    "talla": "S",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641278900029"
    },
    {
-    "talla": "Azul",
+    "talla": "M",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641278900036"
    },
    {
-    "talla": "Azul",
+    "talla": "L",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641278900043"
@@ -304,13 +304,13 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Beige",
+    "talla": "XS/S",
     "stock": 3,
     "price": 29990.0,
     "sku": "2641284800016"
    },
    {
-    "talla": "Beige",
+    "talla": "M/L",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641284800023"
@@ -562,37 +562,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641196900019"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 2,
     "price": 29990.0,
     "sku": "2641196900026"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 7,
     "price": 29990.0,
     "sku": "2641196900033"
    },
    {
-    "talla": "Azul",
+    "talla": "46",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641196900050"
    },
    {
-    "talla": "Azul",
+    "talla": "48",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641196900057"
    },
    {
-    "talla": "Azul",
+    "talla": "50",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641196900064"
@@ -613,31 +613,31 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641196800012"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641196800029"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 1,
     "price": 32990.0,
     "sku": "2641196800036"
    },
    {
-    "talla": "Azul",
+    "talla": "46",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641196800043"
    },
    {
-    "talla": "Azul",
+    "talla": "48",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641196800060"
@@ -760,37 +760,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641197400013"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641197400030"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 1,
     "price": 34990.0,
     "sku": "2641197400037"
    },
    {
-    "talla": "Azul",
+    "talla": "46",
     "stock": 5,
     "price": 34990.0,
     "sku": "2641197400044"
    },
    {
-    "talla": "Azul",
+    "talla": "48",
     "stock": 1,
     "price": 34990.0,
     "sku": "2641197400051"
    },
    {
-    "talla": "Azul",
+    "talla": "50",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641197400068"
@@ -842,7 +842,7 @@
    },
    {
     "talla": "50",
-    "stock": 2,
+    "stock": 1,
     "price": 32990.0,
     "sku": "2721188500066"
    }
@@ -862,37 +862,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Celeste",
+    "talla": "40",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641197800011"
    },
    {
-    "talla": "Celeste",
+    "talla": "42",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641197800028"
    },
    {
-    "talla": "Celeste",
+    "talla": "44",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641197800035"
    },
    {
-    "talla": "Celeste",
+    "talla": "46",
     "stock": 1,
     "price": 29990.0,
     "sku": "2641197800042"
    },
    {
-    "talla": "Celeste",
+    "talla": "48",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641197800059"
    },
    {
-    "talla": "Celeste",
+    "talla": "50",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641197800066"
@@ -964,37 +964,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "40",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641194500013"
    },
    {
-    "talla": "Negro",
+    "talla": "42",
     "stock": 3,
     "price": 39990.0,
     "sku": "2641194500030"
    },
    {
-    "talla": "Negro",
+    "talla": "44",
     "stock": 8,
     "price": 39990.0,
     "sku": "2641194500037"
    },
    {
-    "talla": "Negro",
+    "talla": "46",
     "stock": 4,
     "price": 39990.0,
     "sku": "2641194500044"
    },
    {
-    "talla": "Negro",
+    "talla": "48",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641194500051"
    },
    {
-    "talla": "Negro",
+    "talla": "50",
     "stock": 0,
     "price": 39990.0,
     "sku": "2641194500068"
@@ -1066,37 +1066,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Celeste",
+    "talla": "40",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641197300016"
    },
    {
-    "talla": "Celeste",
+    "talla": "42",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641197300023"
    },
    {
-    "talla": "Celeste",
+    "talla": "44",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641197300040"
    },
    {
-    "talla": "Celeste",
+    "talla": "46",
     "stock": 4,
     "price": 32990.0,
     "sku": "2641197300047"
    },
    {
-    "talla": "Celeste",
+    "talla": "48",
     "stock": 2,
     "price": 32990.0,
     "sku": "2641197300054"
    },
    {
-    "talla": "Celeste",
+    "talla": "50",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641197300061"
@@ -1187,7 +1187,7 @@
    },
    {
     "talla": "44",
-    "stock": 3,
+    "stock": 2,
     "price": 32990.0,
     "sku": "2721197700044"
    },
@@ -1270,37 +1270,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "34",
     "stock": 3,
     "price": 29990.0,
     "sku": "2641274600015"
    },
    {
-    "talla": "Azul",
+    "talla": "36",
     "stock": 8,
     "price": 29990.0,
     "sku": "2641274600022"
    },
    {
-    "talla": "Azul",
+    "talla": "38",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641274600039"
    },
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274600046"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 2,
     "price": 29990.0,
     "sku": "2641274600053"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274600070"
@@ -1372,37 +1372,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "34",
     "stock": 1,
     "price": 32990.0,
     "sku": "2641273600016"
    },
    {
-    "talla": "Azul",
+    "talla": "36",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641273600023"
    },
    {
-    "talla": "Azul",
+    "talla": "38",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641273600040"
    },
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641273600047"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641273600054"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641273600061"
@@ -1525,37 +1525,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Celeste",
+    "talla": "34",
     "stock": 3,
     "price": 32990.0,
     "sku": "2621291100019"
    },
    {
-    "talla": "Celeste",
+    "talla": "36",
     "stock": 4,
     "price": 32990.0,
     "sku": "2621291100026"
    },
    {
-    "talla": "Celeste",
+    "talla": "38",
     "stock": 0,
     "price": 32990.0,
     "sku": "2621291100033"
    },
    {
-    "talla": "Celeste",
+    "talla": "40",
     "stock": 0,
     "price": 32990.0,
     "sku": "2621291100050"
    },
    {
-    "talla": "Celeste",
+    "talla": "42",
     "stock": 0,
     "price": 32990.0,
     "sku": "2621291100057"
    },
    {
-    "talla": "Celeste",
+    "talla": "44",
     "stock": 0,
     "price": 32990.0,
     "sku": "2621291100064"
@@ -1576,37 +1576,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Celeste",
+    "talla": "34",
     "stock": 2,
     "price": 36990.0,
     "sku": "2641273900017"
    },
    {
-    "talla": "Celeste",
+    "talla": "36",
     "stock": 2,
     "price": 36990.0,
     "sku": "2641273900024"
    },
    {
-    "talla": "Celeste",
+    "talla": "38",
     "stock": 10,
     "price": 36990.0,
     "sku": "2641273900031"
    },
    {
-    "talla": "Celeste",
+    "talla": "40",
     "stock": 9,
     "price": 36990.0,
     "sku": "2641273900048"
    },
    {
-    "talla": "Celeste",
-    "stock": 5,
+    "talla": "42",
+    "stock": 4,
     "price": 36990.0,
     "sku": "2641273900055"
    },
    {
-    "talla": "Celeste",
+    "talla": "44",
     "stock": 3,
     "price": 36990.0,
     "sku": "2641273900062"
@@ -1627,37 +1627,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "34",
     "stock": 3,
     "price": 32990.0,
     "sku": "2641279300019"
    },
    {
-    "talla": "Azul",
+    "talla": "36",
     "stock": 5,
     "price": 32990.0,
     "sku": "2641279300026"
    },
    {
-    "talla": "Azul",
+    "talla": "38",
     "stock": 12,
     "price": 32990.0,
     "sku": "2641279300033"
    },
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 7,
     "price": 32990.0,
     "sku": "2641279300050"
    },
    {
-    "talla": "Azul",
-    "stock": 9,
+    "talla": "42",
+    "stock": 8,
     "price": 32990.0,
     "sku": "2641279300057"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 2,
     "price": 32990.0,
     "sku": "2641279300064"
@@ -1678,37 +1678,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "34",
     "stock": 4,
     "price": 32990.0,
     "sku": "2641274100020"
    },
    {
-    "talla": "Negro",
+    "talla": "36",
     "stock": 6,
     "price": 32990.0,
     "sku": "2641274100027"
    },
    {
-    "talla": "Negro",
+    "talla": "38",
     "stock": 11,
     "price": 32990.0,
     "sku": "2641274100034"
    },
    {
-    "talla": "Negro",
+    "talla": "40",
     "stock": 7,
     "price": 32990.0,
     "sku": "2641274100041"
    },
    {
-    "talla": "Negro",
+    "talla": "42",
     "stock": 4,
     "price": 32990.0,
     "sku": "2641274100058"
    },
    {
-    "talla": "Negro",
+    "talla": "44",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641274100065"
@@ -1729,37 +1729,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Celeste",
+    "talla": "34",
     "stock": 2,
     "price": 29990.0,
     "sku": "2641278000019"
    },
    {
-    "talla": "Celeste",
+    "talla": "36",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641278000026"
    },
    {
-    "talla": "Celeste",
+    "talla": "38",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641278000033"
    },
    {
-    "talla": "Celeste",
+    "talla": "40",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641278000050"
    },
    {
-    "talla": "Celeste",
+    "talla": "42",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641278000057"
    },
    {
-    "talla": "Celeste",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641278000064"
@@ -1984,37 +1984,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Gris",
+    "talla": "34",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641274200017"
    },
    {
-    "talla": "Gris",
+    "talla": "36",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641274200024"
    },
    {
-    "talla": "Gris",
+    "talla": "38",
     "stock": 7,
     "price": 29990.0,
     "sku": "2641274200031"
    },
    {
-    "talla": "Gris",
+    "talla": "40",
     "stock": 9,
     "price": 29990.0,
     "sku": "2641274200048"
    },
    {
-    "talla": "Gris",
+    "talla": "42",
     "stock": 7,
     "price": 29990.0,
     "sku": "2641274200055"
    },
    {
-    "talla": "Gris",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274200062"
@@ -2035,37 +2035,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "34",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641279400016"
    },
    {
-    "talla": "Negro",
+    "talla": "36",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641279400023"
    },
    {
-    "talla": "Negro",
+    "talla": "38",
     "stock": 1,
     "price": 29990.0,
     "sku": "2641279400040"
    },
    {
-    "talla": "Negro",
+    "talla": "40",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641279400047"
    },
    {
-    "talla": "Negro",
+    "talla": "42",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641279400054"
    },
    {
-    "talla": "Negro",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641279400061"
@@ -2086,37 +2086,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Celeste",
+    "talla": "34",
     "stock": 2,
     "price": 29990.0,
     "sku": "2641274500018"
    },
    {
-    "talla": "Celeste",
+    "talla": "36",
     "stock": 6,
     "price": 29990.0,
     "sku": "2641274500025"
    },
    {
-    "talla": "Celeste",
+    "talla": "38",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274500032"
    },
    {
-    "talla": "Celeste",
+    "talla": "40",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274500049"
    },
    {
-    "talla": "Celeste",
+    "talla": "42",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274500056"
    },
    {
-    "talla": "Celeste",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274500063"
@@ -2137,37 +2137,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "34",
     "stock": 5,
     "price": 29990.0,
     "sku": "2641279500013"
    },
    {
-    "talla": "Azul",
+    "talla": "36",
     "stock": 12,
     "price": 29990.0,
     "sku": "2641279500030"
    },
    {
-    "talla": "Azul",
+    "talla": "38",
     "stock": 21,
     "price": 29990.0,
     "sku": "2641279500037"
    },
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 16,
     "price": 29990.0,
     "sku": "2641279500044"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 12,
     "price": 29990.0,
     "sku": "2641279500051"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 3,
     "price": 29990.0,
     "sku": "2641279500068"
@@ -2290,37 +2290,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "34",
     "stock": 1,
     "price": 29990.0,
     "sku": "2641279000018"
    },
    {
-    "talla": "Azul",
+    "talla": "36",
     "stock": 9,
     "price": 29990.0,
     "sku": "2641279000025"
    },
    {
-    "talla": "Azul",
+    "talla": "38",
     "stock": 8,
     "price": 29990.0,
     "sku": "2641279000032"
    },
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 7,
     "price": 29990.0,
     "sku": "2641279000049"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 5,
     "price": 29990.0,
     "sku": "2641279000056"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641279000063"
@@ -2494,37 +2494,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Celeste",
+    "talla": "34",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641273800020"
    },
    {
-    "talla": "Celeste",
+    "talla": "36",
     "stock": 3,
     "price": 29990.0,
     "sku": "2641273800027"
    },
    {
-    "talla": "Celeste",
+    "talla": "38",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641273800034"
    },
    {
-    "talla": "Celeste",
+    "talla": "40",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641273800041"
    },
    {
-    "talla": "Celeste",
+    "talla": "42",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641273800058"
    },
    {
-    "talla": "Celeste",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641273800065"
@@ -2627,7 +2627,7 @@
    },
    {
     "talla": "44",
-    "stock": 4,
+    "stock": 3,
     "price": 29990.0,
     "sku": "2721293400070"
    }
@@ -2647,37 +2647,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "34",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274700012"
    },
    {
-    "talla": "Negro",
+    "talla": "36",
     "stock": 2,
     "price": 29990.0,
     "sku": "2641274700029"
    },
    {
-    "talla": "Negro",
+    "talla": "38",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274700036"
    },
    {
-    "talla": "Negro",
+    "talla": "40",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274700043"
    },
    {
-    "talla": "Negro",
+    "talla": "42",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274700060"
    },
    {
-    "talla": "Negro",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641274700067"
@@ -2749,37 +2749,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "34",
     "stock": 3,
     "price": 29990.0,
     "sku": "2641274800019"
    },
    {
-    "talla": "Azul",
+    "talla": "36",
     "stock": 7,
     "price": 29990.0,
     "sku": "2641274800026"
    },
    {
-    "talla": "Azul",
+    "talla": "38",
     "stock": 8,
     "price": 29990.0,
     "sku": "2641274800033"
    },
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641274800050"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 2,
     "price": 29990.0,
     "sku": "2641274800057"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 1,
     "price": 29990.0,
     "sku": "2641274800064"
@@ -2902,37 +2902,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "34",
     "stock": 1,
     "price": 29990.0,
     "sku": "2641279100015"
    },
    {
-    "talla": "Azul",
+    "talla": "36",
     "stock": 4,
     "price": 29990.0,
     "sku": "2641279100022"
    },
    {
-    "talla": "Azul",
+    "talla": "38",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641279100039"
    },
    {
-    "talla": "Azul",
+    "talla": "40",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641279100046"
    },
    {
-    "talla": "Azul",
+    "talla": "42",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641279100053"
    },
    {
-    "talla": "Azul",
+    "talla": "44",
     "stock": 0,
     "price": 29990.0,
     "sku": "2641279100070"
@@ -2953,31 +2953,31 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Gris",
+    "talla": "L",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104900124"
    },
    {
-    "talla": "Gris",
+    "talla": "M",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104900087"
    },
    {
-    "talla": "Gris",
+    "talla": "S",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104900049"
    },
    {
-    "talla": "Gris",
+    "talla": "XL",
     "stock": 6,
     "price": 19990.0,
     "sku": "2641104900162"
    },
    {
-    "talla": "Gris",
+    "talla": "XXL",
     "stock": 2,
     "price": 19990.0,
     "sku": "2641104900209"
@@ -2998,37 +2998,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Azul",
+    "talla": "L",
     "stock": 1,
     "price": 19990.0,
     "sku": "2641104800103"
    },
    {
-    "talla": "Azul",
+    "talla": "M",
     "stock": 2,
     "price": 19990.0,
     "sku": "2641104800066"
    },
    {
-    "talla": "Azul",
+    "talla": "S",
     "stock": 1,
     "price": 19990.0,
     "sku": "2641104800028"
    },
    {
-    "talla": "Azul",
+    "talla": "XL",
     "stock": 4,
     "price": 19990.0,
     "sku": "2641104800141"
    },
    {
-    "talla": "Azul",
+    "talla": "XXL",
     "stock": 3,
     "price": 19990.0,
     "sku": "2641104800189"
    },
    {
-    "talla": "Azul",
+    "talla": "XXXL",
     "stock": 2,
     "price": 19990.0,
     "sku": "2641104800226"
@@ -3049,37 +3049,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "L",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104800097"
    },
    {
-    "talla": "Negro",
+    "talla": "M",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104800059"
    },
    {
-    "talla": "Negro",
+    "talla": "S",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104800011"
    },
    {
-    "talla": "Negro",
+    "talla": "XL",
     "stock": 9,
     "price": 19990.0,
     "sku": "2641104800134"
    },
    {
-    "talla": "Negro",
+    "talla": "XXL",
     "stock": 2,
     "price": 19990.0,
     "sku": "2641104800172"
    },
    {
-    "talla": "Negro",
+    "talla": "XXXL",
     "stock": 1,
     "price": 19990.0,
     "sku": "2641104800219"
@@ -3100,37 +3100,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Rojo",
+    "talla": "L",
     "stock": 7,
     "price": 19990.0,
     "sku": "2641104800127"
    },
    {
-    "talla": "Rojo",
+    "talla": "M",
     "stock": 3,
     "price": 19990.0,
     "sku": "2641104800090"
    },
    {
-    "talla": "Rojo",
+    "talla": "S",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104800042"
    },
    {
-    "talla": "Rojo",
+    "talla": "XL",
     "stock": 6,
     "price": 19990.0,
     "sku": "2641104800165"
    },
    {
-    "talla": "Rojo",
+    "talla": "XXL",
     "stock": 2,
     "price": 19990.0,
     "sku": "2641104800202"
    },
    {
-    "talla": "Rojo",
+    "talla": "XXXL",
     "stock": 1,
     "price": 19990.0,
     "sku": "2641104800250"
@@ -3151,37 +3151,37 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Verde",
+    "talla": "S",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104800035"
    },
    {
-    "talla": "Verde",
+    "talla": "M",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104800073"
    },
    {
-    "talla": "Verde",
+    "talla": "L",
     "stock": 1,
     "price": 19990.0,
     "sku": "2641104800120"
    },
    {
-    "talla": "Verde",
+    "talla": "XL",
     "stock": 0,
     "price": 19990.0,
     "sku": "2641104800158"
    },
    {
-    "talla": "Verde",
+    "talla": "XXL",
     "stock": 1,
     "price": 19990.0,
     "sku": "2641104800196"
    },
    {
-    "talla": "Verde",
+    "talla": "XXXL",
     "stock": 3,
     "price": 19990.0,
     "sku": "2641104800233"
@@ -3202,31 +3202,31 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Beige",
+    "talla": "S",
     "stock": 0,
     "price": 59990.0,
     "sku": "2641188300018"
    },
    {
-    "talla": "Beige",
+    "talla": "M",
     "stock": 0,
     "price": 59990.0,
     "sku": "2641188300025"
    },
    {
-    "talla": "Beige",
+    "talla": "L",
     "stock": 0,
     "price": 59990.0,
     "sku": "2641188300032"
    },
    {
-    "talla": "Beige",
+    "talla": "XL",
     "stock": 0,
     "price": 59990.0,
     "sku": "2641188300049"
    },
    {
-    "talla": "Beige",
+    "talla": "XXL",
     "stock": 1,
     "price": 59990.0,
     "sku": "2641188300056"
@@ -3247,31 +3247,31 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "S",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641193700018"
    },
    {
-    "talla": "Negro",
+    "talla": "M",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641193700025"
    },
    {
-    "talla": "Negro",
+    "talla": "L",
     "stock": 2,
     "price": 32990.0,
     "sku": "2641193700032"
    },
    {
-    "talla": "Negro",
+    "talla": "XL",
     "stock": 2,
     "price": 32990.0,
     "sku": "2641193700049"
    },
    {
-    "talla": "Negro",
+    "talla": "XXL",
     "stock": 0,
     "price": 32990.0,
     "sku": "2641193700056"
@@ -3292,25 +3292,25 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Verde",
+    "talla": "S",
     "stock": 1,
     "price": 24990.0,
     "sku": "2641284900013"
    },
    {
-    "talla": "Verde",
+    "talla": "M",
     "stock": 2,
     "price": 24990.0,
     "sku": "2641284900030"
    },
    {
-    "talla": "Verde",
+    "talla": "L",
     "stock": 2,
     "price": 24990.0,
     "sku": "2641284900037"
    },
    {
-    "talla": "Verde",
+    "talla": "XL",
     "stock": 2,
     "price": 24990.0,
     "sku": "2641284900044"
@@ -3331,25 +3331,25 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "XS",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641279700017"
    },
    {
-    "talla": "Negro",
+    "talla": "S",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641279700024"
    },
    {
-    "talla": "Negro",
+    "talla": "M",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641279700031"
    },
    {
-    "talla": "Negro",
+    "talla": "L",
     "stock": 3,
     "price": 34990.0,
     "sku": "2641279700048"
@@ -3370,25 +3370,25 @@
   "calce": "",
   "variantes": [
    {
-    "talla": "Negro",
+    "talla": "XS",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641277600012"
    },
    {
-    "talla": "Negro",
+    "talla": "S",
     "stock": 4,
     "price": 34990.0,
     "sku": "2641277600029"
    },
    {
-    "talla": "Negro",
+    "talla": "M",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641277600036"
    },
    {
-    "talla": "Negro",
+    "talla": "L",
     "stock": 0,
     "price": 34990.0,
     "sku": "2641277600043"

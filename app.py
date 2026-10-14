@@ -34,6 +34,7 @@ from constantes import (
     CLICS_TIENDAS_PATH,
     COLORES_CONOCIDOS,
     CORTES_CONOCIDOS,
+    DATA_DIR,
     DEPORTES_CONOCIDOS,
     ENVIOS_TIENDAS_PATH,
     EXCLUSIONES_HOBBY,
@@ -49,6 +50,9 @@ from constantes import (
     LARGOS_CONOCIDOS,
     LIMITE_KOKO_PATH,
     LIMITE_MENSAJES_KOKO_DIA,
+    LIMITE_MENSAJES_KOKO_DIA_GLOBAL,
+    LIMITE_MENSAJES_KOKO_DIA_POR_IP,
+    tope_koko,
     LIMITES_ALTURA_M,
     LIMITES_PESO_KG,
     MANGAS_CONOCIDAS,
@@ -139,7 +143,6 @@ from rutas_auth import (
     _iniciar_sesion_usuario,
     _perfil_desde_formulario,
     auth_bp,
-    requiere_cuenta,
 )
 from servicio_koko import (
     KOKO_SYSTEM_PROMPT_BASE,
@@ -160,6 +163,8 @@ from servicio_koko import (
     guardar_mensaje_chat,
     mensajes_usuario_ultimas_24h,
     preferencia_idioma_koko,
+    mensajes_koko_globales_hoy,
+    registrar_mensaje_koko_global,
     registrar_mensaje_usuario_koko,
     reiniciar_chat_koko,
     resumen_historial_para_prompt,
@@ -272,6 +277,10 @@ def _agregar_headers_seguridad(response):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
+# Crea la carpeta de datos "vivos" (favoritos, historial, clics, etc.) si
+# todavia no existe -- hace falta la primera vez que KOLIZION_DATA_DIR
+# apunta a un disco persistente recien montado en Render (ver constantes.py).
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 db_usuarios.inicializar_db()
 
 app.register_blueprint(auth_bp)
@@ -339,7 +348,6 @@ def tienda_perfil(tienda_id):
 
 
 @app.route("/ir/<tienda_id>")
-@requiere_cuenta
 def ir_a_tienda_general(tienda_id):
     tienda = cargar_tiendas().get(tienda_id)
     if not tienda or tienda.get("tipo") != "con_sitio_web":
@@ -349,8 +357,15 @@ def ir_a_tienda_general(tienda_id):
     return redirect(url_destino)
 
 
+# 2026-09-22, pedido explicito del usuario: se saco @requiere_cuenta de las
+# 2 rutas "/ir/..." -- exigir login ANTES de contar el clic hacia la tienda
+# real hacia que la mayoria de los clics de gente sin cuenta nunca llegaran
+# a registrar_clic_tienda (se las mandaba a /login en vez de a la tienda),
+# lo que subestimaba las Tendencias de forma sistematica. Mismo criterio ya
+# aplicado en la version de prueba (ver docs/cuentas.md) -- comprar sigue
+# sin carrito propio, asi que no hay ninguna otra razon tecnica para exigir
+# cuenta en este punto.
 @app.route("/ir/<tienda_id>/<path:producto>")
-@requiere_cuenta
 def ir_a_tienda(tienda_id, producto):
     tienda = cargar_tiendas().get(tienda_id)
     if not tienda or tienda.get("tipo") != "con_sitio_web":
@@ -529,6 +544,7 @@ def api_favoritos():
 
 
 @app.route("/api/favoritos", methods=["POST"])
+@limiter.limit("60 per minute")
 def api_favoritos_alternar():
     data = request.get_json() or {}
     email = _texto_seguro(data.get("email", ""))
@@ -542,6 +558,7 @@ def api_favoritos_alternar():
 
 
 @app.route("/api/favoritos", methods=["DELETE"])
+@limiter.limit("20 per minute")
 def api_favoritos_vaciar():
     email = _texto_seguro(request.args.get("email", ""))
     if not email:
@@ -578,7 +595,16 @@ def recommend():
     manga = _texto_seguro(data.get("manga", ""))
     capucha = _texto_seguro(data.get("capucha", ""))
     cierre = _texto_seguro(data.get("cierre", ""))
-    corte = _texto_seguro(data.get("corte", ""))
+    # El buscador normal manda "cortes" (checkboxes, hasta 3, pedido del
+    # usuario 2026-09-09: elegir mas de un corte a la vez, mismo mecanismo
+    # que "colores"). Koko sigue mandando "corte" en singular (un solo campo
+    # en su tool) -- se acepta cualquiera de los 2 y se juntan en una sola
+    # lista, igual criterio que colores/color de abajo.
+    cortes = _lista_texto_segura(data.get("cortes"), cantidad_max=3)
+    corte_unico = _texto_seguro(data.get("corte", ""))
+    if corte_unico:
+        cortes.append(corte_unico)
+    cortes = list(dict.fromkeys(c for c in cortes if c))[:3]
     # El buscador normal manda "colores" (checkboxes, hasta 3). Koko sigue
     # mandando "color" en singular (un solo campo en su tool) -- se acepta
     # cualquiera de los 2 y se juntan en una sola lista (pedido del usuario,
@@ -619,7 +645,7 @@ def recommend():
                 "manga": manga,
                 "capucha": capucha,
                 "cierre": cierre,
-                "corte": corte,
+                "cortes": cortes,
                 "colores": colores,
                 "ocasion": ocasion,
                 "precio": precio,
@@ -629,7 +655,9 @@ def recommend():
                 "solo_marca_autor": solo_marca_autor,
                 "excluir": excluir,
             }
-            registrar_busqueda(email_sesion, ocasion, categoria, tipo_prenda, corte, payload=payload_reproducible)
+            registrar_busqueda(
+                email_sesion, ocasion, categoria, tipo_prenda, ", ".join(cortes), payload=payload_reproducible
+            )
 
     catalog, aviso_gorro_forma = filtrar_gorros_por_forma_con_aviso(catalog, gorro_forma)
     catalog = filtrar_por_marca_autor(catalog, solo_marca_autor)
@@ -680,14 +708,14 @@ def recommend():
         categorias_deprioritizadas = _categorias_deprioritizadas_por_hobby(
             hobbies, generos_musicales, deportes_subtipo
         )
-        campos_pedido = [categoria, tipo_prenda, subtipo, largo, manga, capucha, cierre, corte, ocasion]
+        campos_pedido = [categoria, tipo_prenda, subtipo, largo, manga, capucha, cierre, ocasion]
         texto_pedido = " ".join([" ".join(hobbies)] + campos_pedido)
     else:
         genero = _texto_seguro(data.get("genero"))
         peso = _texto_seguro(data.get("peso", ""))
         altura = _texto_seguro(data.get("altura", ""))
         categorias_deprioritizadas = set()
-        campos_pedido = [categoria, tipo_prenda, subtipo, largo, manga, capucha, cierre, corte, ocasion]
+        campos_pedido = [categoria, tipo_prenda, subtipo, largo, manga, capucha, cierre, ocasion]
         texto_pedido = " ".join(campos_pedido)
 
     tallas_usuario = estimar_tallas(genero, peso, altura, ajuste_talla)
@@ -699,6 +727,7 @@ def recommend():
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
             precio_pedido=precio, ids_excluir=ids_excluir, preferencia_genero=preferencia_genero,
+            corte_pedido=cortes,
         )
     else:
         catalog_con_precio = filtrar_por_precio(catalog_con_talla, precio)
@@ -706,7 +735,7 @@ def recommend():
             genero, ocasion, categoria, texto_pedido, catalog_con_precio, reglas, tallas_usuario,
             priorizar_material_natural=priorizar_material_natural,
             categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
-            preferencia_genero=preferencia_genero,
+            preferencia_genero=preferencia_genero, corte_pedido=cortes,
         )
         alternativas, aviso_alternativas = [], None
 
@@ -718,6 +747,7 @@ def recommend():
                 priorizar_material_natural=priorizar_material_natural,
                 categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
                 precio_pedido=precio, ids_excluir=ids_excluir, preferencia_genero=preferencia_genero,
+                corte_pedido=cortes,
             )
             sin_talla = bool(resultados_sin_talla) or bool(alternativas_sin_talla)
         else:
@@ -725,7 +755,7 @@ def recommend():
                 genero, ocasion, categoria, texto_pedido, filtrar_por_precio(catalog, precio), reglas,
                 priorizar_material_natural=priorizar_material_natural,
                 categorias_deprioritizadas=categorias_deprioritizadas, color_pedido=colores,
-                preferencia_genero=preferencia_genero,
+                preferencia_genero=preferencia_genero, corte_pedido=cortes,
             )
             sin_talla = bool(resultados_sin_talla)
 
@@ -811,6 +841,7 @@ def koko_historial_chat():
 
 
 @app.route("/api/koko/reiniciar", methods=["POST"])
+@limiter.limit("10 per minute")
 def koko_reiniciar():
     data = request.get_json() or {}
     # Mismo criterio que koko_historial_chat: con sesion real, ese correo
@@ -821,6 +852,7 @@ def koko_reiniciar():
 
 
 @app.route("/api/koko/interes", methods=["POST"])
+@limiter.limit("60 per minute")
 def koko_interes():
     data = request.get_json() or {}
     producto = data.get("producto") or {}
@@ -834,8 +866,14 @@ def koko_interes():
     return jsonify({"ok": True})
 
 
+def _limites_ip_koko():
+    # Por IP: rafagas (10/min) + tope diario. El diario frena a quien cambia
+    # de correo en cada mensaje para saltarse el tope por persona.
+    return f"10 per minute;{tope_koko('KOKO_LIMITE_DIA_POR_IP', LIMITE_MENSAJES_KOKO_DIA_POR_IP)} per day"
+
+
 @app.route("/api/koko/chat", methods=["POST"])
-@limiter.limit("10 per minute")
+@limiter.limit(_limites_ip_koko)
 def koko_chat():
     data = request.get_json() or {}
     # Mismo criterio que koko_historial_chat: con sesion real, ese correo
@@ -872,7 +910,7 @@ def koko_chat():
         mensajes_api[-1]["content"] if mensajes_api[-1]["role"] == "user" else ""
     )
 
-    if mensajes_usuario_ultimas_24h(email) >= LIMITE_MENSAJES_KOKO_DIA:
+    if mensajes_usuario_ultimas_24h(email) >= tope_koko("KOKO_LIMITE_DIA_POR_PERSONA", LIMITE_MENSAJES_KOKO_DIA):
         respuesta_texto = (
             "Guau, llegaste al límite de mensajes de hoy con Koko 🐶 -- vuelve mañana para seguir la charla."
         )
@@ -890,7 +928,19 @@ def koko_chat():
         guardar_mensaje_chat(email, "koko", respuesta_texto)
         return jsonify({"respuesta_texto": respuesta_texto, "sugerencia": None})
 
+    # Techo de gasto diario de todo el sitio (auditoria 2026-10-13): pase lo
+    # que pase con los topes por persona/IP, Koko nunca responde mas de esta
+    # cantidad de mensajes por dia en total.
+    if mensajes_koko_globales_hoy() >= tope_koko("KOKO_LIMITE_DIA_GLOBAL", LIMITE_MENSAJES_KOKO_DIA_GLOBAL):
+        respuesta_texto = (
+            "Guau, hoy conversé con tanta gente que me quedé sin energía 🐶 -- vuelve mañana y seguimos."
+        )
+        guardar_mensaje_chat(email, "usuario", ultimo_mensaje_usuario)
+        guardar_mensaje_chat(email, "koko", respuesta_texto)
+        return jsonify({"respuesta_texto": respuesta_texto, "sugerencia": None, "limite_alcanzado": True})
+
     registrar_mensaje_usuario_koko(email)
+    registrar_mensaje_koko_global()
 
     reglas = load_json(REGLAS_PATH)
     system_prompt = construir_system_prompt_koko(
@@ -908,7 +958,10 @@ def koko_chat():
             messages=mensajes_api,
         )
     except Exception as exc:
-        respuesta_texto = f"Guau, tuve un problema para responder ({exc}). Intenta de nuevo."
+        # El detalle del error queda solo en el log del servidor -- antes se
+        # mostraba al usuario (puede traer datos internos de la API).
+        print(f"[koko] error llamando a la API de Anthropic: {exc!r}")
+        respuesta_texto = "Guau, tuve un problema para responder. Intenta de nuevo en un ratito."
         guardar_mensaje_chat(email, "usuario", ultimo_mensaje_usuario)
         guardar_mensaje_chat(email, "koko", respuesta_texto)
         return jsonify({"respuesta_texto": respuesta_texto, "sugerencia": None})

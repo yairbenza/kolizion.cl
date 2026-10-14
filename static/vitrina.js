@@ -117,6 +117,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  // 2026-09-11 (pedido del usuario): los carruseles quedan escondidos hasta
+  // que se aprieta su tarjeta -- si no, el boton no tenia sentido (con solo
+  // bajar la pantalla ya se veia todo igual).
+  document.querySelectorAll(".btn-tarjeta-categoria").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const seccion = document.getElementById(boton.dataset.irA);
+      if (!seccion) return;
+      seccion.classList.remove("oculto");
+      seccion.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
   cargarTiendasRapido();
   document.getElementById("btn-llegan-rapido").addEventListener("click", () => {
     document.getElementById("modal-llegan-rapido").classList.remove("oculto");
@@ -153,7 +165,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // queda oculta en vez de mostrarse vacia.
     if ((data.basado_busquedas || []).length) {
       renderFilaVitrina("vitrina-basado-busquedas", data.basado_busquedas, favoritosSet);
-      document.getElementById("seccion-basado-busquedas").classList.remove("oculto");
+      // La seccion se queda oculta hasta que se aprieta la tarjeta (ver
+      // .btn-tarjeta-categoria mas abajo) -- solo la tarjeta se habilita aca.
+      document.getElementById("tarjeta-basado-busquedas").classList.remove("oculto");
     }
 
     renderFilaVitrina("vitrina-lanzamientos", data.lanzamientos || [], favoritosSet);

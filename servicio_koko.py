@@ -4,6 +4,7 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from constantes import (
+    LIMITE_KOKO_GLOBAL_PATH,
     CANTIDAD_RESULTADOS,
     CATALOG_PATH,
     CHATS_KOKO_PATH,
@@ -700,4 +701,29 @@ def construir_system_prompt_koko(
         favoritos=favoritos_texto,
         ofertas=texto_ofertas, tendencias=texto_tendencias, lanzamientos=texto_lanzamientos,
         famosos=_texto_famosos_para_prompt(mensaje_usuario),
+    )
+
+
+def _hoy_utc():
+    return datetime.now(timezone.utc).date().isoformat()
+
+
+def mensajes_koko_globales_hoy():
+    """Mensajes de Koko de HOY sumando a todas las personas (techo de gasto
+    diario, auditoria de seguridad 2026-10-13)."""
+    if not LIMITE_KOKO_GLOBAL_PATH.exists():
+        return 0
+    try:
+        datos = load_json(LIMITE_KOKO_GLOBAL_PATH)
+    except Exception:
+        return 0
+    if datos.get("fecha") != _hoy_utc():
+        return 0
+    return int(datos.get("cantidad", 0) or 0)
+
+
+def registrar_mensaje_koko_global():
+    cantidad = mensajes_koko_globales_hoy() + 1
+    LIMITE_KOKO_GLOBAL_PATH.write_text(
+        json.dumps({"fecha": _hoy_utc(), "cantidad": cantidad}), encoding="utf-8"
     )

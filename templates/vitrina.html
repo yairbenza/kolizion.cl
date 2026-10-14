@@ -17,10 +17,38 @@
     <div id="estado"></div>
     {% include "_cargando.html" %}
 
+    <!-- Menu de acceso rapido (2026-09-11, pedido del usuario, inspirado en
+         una referencia visual de Knasta): 4 tarjetas de categoria arriba de
+         los carruseles de siempre -- NO los reemplazan, son un atajo. Cada
+         boton hace scroll a su carrusel real (mismos datos de /api/vitrina,
+         sin inventar ninguna categoria/dato nuevo). -->
+    <div class="grid-categorias-descubre">
+      <div class="tarjeta-categoria">
+        <h3><span class="tarjeta-categoria-emoji">🔥</span> Tendencias</h3>
+        <p>Lo más buscado y popular esta semana en KOLIZION.</p>
+        <button type="button" class="btn-tarjeta-categoria" data-ir-a="seccion-tendencias">Ver tendencias</button>
+      </div>
+      <div class="tarjeta-categoria">
+        <h3><span class="tarjeta-categoria-emoji">🏷️</span> Ofertas</h3>
+        <p>Productos con descuento real de nuestras tiendas piloto.</p>
+        <button type="button" class="btn-tarjeta-categoria" data-ir-a="seccion-ofertas">Ver ofertas</button>
+      </div>
+      <div class="tarjeta-categoria">
+        <h3><span class="tarjeta-categoria-emoji">🎉</span> Nuevos lanzamientos</h3>
+        <p>Lo último que llegó al catálogo.</p>
+        <button type="button" class="btn-tarjeta-categoria" data-ir-a="seccion-lanzamientos">Ver lanzamientos</button>
+      </div>
+      <div class="tarjeta-categoria oculto" id="tarjeta-basado-busquedas">
+        <h3><span class="tarjeta-categoria-emoji">🚨</span> Basado en tus búsquedas</h3>
+        <p>Según lo último que buscaste en KOLIZION.</p>
+        <button type="button" class="btn-tarjeta-categoria" data-ir-a="seccion-basado-busquedas">Ver recomendados</button>
+      </div>
+    </div>
+
     <!-- Cada seccion es una fila horizontal (carrusel), no una grilla que
          obliga a hacer scroll hacia abajo -- Tendencias y Ofertas quedan
          visibles al mismo tiempo en la pantalla. -->
-    <section class="fila-seccion">
+    <section id="seccion-tendencias" class="fila-seccion oculto">
       <h2>Tendencias</h2>
       <div class="fila-carrusel">
         <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-tendencias" aria-label="Ver anteriores">‹</button>
@@ -31,7 +59,7 @@
 
     <!-- Movida justo debajo de Tendencias (2026-08-30, pedido del usuario:
          es lo mas llamativo del feed). -->
-    <section class="fila-seccion">
+    <section id="seccion-ofertas" class="fila-seccion oculto">
       <h2>Ofertas</h2>
       <div class="fila-carrusel">
         <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-ofertas" aria-label="Ver anteriores">‹</button>
@@ -52,7 +80,7 @@
       </div>
     </section>
 
-    <section class="fila-seccion">
+    <section id="seccion-lanzamientos" class="fila-seccion oculto">
       <h2>Nuevos lanzamientos</h2>
       <div class="fila-carrusel">
         <button type="button" class="fila-flecha fila-flecha-izq" data-fila="vitrina-lanzamientos" aria-label="Ver anteriores">‹</button>

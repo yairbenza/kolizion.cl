@@ -34,6 +34,12 @@
       {% endif %}
 
       <form method="post" action="/login" id="form-login">
+        <!-- Campo trampa anti-bots (honeypot): invisible para personas. Los
+             bots que rellenan todos los campos lo completan, y el servidor
+             rechaza ese envio (ver _honeypot_lleno en rutas_auth.py). -->
+        <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+          <label>No completar este campo <input type="text" name="kz_web" tabindex="-1" autocomplete="off"></label>
+        </div>
         <input type="hidden" name="siguiente" value="{{ siguiente }}">
         <label>
           Correo

@@ -3,6 +3,20 @@
     "descripcion": "Politica de envio por tienda, revisada a mano entrando al sitio real de cada una. Usado para 'Llegan rapido a ti' (comparar comuna del usuario vs RM/regiones/retiro en tienda). Si una tienda no publica el dato claramente, se deja como 'no especificado' en vez de asumir.",
     "ultima_revision": "2026-08-27"
   },
+  "Old Tree": {
+    "envio_rm": {"disponible": true, "dias_habiles": "no especificado"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado"},
+    "retiro_tienda": {"disponible": true, "comuna": "Providencia", "es_rm": true},
+    "fuente": "https://oldtree.cl/politicas-de-envio-y-cambio/ (banner del sitio: \"Despacho GRATIS a todo Chile por compras sobre $50.000 via Bluexpress\", revisado 2026-09-10)",
+    "notas": "Envio gratis sobre $50.000 a todo Chile (RM y regiones) via Bluexpress, sin plazo en dias habiles publicado. Retiro en tienda fisica confirmado: Providencia 2198, portal Lyon, local 69, cuarto piso."
+  },
+  "Hooked": {
+    "envio_rm": {"disponible": true, "dias_habiles": "5 dias habiles"},
+    "envio_regiones": {"disponible": true, "dias_habiles": "no especificado (depende de Bluexpress, se comunica al cliente)"},
+    "retiro_tienda": {"disponible": null, "comuna": null, "es_rm": null},
+    "fuente": "https://hookedbrand.cl/policies/shipping-policy (revisado 2026-09-10, banner del sitio: \"FREE SHIPPING ON ORDERS OVER $60.000 CLP\")",
+    "notas": "Envio gratis sobre $60.000. RM: 5 dias habiles confirmado en la politica. Otras comunas de RM y regiones: usa Bluexpress sin plazo fijo publicado, la propia politica dice que se comunica el tiempo al cliente. No menciona retiro en tienda fisica."
+  },
   "StreetVibe": {
     "envio_rm": {"disponible": null, "dias_habiles": "no especificado"},
     "envio_regiones": {"disponible": null, "dias_habiles": "no especificado"},

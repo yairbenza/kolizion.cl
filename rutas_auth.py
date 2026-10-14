@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import secrets
 import urllib.error
 import urllib.parse
@@ -32,6 +33,18 @@ GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 _EXTENSIONES_FOTO_PERMITIDAS = {"jpg", "jpeg", "png", "webp"}
 _FORMATOS_FOTO = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
 FOTOS_USUARIOS_DIR = BASE_DIR / "static" / "img" / "usuarios"
+
+# Auditoria de seguridad 2026-10-13: validacion de formularios del lado del
+# servidor (el "required"/"minlength" del HTML se salta facil).
+LARGO_MAXIMO_PASSWORD = 256
+_EMAIL_VALIDO = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+# Campo trampa anti-bots (honeypot) de login.html/registro.html: invisible
+# para personas, asi que si llega con algo escrito lo envio un bot.
+CAMPO_HONEYPOT = "kz_web"
+
+
+def _honeypot_lleno(form):
+    return bool((form.get(CAMPO_HONEYPOT) or "").strip())
 
 
 def requiere_cuenta(vista):
@@ -101,10 +114,14 @@ def registro():
     if request.method == "POST":
         email = _texto_seguro(request.form.get("email", ""), 200)
         password = request.form.get("password", "")
-        if not email or "@" not in email:
+        if _honeypot_lleno(request.form):
+            error = "No pudimos crear la cuenta -- intenta de nuevo."
+        elif not _EMAIL_VALIDO.match(email):
             error = "Ingresa un correo válido."
         elif len(password) < 8:
             error = "La contraseña debe tener al menos 8 caracteres."
+        elif len(password) > LARGO_MAXIMO_PASSWORD:
+            error = f"La contraseña puede tener como máximo {LARGO_MAXIMO_PASSWORD} caracteres."
         elif db_usuarios.buscar_por_email(email):
             error = "Ya existe una cuenta con ese correo -- inicia sesión en vez de crear una nueva."
         else:
@@ -133,8 +150,10 @@ def login():
         email = _texto_seguro(request.form.get("email", ""), 200)
         password = request.form.get("password", "")
         usuario = db_usuarios.buscar_por_email(email)
-        if not usuario or not usuario["password_hash"] or not check_password_hash(
-            usuario["password_hash"], password
+        if (
+            _honeypot_lleno(request.form) or len(password) > LARGO_MAXIMO_PASSWORD
+            or not usuario or not usuario["password_hash"]
+            or not check_password_hash(usuario["password_hash"], password)
         ):
             error = "Correo o contraseña incorrectos."
         else:
@@ -219,12 +238,18 @@ def auth_google_callback():
     usuario = db_usuarios.buscar_por_google_sub(google_sub)
 
     if not usuario:
-        email_existente = db_usuarios.buscar_por_email(userinfo["email"])
+        # 2026-09-11, bug real: antes se chequeaba userinfo["email"] pero se
+        # creaba la cuenta con email_cuenta (email_pendiente, si venia de una
+        # migracion de perfil local) -- si ese OTRO email ya tenia cuenta, el
+        # chequeo no lo pescaba y crear_usuario reventaba con
+        # IntegrityError (UNIQUE constraint) al toparse con un email
+        # duplicado. Ahora se chequea el mismo email que se va a usar.
+        email_cuenta = email_pendiente or userinfo["email"]
+        email_existente = db_usuarios.buscar_por_email(email_cuenta)
         if email_existente:
             db_usuarios.vincular_google(email_existente["id"], google_sub)
             usuario = db_usuarios.buscar_por_id(email_existente["id"])
         else:
-            email_cuenta = email_pendiente or userinfo["email"]
             usuario = db_usuarios.crear_usuario(
                 email_cuenta, google_sub=google_sub, perfil=perfil_pendiente
             )
@@ -313,6 +338,7 @@ def eliminar_subperfil_ruta(subperfil_id):
 
 @auth_bp.route("/perfil/actualizar", methods=["POST"])
 @requiere_cuenta
+@limiter.limit("20 per minute, 100 per hour")
 def actualizar_perfil_cuenta():
     # Solo datos de contacto (2026-08-30, pedido del usuario: separar "Mi
     # cuenta" -- correo/nombre/telefono -- de "Mi perfil" -- altura/peso/

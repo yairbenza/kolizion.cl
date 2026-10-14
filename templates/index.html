@@ -105,6 +105,8 @@
             <label class="checkbox-inline"><input type="checkbox" name="hobbie_deportes_subtipo" value="futbol"> Fútbol</label>
             <label class="checkbox-inline"><input type="checkbox" name="hobbie_deportes_subtipo" value="baseball"> Baseball</label>
             <label class="checkbox-inline"><input type="checkbox" name="hobbie_deportes_subtipo" value="ski"> Ski</label>
+            <label class="checkbox-inline"><input type="checkbox" name="hobbie_deportes_subtipo" value="artes_marciales"> Artes marciales</label>
+            <label class="checkbox-inline"><input type="checkbox" name="hobbie_deportes_subtipo" value="skate"> Skate</label>
           </div>
         </div>
         <label>
@@ -202,10 +204,10 @@
           <select id="cierre-yo"></select>
         </label>
 
-        <label id="campo-corte-yo" class="oculto">
-          ¿Cómo quieres que te quede?
-          <select id="corte-yo"></select>
-        </label>
+        <div id="campo-corte-yo" class="campo-checkboxes oculto">
+          <p class="ayuda">¿Cómo quieres que te quede? (opcional, elige hasta 3)</p>
+          <div id="corte-yo" class="grid-checkboxes"></div>
+        </div>
         <label id="campo-corte-otro-yo" class="oculto">
           Cuéntanos cómo la quieres
           <input type="text" placeholder="ej: ancha de los hombros...">
@@ -390,10 +392,10 @@
           <select id="cierre-regalo"></select>
         </label>
 
-        <label id="campo-corte-regalo" class="oculto">
-          ¿Cómo quieres que le quede?
-          <select id="corte-regalo"></select>
-        </label>
+        <div id="campo-corte-regalo" class="campo-checkboxes oculto">
+          <p class="ayuda">¿Cómo quieres que le quede? (opcional, elige hasta 3)</p>
+          <div id="corte-regalo" class="grid-checkboxes"></div>
+        </div>
         <label id="campo-corte-otro-regalo" class="oculto">
           Cuéntanos cómo la quieres
           <input type="text" placeholder="ej: ancha de los hombros...">

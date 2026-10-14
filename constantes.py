@@ -6,25 +6,61 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
+
+# 2026-09-22: en Render el disco de la app es efimero -- se borra en cada
+# reinicio o redeploy. KOLIZION_DATA_DIR (si esta seteada) apunta a un disco
+# persistente montado aparte (ej. /var/data) que sobrevive a eso -- ahi es
+# donde deben vivir los archivos que la app escribe sola mientras corre
+# (cuentas, clics, favoritos, historial, etc. -- todos los que estan en
+# .gitignore). Si no esta seteada (desarrollo local, o antes de agregar el
+# disco en Render), cae en data/ dentro del proyecto como siempre. Los
+# archivos que SI se versionan en git (catalogo, tiendas, reglas, tags de
+# clasificacion manual) siguen en BASE_DIR/data sin tocar -- esos ya
+# sobreviven un redeploy porque git los trae de vuelta.
+DATA_DIR = Path(os.environ.get("KOLIZION_DATA_DIR") or (BASE_DIR / "data"))
+
 CATALOG_PATH = BASE_DIR / "data" / "catalog.json"
 REGLAS_PATH = BASE_DIR / "data" / "reglas_streetwear.json"
 FAMOSOS_ESTILO_PATH = BASE_DIR / "data" / "famosos_estilo.json"
-HISTORIAL_PATH = BASE_DIR / "data" / "historial_usuarios.json"
-CHATS_KOKO_PATH = BASE_DIR / "data" / "chats_koko.json"
 TIENDAS_PATH = BASE_DIR / "data" / "tiendas.json"
 TAGS_GRAFICO_PATH = BASE_DIR / "data" / "tags_grafico.json"
 TAGS_FORMA_GORRO_PATH = BASE_DIR / "data" / "tags_forma_gorro.json"
 ENVIOS_TIENDAS_PATH = BASE_DIR / "data" / "envios_tiendas.json"
-CLICS_TIENDAS_PATH = BASE_DIR / "data" / "clics_tiendas.json"
-REPORTES_MANUALES_PATH = BASE_DIR / "data" / "reportes_manuales.json"
-FAVORITOS_PATH = BASE_DIR / "data" / "favoritos.json"
-RESENAS_PATH = BASE_DIR / "data" / "resenas.json"
-LIMITE_KOKO_PATH = BASE_DIR / "data" / "limite_koko.json"
-STOCK_LIVE_PATH = BASE_DIR / "data" / "stock_live.json"
 
-# Subido temporalmente para pruebas (2026-08-26, pedido del usuario) -- volver
-# a 15 antes de sacar la app real (asi se controla el gasto de API por persona).
-LIMITE_MENSAJES_KOKO_DIA = 1000
+HISTORIAL_PATH = DATA_DIR / "historial_usuarios.json"
+CHATS_KOKO_PATH = DATA_DIR / "chats_koko.json"
+CLICS_TIENDAS_PATH = DATA_DIR / "clics_tiendas.json"
+REPORTES_MANUALES_PATH = DATA_DIR / "reportes_manuales.json"
+FAVORITOS_PATH = DATA_DIR / "favoritos.json"
+RESENAS_PATH = DATA_DIR / "resenas.json"
+LIMITE_KOKO_PATH = DATA_DIR / "limite_koko.json"
+# Contador total de mensajes de Koko del dia (todas las personas juntas).
+LIMITE_KOKO_GLOBAL_PATH = DATA_DIR / "limite_koko_global.json"
+STOCK_LIVE_PATH = DATA_DIR / "stock_live.json"
+
+# Topes de Koko (IA con costo por mensaje). Auditoria de seguridad
+# 2026-10-13: estaba en 1000 desde una prueba del 2026-08-26 ("volver a 15
+# antes de sacar la app real") -- vuelto a 15. Son los valores por defecto;
+# se pueden cambiar sin tocar codigo con las variables de entorno de abajo
+# (ver tope_koko y .env.example):
+#   - por persona (correo): KOKO_LIMITE_DIA_POR_PERSONA
+#   - por IP (frena a quien cambia de correo para saltarse el de persona):
+#     KOKO_LIMITE_DIA_POR_IP
+#   - total del sitio, todas las personas juntas (techo de gasto diario):
+#     KOKO_LIMITE_DIA_GLOBAL
+LIMITE_MENSAJES_KOKO_DIA = 15
+LIMITE_MENSAJES_KOKO_DIA_POR_IP = 100
+LIMITE_MENSAJES_KOKO_DIA_GLOBAL = 1500
+
+
+def tope_koko(nombre_env, por_defecto):
+    """Lee el tope de la variable de entorno en el momento de usarlo (no al
+    arrancar), asi un cambio en Render aplica con solo reiniciar. Vacia o
+    con algo que no es un numero entero -> valor por defecto."""
+    try:
+        return max(0, int(os.environ.get(nombre_env, "").strip()))
+    except ValueError:
+        return por_defecto
 CANTIDAD_RESULTADOS = 5
 
 LARGO_MAXIMO_TEXTO_LIBRE = 200
@@ -82,7 +118,9 @@ MATERIALES_CONOCIDOS = {
 # pensada para cualquier tienda actual o futura que declare composicion con
 # porcentajes -- no es una regla exclusiva de Sioux.
 FIBRAS_CONOCIDAS = {
-    "algodon": ["algodon"],
+    # "cotton" (2026-09-10, Hooked): mismo fibra, ficha real en ingles --
+    # mismo criterio que el resto de sinonimos de este diccionario.
+    "algodon": ["algodon", "cotton"],
     "poliester": ["poliester", "polyester"],
     "elastano": ["elastano", "spandex", "licra", "lycra"],
     "poliamida": ["poliamida", "nylon", "polyamide"],
@@ -208,7 +246,18 @@ COLORES_SIMILARES = {
 }
 
 CORTES_CONOCIDOS = {
-    "baggy": ["baggy"],
+    # "balloon"/"ballong" (2026-09-10, pedido explicito del usuario): se
+    # infla en muslo/rodilla y se ajusta en el tobillo -- variante de
+    # Baggy/Wide leg, no un corte aparte. Se suman aca como sinonimo de
+    # "baggy" (la unica opcion real que existe en el formulario para
+    # prenda inferior, CORTE_OPCIONES["prenda inferior"] en script.js no
+    # ofrece "wide leg") para que quien escriba "balloon" en texto libre
+    # encuentre los pantalones que el catalogo ahora tagea como "baggy"
+    # (ver detectar_corte() en construir_catalogo_real.py).
+    # "baloon" (2026-09-10, Hooked): mismo corte, tercera variante de
+    # ortografia real encontrada en una ficha de tienda (falta la segunda
+    # "l") -- mismo criterio que "ballong".
+    "baggy": ["baggy", "balloon", "ballong", "baloon"],
     "boxy fit": ["boxy fit", "boxyfit", "boxy"],
     "slim fit": ["slim fit", "slimfit", "slim"],
     "oversize": ["oversize", "oversized"],
@@ -224,7 +273,6 @@ CORTES_CONOCIDOS = {
     "wide leg": ["wide leg", "wideleg", "wide-leg"],
     "flare": ["flare"],
     "tapered": ["tapered"],
-    "balloon": ["balloon", "ballong"],
     "barrel": ["barrel"],
 }
 
@@ -325,6 +373,31 @@ LIMITES_ALTURA_M = {
 
 ORDEN_TALLAS = ["S", "M", "L", "XL"]
 
+# 2026-09-08 -- bug real reportado por el usuario: buscando "jeans baggy"
+# con su cuerpo cargado (peso/altura) solo aparecian 2 resultados, aunque el
+# catalogo tiene 51 jeans baggy reales. Causa: estimar_tallas() SOLO calcula
+# S/M/L/XL, y filtrar_por_talla() (motor_recomendacion.py) exige que esa
+# letra este en tallas_disponibles -- pero StreetVibe/Sioux venden jeans con
+# talla NUMERICA real (cintura, ej. "40"/"42"), que nunca calzaba con
+# S/M/L/XL y dejaba esos jeans invisibles en CUALQUIER busqueda con talla
+# (mismo tipo de bug ya resuelto antes para ForceBlack/Floating via
+# _traducir_tallas_numericas(), pero esas 2 tiendas solo vendian talla de
+# hombre -- StreetVibe/Sioux tienen tallas de hombre Y de mujer con
+# escalas numericas DISTINTAS para la misma letra, asi que hace falta una
+# tabla por genero, no una sola).
+# Fuente real: guia de tallas publicada por Sioux en la ficha de producto
+# (imagen "Guia de Tallas", cintura en cm, revisada a mano 2026-09-08) --
+# hombre 40-50cintura 80-102cm, mujer 34-44 cintura 60-82cm. StreetVibe no
+# publica su propia guia pero vende el mismo rango de tallas (30-48) bajo
+# el mismo sistema chileno de numeracion, asi que se usa la MISMA tabla
+# para ambas tiendas. "unisex" (StreetVibe: mismo rango 30-48 que mujer,
+# nunca sube a hombre) usa la tabla de mujer extendida hacia abajo.
+TALLAS_NUMERICAS_PANTALON_POR_GENERO = {
+    "hombre": {"40": "S", "42": "M", "44": "L", "46": "XL", "48": "XL", "50": "XL"},
+    "mujer": {"30": "S", "32": "S", "34": "S", "36": "S", "38": "M", "40": "M", "42": "L", "44": "XL", "46": "XL", "48": "XL"},
+    "unisex": {"30": "S", "32": "S", "34": "S", "36": "S", "38": "M", "40": "M", "42": "L", "44": "XL", "46": "XL", "48": "XL"},
+}
+
 # Preferencia de calce del perfil (2026-09-07, pedido del usuario): "Como
 # prefieres que te quede la ropa" -- ajusta que talla se destaca como
 # recomendada por defecto en cada producto, sin sacar ninguna opcion (el
@@ -366,6 +439,9 @@ DEPORTES_CONOCIDOS = {
     "futbol": {"etiqueta": "Fútbol"},
     "baseball": {"etiqueta": "Baseball"},
     "ski": {"etiqueta": "Ski"},
+    # 2026-09-08, pedido del usuario.
+    "artes_marciales": {"etiqueta": "Artes marciales"},
+    "skate": {"etiqueta": "Skate"},
 }
 
 EXCLUSIONES_HOBBY = {

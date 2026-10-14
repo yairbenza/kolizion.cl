@@ -244,7 +244,18 @@ def auth_google_callback():
         # chequeo no lo pescaba y crear_usuario reventaba con
         # IntegrityError (UNIQUE constraint) al toparse con un email
         # duplicado. Ahora se chequea el mismo email que se va a usar.
-        email_cuenta = email_pendiente or userinfo["email"]
+        #
+        # 2026-10-14, bug de seguridad real (mismo arreglo que ya tenia
+        # app-moda-preview desde el 2026-09-18, nunca portado aca): se usaba
+        # email_pendiente (el campo "gmail" del perfil de localStorage, que el
+        # navegador manda SIN VERIFICAR) para decidir a que cuenta conectar --
+        # alguien podia poner el correo de otra persona ahi, entrar con SU
+        # propio Google, y vincular_google() lo dejaba dentro de la cuenta
+        # ajena (toma de cuenta). Ahora la identidad SIEMPRE sale de
+        # userinfo["email"] (lo que Google confirma del lado del servidor).
+        # perfil_pendiente (altura/peso/hobbies, sin el email) se sigue usando
+        # para precargar una cuenta recien creada -- no es dato de identidad.
+        email_cuenta = userinfo["email"]
         email_existente = db_usuarios.buscar_por_email(email_cuenta)
         if email_existente:
             db_usuarios.vincular_google(email_existente["id"], google_sub)

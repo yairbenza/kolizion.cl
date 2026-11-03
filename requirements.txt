@@ -5,3 +5,5 @@ openpyxl
 python-dotenv
 gunicorn
 Pillow
+PyJWT[crypto]
+httpx[http2]

@@ -9,6 +9,7 @@ import urllib.request
 from functools import wraps
 from pathlib import Path
 
+import jwt
 from flask import Blueprint, jsonify, redirect, render_template, request, session, url_for
 from PIL import Image, UnidentifiedImageError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -17,6 +18,7 @@ from werkzeug.utils import secure_filename
 import db_usuarios
 from constantes import (
     BASE_DIR,
+    _es_app_ios,
     _es_safari,
     _lista_texto_segura,
     _siguiente_seguro,
@@ -29,6 +31,19 @@ auth_bp = Blueprint("auth_bp", __name__)
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+
+# App de iOS (2026-11-03, ver ios-app/README.md). Google bloquea su login web
+# dentro de una app (error "disallowed_useragent"), asi que en la app se usa
+# el login NATIVO de Google y de Apple: el telefono entrega un "id_token"
+# firmado por Google/Apple y el servidor verifica esa firma con sus claves
+# publicas antes de confiar en el correo que trae.
+#   GOOGLE_IOS_CLIENT_ID: Client ID tipo "iOS" de Google Cloud Console.
+#   APPLE_BUNDLE_ID: identificador de la app en Apple (cl.kolizion.app).
+GOOGLE_IOS_CLIENT_ID = os.environ.get("GOOGLE_IOS_CLIENT_ID", "")
+APPLE_BUNDLE_ID = os.environ.get("APPLE_BUNDLE_ID", "cl.kolizion.app")
+
+_JWKS_GOOGLE = jwt.PyJWKClient("https://www.googleapis.com/oauth2/v3/certs", cache_keys=True, lifespan=3600)
+_JWKS_APPLE = jwt.PyJWKClient("https://appleid.apple.com/auth/keys", cache_keys=True, lifespan=3600)
 
 _EXTENSIONES_FOTO_PERMITIDAS = {"jpg", "jpeg", "png", "webp"}
 _FORMATOS_FOTO = {"jpg": "JPEG", "jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
@@ -103,6 +118,42 @@ def _google_intercambiar_code(code):
             return json.loads(resp.read())
     except (urllib.error.URLError, urllib.error.HTTPError, KeyError, json.JSONDecodeError):
         return None
+
+
+def _cuenta_desde_google(google_sub, email_google, perfil_pendiente):
+    """Busca o crea la cuenta de quien entro con Google (web o app). La
+    identidad sale SIEMPRE del correo que confirma Google (ver comentario
+    de seguridad del 2026-10-14 abajo)."""
+    usuario = db_usuarios.buscar_por_google_sub(google_sub)
+
+    if not usuario:
+        # 2026-09-11, bug real: antes se chequeaba userinfo["email"] pero se
+        # creaba la cuenta con email_cuenta (email_pendiente, si venia de una
+        # migracion de perfil local) -- si ese OTRO email ya tenia cuenta, el
+        # chequeo no lo pescaba y crear_usuario reventaba con
+        # IntegrityError (UNIQUE constraint) al toparse con un email
+        # duplicado. Ahora se chequea el mismo email que se va a usar.
+        #
+        # 2026-10-14, bug de seguridad real (mismo arreglo que ya tenia
+        # app-moda-preview desde el 2026-09-18, nunca portado aca): se usaba
+        # email_pendiente (el campo "gmail" del perfil de localStorage, que el
+        # navegador manda SIN VERIFICAR) para decidir a que cuenta conectar --
+        # alguien podia poner el correo de otra persona ahi, entrar con SU
+        # propio Google, y vincular_google() lo dejaba dentro de la cuenta
+        # ajena (toma de cuenta). Ahora la identidad SIEMPRE sale de
+        # userinfo["email"] (lo que Google confirma del lado del servidor).
+        # perfil_pendiente (altura/peso/hobbies, sin el email) se sigue usando
+        # para precargar una cuenta recien creada -- no es dato de identidad.
+        email_cuenta = email_google
+        email_existente = db_usuarios.buscar_por_email(email_cuenta)
+        if email_existente:
+            db_usuarios.vincular_google(email_existente["id"], google_sub)
+            usuario = db_usuarios.buscar_por_id(email_existente["id"])
+        else:
+            usuario = db_usuarios.crear_usuario(
+                email_cuenta, google_sub=google_sub, perfil=perfil_pendiente
+            )
+    return usuario
 
 
 @auth_bp.route("/registro", methods=["GET", "POST"])
@@ -234,36 +285,7 @@ def auth_google_callback():
     if not userinfo or not userinfo.get("email"):
         return redirect("/login")
 
-    google_sub = userinfo.get("sub", "")
-    usuario = db_usuarios.buscar_por_google_sub(google_sub)
-
-    if not usuario:
-        # 2026-09-11, bug real: antes se chequeaba userinfo["email"] pero se
-        # creaba la cuenta con email_cuenta (email_pendiente, si venia de una
-        # migracion de perfil local) -- si ese OTRO email ya tenia cuenta, el
-        # chequeo no lo pescaba y crear_usuario reventaba con
-        # IntegrityError (UNIQUE constraint) al toparse con un email
-        # duplicado. Ahora se chequea el mismo email que se va a usar.
-        #
-        # 2026-10-14, bug de seguridad real (mismo arreglo que ya tenia
-        # app-moda-preview desde el 2026-09-18, nunca portado aca): se usaba
-        # email_pendiente (el campo "gmail" del perfil de localStorage, que el
-        # navegador manda SIN VERIFICAR) para decidir a que cuenta conectar --
-        # alguien podia poner el correo de otra persona ahi, entrar con SU
-        # propio Google, y vincular_google() lo dejaba dentro de la cuenta
-        # ajena (toma de cuenta). Ahora la identidad SIEMPRE sale de
-        # userinfo["email"] (lo que Google confirma del lado del servidor).
-        # perfil_pendiente (altura/peso/hobbies, sin el email) se sigue usando
-        # para precargar una cuenta recien creada -- no es dato de identidad.
-        email_cuenta = userinfo["email"]
-        email_existente = db_usuarios.buscar_por_email(email_cuenta)
-        if email_existente:
-            db_usuarios.vincular_google(email_existente["id"], google_sub)
-            usuario = db_usuarios.buscar_por_id(email_existente["id"])
-        else:
-            usuario = db_usuarios.crear_usuario(
-                email_cuenta, google_sub=google_sub, perfil=perfil_pendiente
-            )
+    usuario = _cuenta_desde_google(userinfo.get("sub", ""), userinfo["email"], perfil_pendiente)
 
     _iniciar_sesion_usuario(usuario, recordar=recordar)
     return render_template("_auth_sincronizar.html", usuario=usuario, siguiente=siguiente)
@@ -366,3 +388,129 @@ def actualizar_perfil_cuenta():
     }
     db_usuarios.actualizar_perfil(session["usuario_id"], perfil)
     return redirect(request.referrer or "/perfil")
+
+
+# --- Login nativo de la app de iOS (Google y Apple) --------------------------
+
+def _verificar_id_token(id_token, cliente_jwks, emisores, audiencias):
+    """Verifica la firma, el emisor, la audiencia y la expiracion de un
+    id_token. Devuelve los datos (claims) o None si algo no calza."""
+    audiencias = [a for a in audiencias if a]
+    if not id_token or not audiencias:
+        return None
+    try:
+        clave = cliente_jwks.get_signing_key_from_jwt(id_token)
+        return jwt.decode(
+            id_token, clave.key, algorithms=["RS256"],
+            audience=audiencias, issuer=emisores,
+        )
+    except (jwt.PyJWTError, jwt.exceptions.PyJWKClientError, ValueError):
+        return None
+
+
+def _perfil_pendiente_desde_json(datos):
+    perfil = datos.get("perfil") if isinstance(datos.get("perfil"), dict) else {}
+    campos_validos = (
+        db_usuarios.CAMPOS_PERFIL_TEXTO + db_usuarios.CAMPOS_PERFIL_NUMERO + db_usuarios.CAMPOS_PERFIL_LISTA
+    )
+    return {campo: perfil.get(campo) for campo in campos_validos if campo in perfil}
+
+
+def _respuesta_login_nativo(usuario, datos):
+    # En la app la sesion siempre queda recordada (30 dias): es el
+    # comportamiento esperado de una app instalada.
+    _iniciar_sesion_usuario(usuario, recordar=True)
+    siguiente = _siguiente_seguro(datos.get("siguiente"))
+    return jsonify({"ok": True, "url": "/auth/sincronizar?" + urllib.parse.urlencode({"siguiente": siguiente})})
+
+
+@auth_bp.route("/auth/nativo/google", methods=["POST"])
+@limiter.limit("10 per minute, 30 per hour")
+def auth_nativo_google():
+    datos = request.get_json(silent=True) or {}
+    claims = _verificar_id_token(
+        datos.get("id_token", ""), _JWKS_GOOGLE,
+        ["https://accounts.google.com", "accounts.google.com"],
+        [GOOGLE_IOS_CLIENT_ID, GOOGLE_CLIENT_ID],
+    )
+    if not claims or not claims.get("email") or not claims.get("email_verified"):
+        return jsonify({"error": "No pudimos verificar tu cuenta de Google."}), 401
+    usuario = _cuenta_desde_google(claims["sub"], claims["email"], _perfil_pendiente_desde_json(datos))
+    return _respuesta_login_nativo(usuario, datos)
+
+
+@auth_bp.route("/auth/nativo/apple", methods=["POST"])
+@limiter.limit("10 per minute, 30 per hour")
+def auth_nativo_apple():
+    datos = request.get_json(silent=True) or {}
+    claims = _verificar_id_token(
+        datos.get("id_token", ""), _JWKS_APPLE, ["https://appleid.apple.com"], [APPLE_BUNDLE_ID],
+    )
+    if not claims or not claims.get("sub"):
+        return jsonify({"error": "No pudimos verificar tu cuenta de Apple."}), 401
+
+    apple_sub = claims["sub"]
+    usuario = db_usuarios.buscar_por_apple_sub(apple_sub)
+    if not usuario:
+        # Apple manda el correo solo la primera vez (puede ser un correo
+        # "oculto" @privaterelay.appleid.com, que igual funciona). El nombre
+        # lo entrega el telefono, no el token -- llega aparte en "nombre".
+        email = (claims.get("email") or "").strip().lower()
+        email_verificado = claims.get("email_verified") in (True, "true")
+        if not email or not email_verificado:
+            return jsonify({"error": "Apple no nos compartió tu correo. Ve a Ajustes > Apple ID > Iniciar sesión con Apple, quita KOLIZION e intenta de nuevo."}), 400
+        existente = db_usuarios.buscar_por_email(email)
+        if existente:
+            db_usuarios.vincular_apple(existente["id"], apple_sub)
+            usuario = db_usuarios.buscar_por_id(existente["id"])
+        else:
+            perfil = _perfil_pendiente_desde_json(datos)
+            perfil["nombre"] = perfil.get("nombre") or _texto_seguro(datos.get("nombre", ""), 200)
+            perfil["apellido"] = perfil.get("apellido") or _texto_seguro(datos.get("apellido", ""), 200)
+            usuario = db_usuarios.crear_usuario(email, apple_sub=apple_sub, perfil=perfil)
+    return _respuesta_login_nativo(usuario, datos)
+
+
+@auth_bp.route("/auth/sincronizar")
+def auth_sincronizar():
+    """Misma pagina puente que usa el callback web de Google: copia los
+    datos de la cuenta al localStorage antes de seguir."""
+    usuario = db_usuarios.buscar_por_id(session["usuario_id"]) if session.get("usuario_id") else None
+    if not usuario:
+        return redirect("/login")
+    siguiente = _siguiente_seguro(request.args.get("siguiente"))
+    return render_template("_auth_sincronizar.html", usuario=usuario, siguiente=siguiente)
+
+
+# --- Eliminar cuenta (obligatorio en la App Store, guia 5.1.1(v)) -----------
+
+@auth_bp.route("/cuenta/eliminar", methods=["POST"])
+@requiere_cuenta
+@limiter.limit("5 per hour")
+def eliminar_cuenta():
+    """Borra la cuenta y todos los datos guardados con su correo: favoritos,
+    historial de busquedas, conversaciones con Koko y foto de perfil."""
+    from servicio_koko import reiniciar_chat_koko
+    from servicio_tiendas import cargar_favoritos, cargar_historial, guardar_favoritos, guardar_historial
+
+    if (request.form.get("confirmacion") or "").strip().upper() != "ELIMINAR":
+        return redirect(request.referrer or "/perfil")
+
+    usuario = db_usuarios.buscar_por_id(session["usuario_id"])
+    if usuario:
+        email = usuario["email"]
+        favoritos = cargar_favoritos()
+        if favoritos.pop(email, None) is not None:
+            guardar_favoritos(favoritos)
+        historial = cargar_historial()
+        if historial.pop(email, None) is not None:
+            guardar_historial(historial)
+        reiniciar_chat_koko(email)
+        # data/limite_koko.json (solo fechas de mensajes, para el tope diario)
+        # NO se borra: si no, eliminar la cuenta seria una forma de saltarse
+        # el limite de Koko. Esas fechas se limpian solas a las 48 h.
+        if usuario.get("foto_perfil"):
+            (BASE_DIR / "static" / usuario["foto_perfil"]).unlink(missing_ok=True)
+        db_usuarios.eliminar_usuario(usuario["id"])
+    session.clear()
+    return render_template("cuenta_eliminada.html")

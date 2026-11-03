@@ -1,0 +1,44 @@
+# Build en la nube de la app de iOS (Codemagic, codemagic.io) -- compila en un
+# Mac de ellos y sube la app a TestFlight sin necesitar un Mac propio.
+# Pasos de configuracion (una sola vez): ver ios-app/README.md.
+workflows:
+  ios-testflight:
+    name: KOLIZION iOS -> TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: ios-app
+    integrations:
+      # Nombre EXACTO de la clave de App Store Connect que se agrega en
+      # Codemagic > Team settings > Integrations > Developer Portal.
+      app_store_connect: KOLIZION App Store Connect
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: cl.kolizion.app
+      groups:
+        # Grupo de variables creado en Codemagic con GOOGLE_IOS_CLIENT_ID.
+        - kolizion_ios
+      node: 20
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "ios-v*"
+    scripts:
+      - name: Instalar dependencias
+        script: npm install
+      - name: Generar y configurar el proyecto de Xcode
+        script: node scripts/preparar-ios.mjs
+      - name: Aplicar certificados y perfiles de firma
+        script: xcode-project use-profiles --project ios/App/App.xcodeproj
+      - name: Compilar la app (.ipa)
+        script: xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true

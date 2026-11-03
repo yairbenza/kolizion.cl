@@ -8,3 +8,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="KOLIZION">
 <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/icons/apple-touch-icon.png') }}">
+{% if es_app %}
+<!-- Solo dentro de la app de iOS (ver es_app en app.py y ios-app/README.md):
+     la pagina ocupa toda la pantalla (viewport-fit=cover, asi env(safe-area-*)
+     deja de valer 0 y la barra de abajo no queda bajo la "rayita" del
+     iPhone) y se carga el puente con las funciones nativas. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  html body { padding-top: calc(2rem + env(safe-area-inset-top, 0px)); }
+  html .fab-cuenta { top: calc(1rem + env(safe-area-inset-top, 0px)); }
+  html .modal-overlay-producto { padding-top: calc(2rem + env(safe-area-inset-top, 0px)); }
+</style>
+<script>window.KZ_CONFIG = { googleIosClientId: {{ google_ios_client_id | tojson }} };</script>
+<script src="{{ url_for('static', filename='nativo.js') }}" defer></script>
+{% endif %}

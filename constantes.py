@@ -782,6 +782,13 @@ def _siguiente_seguro(valor, por_defecto="/"):
     return valor
 
 
+def _es_app_ios(user_agent_texto):
+    """True si la pagina se esta viendo dentro de la app de iOS (Capacitor
+    agrega "KolizionApp/<version>" al User-Agent, ver
+    ios-app/capacitor.config.json)."""
+    return "kolizionapp/" in (user_agent_texto or "").lower()
+
+
 def _es_safari(user_agent_texto):
     ua = (user_agent_texto or "").lower()
     if "safari" not in ua:

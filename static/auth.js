@@ -3,6 +3,9 @@
 // Ver docs/cuentas.md para el flujo completo.
 
 async function iniciarLoginGoogle(siguiente, recordar) {
+  // Dentro de la app de iOS Google bloquea su login web, asi que se usa el
+  // login nativo (static/nativo.js, /auth/nativo/google).
+  if (window.KZNativo) return window.KZNativo.login("google", siguiente);
   const boton = document.getElementById("btn-google-login");
   if (boton) {
     boton.disabled = true;
@@ -34,4 +37,10 @@ async function iniciarLoginGoogle(siguiente, recordar) {
     }
     alert("No se pudo conectar con Google. Intenta con tu correo y contraseña.");
   }
+}
+
+// "Continuar con Apple" -- solo existe dentro de la app de iOS.
+function iniciarLoginApple(siguiente) {
+  if (window.KZNativo) return window.KZNativo.login("apple", siguiente);
+  alert("Iniciar sesión con Apple está disponible en la app de KOLIZION.");
 }

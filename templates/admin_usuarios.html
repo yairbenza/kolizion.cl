@@ -15,6 +15,7 @@
       <a href="/admin/tiendas">Tiendas</a>
       <a href="/admin/clics">Clics</a>
       <a href="/admin/usuarios" class="admin-nav-activo">Usuarios</a>
+      <a href="/admin/push">Notificaciones</a>
       <a href="/admin/clasificar-graficos">Clasificar prendas</a>
       <a href="/admin/clasificar-gorros">Clasificar gorros</a>
       <form method="post" action="/admin/logout" class="admin-nav-logout">
@@ -38,7 +39,7 @@
         </div>
       </div>
       <p class="descripcion">
-        {{ "Google" if u.google_sub else "" }}{{ " + " if u.google_sub and u.tiene_password else "" }}{{ "Contraseña" if u.tiene_password else "" }}
+        {{ [("Google" if u.google_sub else ""), ("Apple" if u.apple_sub else ""), ("Contraseña" if u.tiene_password else "")] | select | join(" + ") }}
         -- creada {{ u.creado_en[:10] }}
       </p>
       {% if u.telefono or u.direccion or u.altura or u.peso %}

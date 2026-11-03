@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>KOLIZION · Sin conexión</title>
+  <!-- Pantalla que muestra la app cuando kolizion.cl no carga (sin
+       internet). Vive DENTRO de la app (no en el servidor) y muestra la
+       copia de favoritos que static/nativo.js guarda en el telefono. -->
+  <style>
+    :root { --bg: #0d0d0d; --card: #1a1a1a; --text: #f5f5f5; --muted: #9a9a9a; --accent: #E60106; --border: #2c2c2c; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      padding: calc(1.5rem + env(safe-area-inset-top)) 1rem calc(2rem + env(safe-area-inset-bottom));
+    }
+    main { max-width: 640px; margin: 0 auto; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.25rem; }
+    h1 span { color: var(--accent); }
+    .sub { color: var(--muted); margin: 0 0 1.25rem; line-height: 1.4; }
+    button {
+      width: 100%; padding: 0.9rem; border-radius: 10px; border: none; font-weight: 700; font-size: 1rem;
+      background: var(--accent); color: #fff; margin-bottom: 1.5rem;
+    }
+    h2 { font-size: 1.05rem; margin: 0 0 0.75rem; }
+    .grilla { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .card .foto { aspect-ratio: 1 / 1; width: 100%; object-fit: cover; display: block; background: #222; }
+    .card .info { padding: 0.6rem; }
+    .card .tienda { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .card .nombre { font-size: 0.9rem; margin: 0.2rem 0; line-height: 1.25; }
+    .card .precio { font-weight: 700; color: var(--accent); }
+    .vacio, .nota { color: var(--muted); line-height: 1.4; }
+    .nota { font-size: 0.8rem; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Sin conexión <span>⚡</span></h1>
+    <p class="sub">No pudimos conectarnos a KOLIZION. Revisa tu internet y vuelve a intentar. Volvemos solos apenas haya señal.</p>
+    <button type="button" id="reintentar">Reintentar</button>
+
+    <h2>Tus favoritos guardados</h2>
+    <div id="lista" class="grilla"></div>
+    <p id="vacio" class="vacio" hidden>Todavía no tienes favoritos guardados en este iPhone. Marca prendas con la estrella cuando tengas conexión y aparecerán aquí.</p>
+    <p id="nota" class="nota" hidden></p>
+  </main>
+
+  <script>
+    (function () {
+      var URL_APP = "https://kolizion.cl/";
+      var C = window.Capacitor;
+      function llamar(plugin, metodo, opciones) {
+        if (!C || typeof C.nativePromise !== "function") return Promise.reject(new Error("sin puente"));
+        return C.nativePromise(plugin, metodo, opciones || {});
+      }
+      function volver() { window.location.href = URL_APP; }
+      document.getElementById("reintentar").addEventListener("click", volver);
+
+      // Vuelve sola cuando regresa la conexion.
+      try {
+        C.nativeCallback("Network", "addListener", { eventName: "networkStatusChange" }, function (estado) {
+          if (estado && estado.connected) setTimeout(volver, 800);
+        });
+      } catch (e) {}
+
+      function texto(etiqueta, clase, contenido) {
+        var el = document.createElement(etiqueta);
+        el.className = clase;
+        el.textContent = contenido || "";
+        return el;
+      }
+
+      async function foto(ruta) {
+        if (!ruta) return "";
+        try {
+          var r = await llamar("Filesystem", "readFile", { path: ruta, directory: "DATA" });
+          return r && r.data ? "data:image/jpeg;base64," + r.data : "";
+        } catch (e) { return ""; }
+      }
+
+      async function pintar() {
+        var guardado = null;
+        try {
+          var r = await llamar("Preferences", "get", { key: "kz_favoritos_offline" });
+          guardado = r && r.value ? JSON.parse(r.value) : null;
+        } catch (e) {}
+        var items = (guardado && guardado.items) || [];
+        if (!items.length) { document.getElementById("vacio").hidden = false; return; }
+
+        var lista = document.getElementById("lista");
+        for (var i = 0; i < items.length; i++) {
+          var f = items[i];
+          var card = document.createElement("div");
+          card.className = "card";
+          var img = document.createElement("img");
+          img.className = "foto";
+          img.alt = "";
+          var src = await foto(f.foto);
+          if (src) img.src = src;
+          card.appendChild(img);
+          var info = document.createElement("div");
+          info.className = "info";
+          info.appendChild(texto("div", "tienda", f.tienda));
+          info.appendChild(texto("div", "nombre", f.nombre));
+          info.appendChild(texto("div", "precio", f.precio));
+          card.appendChild(info);
+          lista.appendChild(card);
+        }
+        if (guardado.actualizado) {
+          var nota = document.getElementById("nota");
+          nota.textContent = "Guardados el " + new Date(guardado.actualizado).toLocaleString("es-CL") + ". Los precios y el stock pueden haber cambiado.";
+          nota.hidden = false;
+        }
+      }
+      pintar();
+    })();
+  </script>
+</body>
+</html>

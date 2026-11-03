@@ -75,6 +75,7 @@ from constantes import (
     _contiene_palabra,
     _detectar,
     _detectar_reciente,
+    _es_app_ios,
     _es_safari,
     _lista_texto_segura,
     _mencionado_en_conversacion,
@@ -144,6 +145,7 @@ from rutas_auth import (
     _perfil_desde_formulario,
     auth_bp,
 )
+from rutas_push import push_bp
 from servicio_koko import (
     KOKO_SYSTEM_PROMPT_BASE,
     KOKO_TOOL_SUGERIR_BUSQUEDA,
@@ -285,6 +287,7 @@ db_usuarios.inicializar_db()
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(push_bp)
 
 
 # El icono de "Mi cuenta" (avatar fijo arriba, ver _barra_cuenta.html) esta
@@ -296,7 +299,25 @@ def _inyectar_usuario_sesion():
     usuario = None
     if session.get("usuario_id"):
         usuario = db_usuarios.buscar_por_id(session["usuario_id"])
-    return {"usuario": usuario}
+    # es_app: la pagina se esta viendo dentro de la app de iOS (ver
+    # _es_app_ios en constantes.py) -- activa login con Apple, avisos push,
+    # compartir nativo y favoritos sin conexion (static/nativo.js).
+    return {
+        "usuario": usuario,
+        "es_app": _es_app_ios(request.user_agent.string),
+        "google_ios_client_id": os.environ.get("GOOGLE_IOS_CLIENT_ID", ""),
+    }
+
+
+# Paginas que pide la App Store: politica de privacidad y soporte.
+@app.route("/privacidad")
+def privacidad():
+    return render_template("privacidad.html")
+
+
+@app.route("/soporte")
+def soporte():
+    return render_template("soporte.html")
 
 
 # --- Vistas HTML -------------------------------------------------------------

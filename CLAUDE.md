@@ -26,7 +26,8 @@ No reincorporar sin pedido explícito del usuario:
    - `rutas_auth.py`: Blueprint de autenticación (registro, login, Google OAuth, fotos de perfil).
    - `rutas_admin.py`: Blueprint del panel de administración (`/admin/*`, tiendas, clics, usuarios).
    - `constantes.py`: Constantes, paths, diccionarios de prendas y utilidades de normalización/saneo.
-   - `db_usuarios.py`: Base de datos SQLite (`kolizion.db`) y funciones CRUD de usuarios.
+   - `db_usuarios.py`: Base de datos SQLite (`kolizion.db`) y funciones CRUD de usuarios y dispositivos push.
+   - `rutas_push.py` / `servicio_push.py`: notificaciones push de la app de iOS (registro de tokens, envío por APNs, `/admin/push`).
 
 ## Índice de documentación (`docs/`)
 
@@ -39,4 +40,5 @@ Cada archivo trae el detalle completo con fechas y el porqué de cada decisión 
 - **`docs/tiendas_admin.md`** — tiendas reales con convenio, tracking de clics/descuentos, panel `/admin`, estimación de envío.
 - **`docs/ui_features.md`** — barra de navegación, onboarding, favoritos, PWA, vista previa rápida de producto.
 - **`docs/seguridad.md`** — revisiones de seguridad y de producción ya hechas (qué se revisó y qué se corrigió).
+- **`docs/app_ios.md`** — app de iPhone (Capacitor en `ios-app/`): qué agrega de nativo (`static/nativo.js`), login con Google/Apple nativo, push (`/admin/push`), eliminar cuenta, `/privacidad`, build en Codemagic.
 - **`docs/cuentas.md`** — cuentas de usuario reales (Google OAuth + email/contraseña): schema de la base de datos, migración desde localStorage, los 2 puntos donde se exige cuenta para comprar.

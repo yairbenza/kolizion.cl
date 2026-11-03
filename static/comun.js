@@ -630,8 +630,34 @@ function _pintarImagenVp(indice) {
   if (zoomImg) zoomImg.src = src;
 }
 
+// Compartir un producto (2026-11-03): en la app de iOS abre la hoja nativa
+// de compartir (WhatsApp, Instagram, etc. -- ver static/nativo.js); en el
+// navegador usa navigator.share si existe, y si no, copia el link.
+async function compartirProducto(rec) {
+  const url = rec.link && rec.link !== "#" ? new URL(rec.link, location.href).href : location.origin;
+  const datos = {
+    title: rec.nombre || "KOLIZION",
+    text: `${rec.nombre || "Mira esta prenda"}${rec.tienda ? " de " + rec.tienda : ""} -- la encontré en KOLIZION`,
+    url,
+  };
+  try {
+    if (window.KZNativo) return await window.KZNativo.compartir(datos);
+    if (navigator.share) return await navigator.share(datos);
+    await navigator.clipboard.writeText(`${datos.text}: ${url}`);
+    const boton = document.getElementById("vp-compartir");
+    if (boton) {
+      boton.textContent = "¡Link copiado!";
+      setTimeout(() => { boton.textContent = "Compartir"; }, 2000);
+    }
+  } catch (e) {
+    // La persona cerro la hoja de compartir sin elegir nada: no es un error.
+  }
+}
+
 function abrirVistaPrevia(rec) {
   vpRecActual = rec;
+  const botonCompartir = document.getElementById("vp-compartir");
+  if (botonCompartir) botonCompartir.onclick = () => compartirProducto(rec);
   vpTallaElegida = null;
   vpColorElegido = null;
   vpImagenes = imagenesPreview(rec);

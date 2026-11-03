@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Admin notificaciones</title>
+  {% include "_tema_inline.html" %}
+  {% include "_titulos_vistos.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <nav class="admin-nav">
+      <a href="/admin/tiendas">Tiendas</a>
+      <a href="/admin/clics">Clics</a>
+      <a href="/admin/usuarios">Usuarios</a>
+      <a href="/admin/push" class="admin-nav-activo">Notificaciones</a>
+      <a href="/admin/clasificar-graficos">Clasificar prendas</a>
+      <a href="/admin/clasificar-gorros">Clasificar gorros</a>
+      <form method="post" action="/admin/logout" class="admin-nav-logout">
+        <button type="submit">Cerrar sesión</button>
+      </form>
+    </nav>
+
+    <h1>Notificaciones push</h1>
+    <p class="subtitulo">{{ dispositivos }} iPhone{{ "s" if dispositivos != 1 else "" }} con avisos activados.</p>
+
+    {% if not configurado %}
+    <p class="descripcion" style="color: var(--accent); font-weight: 600;">
+      Falta configurar APNS_KEY_ID, APNS_TEAM_ID y APNS_KEY_P8 en el servidor (ver ios-app/README.md).
+    </p>
+    {% endif %}
+
+    {% if resultado %}
+      {% if resultado.error %}
+      <p class="descripcion" style="color: var(--accent); font-weight: 600;">{{ resultado.error }}</p>
+      {% endif %}
+      {% if resultado.enviados is defined %}
+      <p class="descripcion">Enviados: {{ resultado.enviados }} · Fallidos: {{ resultado.fallidos }} · Tokens vencidos borrados: {{ resultado.eliminados }}</p>
+      {% endif %}
+    {% endif %}
+
+    <form method="post" action="/admin/push" onsubmit="return confirm('¿Mandar este aviso a todos los iPhone?');">
+      <label>
+        Título <span class="ayuda">(máx. 60)</span>
+        <input type="text" name="titulo" maxlength="60" required value="{{ form.titulo }}">
+      </label>
+      <label>
+        Mensaje <span class="ayuda">(máx. 180)</span>
+        <textarea name="cuerpo" maxlength="180" rows="3" required>{{ form.cuerpo }}</textarea>
+      </label>
+      <label>
+        Abrir al tocar <span class="ayuda">(opcional, ej. /vitrina)</span>
+        <input type="text" name="url" maxlength="300" value="{{ form.url }}" placeholder="/vitrina">
+      </label>
+      <button type="submit">Enviar a todos</button>
+    </form>
+  </main>
+</body>
+</html>

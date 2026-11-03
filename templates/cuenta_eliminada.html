@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KOLIZION · Cuenta eliminada</title>
+  {% include "_tema_inline.html" %}
+  {% include "_pwa_meta.html" %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Tu cuenta fue eliminada</h1>
+    <p class="descripcion">Borramos tu cuenta y tus datos de KOLIZION. Puedes seguir usando el buscador sin cuenta cuando quieras.</p>
+    <a href="/" class="btn-editar-perfil">Volver al inicio</a>
+  </main>
+  <script>
+    // Tambien se borra lo guardado en este dispositivo (perfil, favoritos
+    // sin conexion de la app, etc.).
+    try { localStorage.clear(); } catch (e) {}
+    window.addEventListener("load", function () {
+      if (window.KZNativo) window.KZNativo.limpiarDatosLocales();
+    });
+  </script>
+</body>
+</html>

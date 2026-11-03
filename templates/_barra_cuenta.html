@@ -52,6 +52,23 @@
     <form method="post" action="/logout" style="margin-top: 0.75rem;">
       <button type="submit" class="btn-ubicacion-actual">Cerrar sesión</button>
     </form>
+
+    <!-- Eliminar cuenta (2026-11-03): obligatorio para publicar en la App
+         Store (guia 5.1.1(v) de Apple) -- ver /cuenta/eliminar en
+         rutas_auth.py. Pide escribir ELIMINAR para que no pase por error. -->
+    <details style="margin-top: 1rem;">
+      <summary class="ayuda">Eliminar mi cuenta</summary>
+      <form method="post" action="/cuenta/eliminar"
+            onsubmit="return confirm('Se borrarán tu cuenta, favoritos, historial y conversaciones con Koko. No se puede deshacer. ¿Seguir?');">
+        <p class="ayuda">Esto borra tu cuenta y todos tus datos de KOLIZION para siempre. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
+        <label>
+          Confirmación
+          <input type="text" name="confirmacion" autocomplete="off" autocapitalize="characters" required pattern="[Ee][Ll][Ii][Mm][Ii][Nn][Aa][Rr]">
+        </label>
+        <button type="submit" style="background: var(--oferta, #c0392b); border-color: var(--oferta, #c0392b);">Eliminar mi cuenta</button>
+      </form>
+    </details>
+    <p class="ayuda" style="text-align: center; margin-top: 1rem;"><a href="/privacidad">Política de privacidad</a> · <a href="/soporte">Soporte</a></p>
   </div>
 </div>
 {% else %}

@@ -59,8 +59,47 @@ def inicializar_db():
     vez que arranca el servidor, no borra nada si ya existia."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     conexion = get_conexion()
+    conexion.execute(_sql_tabla_usuarios("usuarios"))
+    _migrar_apple_sub(conexion)
     conexion.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
+        CREATE TABLE IF NOT EXISTS subperfiles (
+            id                       INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario_id               INTEGER NOT NULL REFERENCES usuarios(id),
+            nombre                   TEXT NOT NULL,
+            apellido                 TEXT,
+            genero                   TEXT,
+            edad                     INTEGER,
+            altura                   REAL,
+            peso                     REAL,
+            hobbie                   TEXT,
+            hobbie_musica_genero     TEXT,
+            hobbie_deportes_subtipo  TEXT,
+            creado_en                TEXT NOT NULL,
+            actualizado_en           TEXT
+        )
+    """)
+    # App de iOS (2026-11-03): tokens de notificaciones push de cada
+    # dispositivo. usuario_id es opcional -- se puede recibir avisos sin
+    # tener cuenta (mismo criterio que navegar la app sin cuenta).
+    conexion.execute("""
+        CREATE TABLE IF NOT EXISTS dispositivos_push (
+            token           TEXT PRIMARY KEY,
+            plataforma      TEXT NOT NULL,
+            usuario_id      INTEGER REFERENCES usuarios(id),
+            creado_en       TEXT NOT NULL,
+            actualizado_en  TEXT NOT NULL
+        )
+    """)
+    conexion.commit()
+    conexion.close()
+
+
+def _sql_tabla_usuarios(nombre_tabla):
+    """Schema de la tabla de cuentas. apple_sub se agrego el 2026-11-03 para
+    "Iniciar sesion con Apple" (obligatorio en la App Store si la app ofrece
+    Google) -- el CHECK ahora acepta cualquiera de las 3 formas de entrar."""
+    return f"""
+        CREATE TABLE IF NOT EXISTS {nombre_tabla} (
             id                       INTEGER PRIMARY KEY AUTOINCREMENT,
             email                    TEXT NOT NULL UNIQUE,
             password_hash            TEXT,
@@ -79,28 +118,29 @@ def inicializar_db():
             foto_perfil              TEXT,
             creado_en                TEXT NOT NULL,
             actualizado_en           TEXT,
-            CHECK (password_hash IS NOT NULL OR google_sub IS NOT NULL)
+            apple_sub                TEXT UNIQUE,
+            CHECK (password_hash IS NOT NULL OR google_sub IS NOT NULL OR apple_sub IS NOT NULL)
         )
-    """)
-    conexion.execute("""
-        CREATE TABLE IF NOT EXISTS subperfiles (
-            id                       INTEGER PRIMARY KEY AUTOINCREMENT,
-            usuario_id               INTEGER NOT NULL REFERENCES usuarios(id),
-            nombre                   TEXT NOT NULL,
-            apellido                 TEXT,
-            genero                   TEXT,
-            edad                     INTEGER,
-            altura                   REAL,
-            peso                     REAL,
-            hobbie                   TEXT,
-            hobbie_musica_genero     TEXT,
-            hobbie_deportes_subtipo  TEXT,
-            creado_en                TEXT NOT NULL,
-            actualizado_en           TEXT
-        )
-    """)
+    """
+
+
+def _migrar_apple_sub(conexion):
+    """Bases de datos creadas antes del 2026-11-03 no tienen la columna
+    apple_sub, y su CHECK no deja crear una cuenta que solo entra con Apple.
+    SQLite no permite cambiar un CHECK con ALTER TABLE, asi que se copia
+    todo a una tabla nueva con el schema actual (receta oficial de SQLite).
+    No borra ningun dato: mismos ids, mismas filas. Solo corre una vez."""
+    columnas = [fila["name"] for fila in conexion.execute("PRAGMA table_info(usuarios)")]
+    if "apple_sub" in columnas:
+        return
+    conexion.execute("DROP TABLE IF EXISTS usuarios_migracion")
+    conexion.execute(_sql_tabla_usuarios("usuarios_migracion"))
+    nuevas = {fila["name"] for fila in conexion.execute("PRAGMA table_info(usuarios_migracion)")}
+    lista = ", ".join(c for c in columnas if c in nuevas)
+    conexion.execute(f"INSERT INTO usuarios_migracion ({lista}) SELECT {lista} FROM usuarios")
+    conexion.execute("DROP TABLE usuarios")
+    conexion.execute("ALTER TABLE usuarios_migracion RENAME TO usuarios")
     conexion.commit()
-    conexion.close()
 
 
 def _normalizar_email(email):
@@ -152,7 +192,7 @@ def listar_usuarios():
     asi ni por error se termina mostrando algo asi en una pantalla)."""
     conexion = get_conexion()
     filas = conexion.execute(
-        "SELECT id, email, google_sub, nombre, apellido, genero, edad, altura, peso, "
+        "SELECT id, email, google_sub, apple_sub, nombre, apellido, genero, edad, altura, peso, "
         "direccion, telefono, foto_perfil, creado_en, actualizado_en, "
         "(password_hash IS NOT NULL) AS tiene_password "
         "FROM usuarios ORDER BY creado_en DESC"
@@ -196,6 +236,17 @@ def buscar_por_google_sub(google_sub):
     return fila_a_dict(fila)
 
 
+def buscar_por_apple_sub(apple_sub):
+    if not apple_sub:
+        return None
+    conexion = get_conexion()
+    fila = conexion.execute(
+        "SELECT * FROM usuarios WHERE apple_sub = ?", (apple_sub,)
+    ).fetchone()
+    conexion.close()
+    return fila_a_dict(fila)
+
+
 def buscar_por_id(usuario_id):
     conexion = get_conexion()
     fila = conexion.execute(
@@ -205,15 +256,15 @@ def buscar_por_id(usuario_id):
     return fila_a_dict(fila)
 
 
-def crear_usuario(email, password_hash=None, google_sub=None, perfil=None):
+def crear_usuario(email, password_hash=None, google_sub=None, perfil=None, apple_sub=None):
     """Crea una cuenta nueva. 'perfil' es el dict (opcional) migrado desde
     localStorage -- mismos nombres de campo que CAMPOS_PERFIL_*. Devuelve
     el usuario recien creado (como dict, ver fila_a_dict)."""
     perfil = perfil or {}
     ahora = datetime.now(timezone.utc).isoformat()
 
-    columnas = ["email", "password_hash", "google_sub", "creado_en"]
-    valores = [_normalizar_email(email), password_hash, google_sub, ahora]
+    columnas = ["email", "password_hash", "google_sub", "apple_sub", "creado_en"]
+    valores = [_normalizar_email(email), password_hash, google_sub, apple_sub, ahora]
 
     for campo in CAMPOS_PERFIL_TEXTO:
         columnas.append(campo)
@@ -286,6 +337,65 @@ def vincular_google(usuario_id, google_sub):
     )
     conexion.commit()
     conexion.close()
+
+
+def vincular_apple(usuario_id, apple_sub):
+    """Igual que vincular_google, para "Iniciar sesion con Apple"."""
+    conexion = get_conexion()
+    conexion.execute(
+        "UPDATE usuarios SET apple_sub = ? WHERE id = ?", (apple_sub, usuario_id)
+    )
+    conexion.commit()
+    conexion.close()
+
+
+def eliminar_usuario(usuario_id):
+    """Borra la cuenta y todo lo que cuelga de ella en la base de datos
+    (subperfiles y dispositivos push). Exigido por Apple: toda app con
+    cuentas tiene que dejar eliminarlas desde la misma app (guia 5.1.1(v)).
+    Los datos en data/*.json keyados por correo los borra rutas_auth.py."""
+    conexion = get_conexion()
+    conexion.execute("DELETE FROM subperfiles WHERE usuario_id = ?", (usuario_id,))
+    conexion.execute("DELETE FROM dispositivos_push WHERE usuario_id = ?", (usuario_id,))
+    conexion.execute("DELETE FROM usuarios WHERE id = ?", (usuario_id,))
+    conexion.commit()
+    conexion.close()
+
+
+# --- Dispositivos para notificaciones push (app de iOS) ----------------------
+
+def registrar_dispositivo(token, plataforma, usuario_id=None):
+    """Guarda (o actualiza) el token de un dispositivo. La app lo manda cada
+    vez que abre, asi que si la persona inicia sesion despues, el token
+    queda asociado a su cuenta en la siguiente apertura."""
+    ahora = datetime.now(timezone.utc).isoformat()
+    conexion = get_conexion()
+    conexion.execute(
+        "INSERT INTO dispositivos_push (token, plataforma, usuario_id, creado_en, actualizado_en) "
+        "VALUES (?, ?, ?, ?, ?) "
+        "ON CONFLICT(token) DO UPDATE SET plataforma = excluded.plataforma, "
+        "usuario_id = COALESCE(excluded.usuario_id, dispositivos_push.usuario_id), "
+        "actualizado_en = excluded.actualizado_en",
+        (token, plataforma, usuario_id, ahora, ahora),
+    )
+    conexion.commit()
+    conexion.close()
+
+
+def eliminar_dispositivo(token):
+    conexion = get_conexion()
+    conexion.execute("DELETE FROM dispositivos_push WHERE token = ?", (token,))
+    conexion.commit()
+    conexion.close()
+
+
+def listar_tokens_push(plataforma="ios"):
+    conexion = get_conexion()
+    filas = conexion.execute(
+        "SELECT token FROM dispositivos_push WHERE plataforma = ?", (plataforma,)
+    ).fetchall()
+    conexion.close()
+    return [f["token"] for f in filas]
 
 
 def fila_subperfil_a_dict(fila):
